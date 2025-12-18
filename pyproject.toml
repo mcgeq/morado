@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "allure-pytest>=2.15.2",
-    "fastapi>=0.124.4",
+    "litestar>=2.19.0",
     "playwright>=1.57.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
