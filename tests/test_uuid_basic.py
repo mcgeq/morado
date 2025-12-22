@@ -3,10 +3,10 @@ import pytest
 from morado.common.utils.uuid import (
     UUIDConfig,
     UUIDGenerator,
-    generate_uuid4,
-    generate_ulid,
     generate_alphanumeric,
     generate_numeric,
+    generate_ulid,
+    generate_uuid4,
 )
 
 
@@ -120,13 +120,13 @@ def test_convenience_functions():
     """Test convenience functions work"""
     uuid4 = generate_uuid4()
     assert len(uuid4) == 36
-    
+
     ulid = generate_ulid()
     assert len(ulid) == 26
-    
+
     alphanumeric = generate_alphanumeric(length=20)
     assert len(alphanumeric) == 20
-    
+
     numeric = generate_numeric(length=15)
     assert len(numeric) == 15
     assert numeric.isdigit()

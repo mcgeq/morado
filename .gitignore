@@ -35,6 +35,12 @@ env/
 htmlcov/
 .hypothesis/
 
+# Code Quality
+.ruff_cache/
+.mypy_cache/
+.pytype/
+.secrets.baseline
+
 # IDE
 .vscode/
 .idea/
@@ -45,3 +51,25 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend (to be added when frontend is set up)
+# node_modules/
+# dist/
+# .nuxt/
+# .output/
+# .cache/
+# bun.lockb
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3

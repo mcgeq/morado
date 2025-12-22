@@ -1,0 +1,145 @@
+# Pre-commit hooks configuration
+# See https://pre-commit.com for more information
+# 
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+# Usage:
+#   pre-commit run --all-files  # Run on all files
+#   pre-commit run              # Run on staged files only
+
+repos:
+  # ============================================================================
+  # General file checks
+  # ============================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        exclude: '\.min\.(js|css)$'
+      
+      - id: end-of-file-fixer
+        name: Fix end of files
+        exclude: '\.min\.(js|css)$'
+      
+      - id: check-yaml
+        name: Check YAML syntax
+        args: ['--unsafe']  # Allow custom tags
+      
+      - id: check-json
+        name: Check JSON syntax
+      
+      - id: check-toml
+        name: Check TOML syntax
+      
+      - id: check-added-large-files
+        name: Check for large files
+        args: ['--maxkb=1000']
+      
+      - id: check-merge-conflict
+        name: Check for merge conflicts
+      
+      - id: check-case-conflict
+        name: Check for case conflicts
+      
+      - id: mixed-line-ending
+        name: Check line endings
+        args: ['--fix=lf']
+
+  # ============================================================================
+  # Python (Backend)
+  # ============================================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      # Run the linter
+      - id: ruff
+        name: Ruff linter (Python)
+        args: ['--fix']
+        files: ^backend/
+      
+      # Run the formatter
+      - id: ruff-format
+        name: Ruff formatter (Python)
+        files: ^backend/
+
+  # ============================================================================
+  # Python type checking (optional - can be slow)
+  # ============================================================================
+  # Uncomment to enable ty type checking in pre-commit
+  # - repo: local
+  #   hooks:
+  #     - id: ty-check
+  #       name: Ty type checker (Python)
+  #       entry: ty check backend/src
+  #       language: system
+  #       pass_filenames: false
+  #       files: ^backend/.*\.py$
+
+  # ============================================================================
+  # Frontend (TypeScript/Vue) - Optional
+  # ============================================================================
+  # Uncomment when frontend is set up
+  # - repo: https://github.com/pre-commit/mirrors-eslint
+  #   rev: v9.17.0
+  #   hooks:
+  #     - id: eslint
+  #       name: ESLint (TypeScript/Vue)
+  #       files: ^frontend/.*\.(js|jsx|ts|tsx|vue)$
+  #       args: ['--fix']
+  #       additional_dependencies:
+  #         - eslint@9.17.0
+  #         - typescript@5.7.2
+
+  # ============================================================================
+  # Markdown
+  # ============================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint
+        name: Markdown linter
+        args: ['--fix']
+        exclude: 'CHANGELOG\.md'
+
+  # ============================================================================
+  # Security checks
+  # ============================================================================
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        name: Detect secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '(package-lock\.json|bun\.lockb|uv\.lock)$'
+
+# ============================================================================
+# Configuration
+# ============================================================================
+default_language_version:
+  python: python3.13
+
+# Files to exclude from all hooks
+exclude: |
+  (?x)^(
+    \.git/|
+    \.venv/|
+    node_modules/|
+    __pycache__/|
+    \.pytest_cache/|
+    \.ruff_cache/|
+    \.hypothesis/|
+    dist/|
+    build/|
+    .*\.egg-info/|
+    \.min\.(js|css)$|
+    .*\.lock$
+  )
+
+# Fail fast - stop on first failure
+fail_fast: false
+
+# Minimum pre-commit version
+minimum_pre_commit_version: '3.0.0'

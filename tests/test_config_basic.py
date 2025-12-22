@@ -7,11 +7,10 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
 from morado.common.logger.config import (
+    ConfigurationManager,
     LoggerConfig,
     ProcessorConfig,
-    ConfigurationManager,
 )
 from morado.common.utils.uuid import UUIDConfig
 
@@ -37,7 +36,7 @@ def test_logger_config_to_dict():
         module_levels={"morado.api": "WARNING"},
     )
     config_dict = config.to_dict()
-    
+
     assert config_dict["level"] == "DEBUG"
     assert config_dict["format"] == "json"
     assert config_dict["output"] == "stderr"
@@ -54,7 +53,7 @@ def test_logger_config_from_dict():
         "context_vars": ["request_id"],
     }
     config = LoggerConfig.from_dict(data)
-    
+
     assert config.level == "ERROR"
     assert config.format == "structured"
     assert config.output == "stdout"
@@ -72,9 +71,9 @@ def test_logger_config_merge():
         level="WARNING",
         module_levels={"morado.db": "ERROR"},
     )
-    
+
     merged = config1.merge(config2)
-    
+
     assert merged.level == "WARNING"
     assert merged.module_levels == {"morado.api": "DEBUG", "morado.db": "ERROR"}
 
@@ -87,16 +86,16 @@ def test_processor_config():
         params={"key": "value"},
         enabled=True,
     )
-    
+
     assert proc.name == "custom_processor"
     assert proc.module == "myapp.processors"
     assert proc.params == {"key": "value"}
     assert proc.enabled is True
-    
+
     # Test to_dict
     proc_dict = proc.to_dict()
     assert proc_dict["name"] == "custom_processor"
-    
+
     # Test from_dict
     proc2 = ProcessorConfig.from_dict(proc_dict)
     assert proc2.name == proc.name
@@ -126,14 +125,14 @@ format = "alphanumeric"
 length = 32
 prefix = "REQ"
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
         f.write(toml_content)
         temp_path = f.name
-    
+
     try:
         config = ConfigurationManager.load_from_file(temp_path)
-        
+
         assert config.level == "DEBUG"
         assert config.format == "json"
         assert config.output == "stdout"
@@ -153,10 +152,10 @@ def test_configuration_manager_load_from_env():
     os.environ["MORADO_LOG_FORMAT"] = "json"
     os.environ["MORADO_REQUEST_ID_FORMAT"] = "uuid4"
     os.environ["MORADO_REQUEST_ID_LENGTH"] = "36"
-    
+
     try:
         config = ConfigurationManager.load_from_env()
-        
+
         assert config.level == "ERROR"
         assert config.format == "json"
         assert config.request_id_config is not None
@@ -175,9 +174,9 @@ def test_configuration_manager_merge_configs():
     config1 = LoggerConfig(level="INFO")
     config2 = LoggerConfig(format="json")
     config3 = LoggerConfig(output="stderr")
-    
+
     merged = ConfigurationManager.merge_configs(config1, config2, config3)
-    
+
     assert merged.level == "INFO"
     assert merged.format == "json"
     assert merged.output == "stderr"
@@ -189,14 +188,14 @@ def test_configuration_manager_validate_config():
     config = LoggerConfig(level="INVALID")
     validated = ConfigurationManager.validate_config(config)
     assert validated.level == "INFO"  # Should fall back to default
-    
+
     # Invalid format - Pydantic will prevent this at creation time
     # So we test with a valid format and then validate
     config = LoggerConfig(level="debug", format="json")
     validated = ConfigurationManager.validate_config(config)
     assert validated.level == "DEBUG"  # Should be uppercased
     assert validated.format == "json"
-    
+
     # Test that Pydantic validates format at creation
     from pydantic import ValidationError
     with pytest.raises(ValidationError):
@@ -215,7 +214,7 @@ def test_configuration_manager_find_config_file():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
         f.write("[logging]\nlevel = \"INFO\"")
         temp_path = f.name
-    
+
     try:
         os.environ["MORADO_LOG_CONFIG"] = temp_path
         found_path = ConfigurationManager.find_config_file()
@@ -232,20 +231,20 @@ def test_logger_config_with_uuid_config():
         length=24,
         prefix="TEST",
     )
-    
+
     logger_config = LoggerConfig(
         level="DEBUG",
         request_id_config=uuid_config,
     )
-    
+
     assert logger_config.request_id_config is not None
     assert logger_config.request_id_config.format == "alphanumeric"
     assert logger_config.request_id_config.prefix == "TEST"
-    
+
     # Test serialization
     config_dict = logger_config.to_dict()
     assert "request_id_config" in config_dict
-    
+
     # Test deserialization
     restored = LoggerConfig.from_dict(config_dict)
     assert restored.request_id_config is not None

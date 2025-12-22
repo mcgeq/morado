@@ -1,0 +1,34 @@
+# Production environment configuration
+
+app_name = "Morado"
+version = "0.1.0"
+debug = false
+environment = "production"
+
+# Server settings
+host = "0.0.0.0"
+port = 8000
+workers = 4
+reload = false
+
+# Database settings (override with environment variables in production!)
+database_url = "postgresql://morado:morado@db:5432/morado"
+database_pool_size = 20
+database_echo = false
+
+# Redis settings
+redis_url = "redis://redis:6379/0"
+redis_max_connections = 20
+
+# Security settings (MUST be overridden with environment variables!)
+# secret_key should be set via SECRET_KEY environment variable
+algorithm = "HS256"
+access_token_expire_minutes = 15
+
+# CORS settings (configure for your domain)
+cors_origins = ["https://yourdomain.com"]
+cors_allow_credentials = true
+
+# Logging settings
+log_level = "INFO"
+log_format = "json"
