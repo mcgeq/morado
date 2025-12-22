@@ -1,7 +1,7 @@
 """Morado Common Utilities - Public API
 
-This module provides utility functions for the Morado application,
-including UUID generation in various formats.
+This module provides utility classes and functions for the Morado application,
+including UUID generation, file system operations, and time handling.
 
 UUID Generation:
     from morado.common.utils import UUIDGenerator, uuid4, ulid
@@ -17,6 +17,42 @@ UUID Generation:
     
     # Generate numeric ID
     id4 = numeric(length=20)
+
+File System Operations:
+    from morado.common.utils import FileSystemUtil
+    
+    # Check if a path exists
+    if FileSystemUtil.exists("/path/to/file"):
+        size = FileSystemUtil.get_size("/path/to/file")
+        print(f"File size: {size} bytes")
+    
+    # Create directories
+    FileSystemUtil.create_directory("/path/to/new/dir")
+    
+    # Copy and move files
+    FileSystemUtil.copy_file("source.txt", "dest.txt")
+    FileSystemUtil.move("old.txt", "new.txt")
+    
+    # List files with pattern matching
+    files = FileSystemUtil.list_files("/path", pattern="*.txt")
+
+Time Operations:
+    from morado.common.utils import TimeUtil
+    
+    # Get current time
+    utc_now = TimeUtil.now_utc()
+    local_now = TimeUtil.now_local()
+    
+    # Format and parse timestamps
+    iso_string = TimeUtil.to_iso8601(utc_now)
+    parsed = TimeUtil.parse_iso8601(iso_string)
+    
+    # Time calculations
+    future = TimeUtil.add_duration(utc_now, hours=2, minutes=30)
+    diff = TimeUtil.time_difference(utc_now, future)
+    
+    # Timezone conversions
+    ny_time = TimeUtil.convert_timezone(utc_now, "America/New_York")
 
 Configuration:
     from morado.common.utils import UUIDGenerator, UUIDConfig
@@ -35,6 +71,14 @@ from morado.common.utils.uuid import (
     UUIDGenerator,
     UUIDConfig,
 )
+from morado.common.utils.exceptions import (
+    FileSystemError,
+    FileNotFoundError,
+    FileExistsError,
+    TimeParseError,
+)
+from morado.common.utils.filesystem import FileSystemUtil
+from morado.common.utils.time import TimeUtil
 
 
 # Convenience functions for common UUID formats
@@ -153,4 +197,16 @@ __all__ = [
     'ulid',
     'alphanumeric',
     'numeric',
+    
+    # File system utilities
+    'FileSystemUtil',
+    
+    # Time utilities
+    'TimeUtil',
+    
+    # Exception classes
+    'FileSystemError',
+    'FileNotFoundError',
+    'FileExistsError',
+    'TimeParseError',
 ]
