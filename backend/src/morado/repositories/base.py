@@ -4,7 +4,7 @@ This module provides the base repository class with common CRUD operations
 that all specific repositories inherit from.
 """
 
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ from morado.models.base import Base
 ModelType = TypeVar("ModelType", bound=Base)
 
 
-class BaseRepository(Generic[ModelType]):
+class BaseRepository[ModelType: Base]:
     """Base repository class with common CRUD operations.
 
     This class provides standard database operations that can be used
@@ -122,7 +122,9 @@ class BaseRepository(Generic[ModelType]):
             >>> total = repo.count(session)
             >>> active_count = repo.count(session, filters={"is_active": True})
         """
-        stmt = select(self.model)
+        from sqlalchemy import func
+
+        stmt = select(func.count()).select_from(self.model)
 
         if filters:
             for field, value in filters.items():

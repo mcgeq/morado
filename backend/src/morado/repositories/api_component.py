@@ -3,7 +3,6 @@
 This module provides data access methods for Header, Body, and ApiDefinition models.
 """
 
-from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,7 +51,7 @@ class HeaderRepository(BaseRepository[Header]):
         stmt = (
             select(Header)
             .where(Header.scope == scope)
-            .where(Header.is_active == True)
+            .where(Header.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -82,7 +81,7 @@ class HeaderRepository(BaseRepository[Header]):
         stmt = (
             select(Header)
             .where(Header.project_id == project_id)
-            .where(Header.is_active == True)
+            .where(Header.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -112,7 +111,7 @@ class HeaderRepository(BaseRepository[Header]):
         stmt = (
             select(Header)
             .where(Header.name.ilike(f"%{name}%"))
-            .where(Header.is_active == True)
+            .where(Header.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -141,7 +140,7 @@ class HeaderRepository(BaseRepository[Header]):
         stmt = (
             select(Header)
             .where(Header.scope == scope)
-            .where(Header.is_active == True)
+            .where(Header.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -169,7 +168,7 @@ class HeaderRepository(BaseRepository[Header]):
         stmt = (
             select(Header)
             .where(Header.project_id == project_id)
-            .where(Header.is_active == True)
+            .where(Header.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -197,7 +196,7 @@ class HeaderRepository(BaseRepository[Header]):
         stmt = (
             select(Header)
             .where(Header.name.ilike(f"%{name}%"))
-            .where(Header.is_active == True)
+            .where(Header.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -241,7 +240,7 @@ class BodyRepository(BaseRepository[Body]):
         stmt = (
             select(Body)
             .where(Body.scope == scope)
-            .where(Body.is_active == True)
+            .where(Body.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -268,7 +267,7 @@ class BodyRepository(BaseRepository[Body]):
         stmt = (
             select(Body)
             .where(Body.body_type == body_type)
-            .where(Body.is_active == True)
+            .where(Body.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -295,7 +294,7 @@ class BodyRepository(BaseRepository[Body]):
         stmt = (
             select(Body)
             .where(Body.name.ilike(f"%{name}%"))
-            .where(Body.is_active == True)
+            .where(Body.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -324,7 +323,7 @@ class BodyRepository(BaseRepository[Body]):
         stmt = (
             select(Body)
             .where(Body.scope == scope)
-            .where(Body.is_active == True)
+            .where(Body.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -352,7 +351,7 @@ class BodyRepository(BaseRepository[Body]):
         stmt = (
             select(Body)
             .where(Body.body_type == body_type)
-            .where(Body.is_active == True)
+            .where(Body.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -380,7 +379,7 @@ class BodyRepository(BaseRepository[Body]):
         stmt = (
             select(Body)
             .where(Body.name.ilike(f"%{name}%"))
-            .where(Body.is_active == True)
+            .where(Body.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -455,7 +454,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         stmt = (
             select(ApiDefinition)
             .where(ApiDefinition.method == method)
-            .where(ApiDefinition.is_active == True)
+            .where(ApiDefinition.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -482,7 +481,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         stmt = (
             select(ApiDefinition)
             .where(ApiDefinition.path.ilike(f"%{path}%"))
-            .where(ApiDefinition.is_active == True)
+            .where(ApiDefinition.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -509,7 +508,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         stmt = (
             select(ApiDefinition)
             .where(ApiDefinition.header_id == header_id)
-            .where(ApiDefinition.is_active == True)
+            .where(ApiDefinition.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -564,7 +563,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         stmt = (
             select(ApiDefinition)
             .where(ApiDefinition.method == method)
-            .where(ApiDefinition.is_active == True)
+            .where(ApiDefinition.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -592,7 +591,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         stmt = (
             select(ApiDefinition)
             .where(ApiDefinition.path.ilike(f"%{path}%"))
-            .where(ApiDefinition.is_active == True)
+            .where(ApiDefinition.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -620,7 +619,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         stmt = (
             select(ApiDefinition)
             .where(ApiDefinition.header_id == header_id)
-            .where(ApiDefinition.is_active == True)
+            .where(ApiDefinition.is_active)
             .offset(skip)
             .limit(limit)
         )

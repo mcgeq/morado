@@ -61,7 +61,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
                 .joinedload(TestCaseScript.script)
             )
         )
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_components(
         self,
@@ -90,7 +90,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
                 .joinedload(TestCaseComponent.component)
             )
         )
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_relations(
         self,
@@ -121,7 +121,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
                 .joinedload(TestCaseComponent.component)
             )
         )
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_by_status(
         self,
@@ -318,7 +318,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.is_automated == True)
+            .where(TestCase.is_automated)
             .where(TestCase.status == TestCaseStatus.ACTIVE)
             .offset(skip)
             .limit(limit)
@@ -503,7 +503,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.is_automated == True)
+            .where(TestCase.is_automated)
             .where(TestCase.status == TestCaseStatus.ACTIVE)
             .offset(skip)
             .limit(limit)
@@ -548,7 +548,7 @@ class TestCaseScriptRepository(BaseRepository[TestCaseScript]):
         stmt = (
             select(TestCaseScript)
             .where(TestCaseScript.test_case_id == test_case_id)
-            .where(TestCaseScript.is_enabled == True)
+            .where(TestCaseScript.is_enabled)
             .options(joinedload(TestCaseScript.script))
             .order_by(TestCaseScript.execution_order)
         )
@@ -599,7 +599,7 @@ class TestCaseScriptRepository(BaseRepository[TestCaseScript]):
         stmt = (
             select(TestCaseScript)
             .where(TestCaseScript.test_case_id == test_case_id)
-            .where(TestCaseScript.is_enabled == True)
+            .where(TestCaseScript.is_enabled)
             .options(joinedload(TestCaseScript.script))
             .order_by(TestCaseScript.execution_order)
         )
@@ -665,7 +665,7 @@ class TestCaseComponentRepository(BaseRepository[TestCaseComponent]):
         stmt = (
             select(TestCaseComponent)
             .where(TestCaseComponent.test_case_id == test_case_id)
-            .where(TestCaseComponent.is_enabled == True)
+            .where(TestCaseComponent.is_enabled)
             .options(joinedload(TestCaseComponent.component))
             .order_by(TestCaseComponent.execution_order)
         )
@@ -716,7 +716,7 @@ class TestCaseComponentRepository(BaseRepository[TestCaseComponent]):
         stmt = (
             select(TestCaseComponent)
             .where(TestCaseComponent.test_case_id == test_case_id)
-            .where(TestCaseComponent.is_enabled == True)
+            .where(TestCaseComponent.is_enabled)
             .options(joinedload(TestCaseComponent.component))
             .order_by(TestCaseComponent.execution_order)
         )

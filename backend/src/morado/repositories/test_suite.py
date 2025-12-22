@@ -106,7 +106,7 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         """
         stmt = (
             select(TestSuite)
-            .where(TestSuite.is_scheduled == True)
+            .where(TestSuite.is_scheduled)
             .offset(skip)
             .limit(limit)
         )
@@ -242,7 +242,7 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         """
         stmt = (
             select(TestSuite)
-            .where(TestSuite.is_scheduled == True)
+            .where(TestSuite.is_scheduled)
             .offset(skip)
             .limit(limit)
         )
@@ -340,7 +340,7 @@ class TestSuiteCaseRepository(BaseRepository[TestSuiteCase]):
         stmt = (
             select(TestSuiteCase)
             .where(TestSuiteCase.test_suite_id == test_suite_id)
-            .where(TestSuiteCase.is_enabled == True)
+            .where(TestSuiteCase.is_enabled)
             .options(joinedload(TestSuiteCase.test_case))
             .order_by(TestSuiteCase.execution_order)
         )
@@ -391,7 +391,7 @@ class TestSuiteCaseRepository(BaseRepository[TestSuiteCase]):
         stmt = (
             select(TestSuiteCase)
             .where(TestSuiteCase.test_suite_id == test_suite_id)
-            .where(TestSuiteCase.is_enabled == True)
+            .where(TestSuiteCase.is_enabled)
             .options(joinedload(TestSuiteCase.test_case))
             .order_by(TestSuiteCase.execution_order)
         )

@@ -80,7 +80,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.api_definition_id == api_definition_id)
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -110,7 +110,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.script_type == script_type)
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .order_by(TestScript.execution_order)
             .offset(skip)
             .limit(limit)
@@ -141,7 +141,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.name.ilike(f"%{name}%"))
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -171,7 +171,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.tags.contains(tags))
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -225,7 +225,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.api_definition_id == api_definition_id)
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -253,7 +253,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.script_type == script_type)
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .order_by(TestScript.execution_order)
             .offset(skip)
             .limit(limit)
@@ -282,7 +282,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.name.ilike(f"%{name}%"))
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -310,7 +310,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         stmt = (
             select(TestScript)
             .where(TestScript.tags.contains(tags))
-            .where(TestScript.is_active == True)
+            .where(TestScript.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -378,7 +378,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         stmt = (
             select(ScriptParameter)
             .where(ScriptParameter.script_id == script_id)
-            .where(ScriptParameter.is_required == True)
+            .where(ScriptParameter.is_required)
             .order_by(ScriptParameter.order)
         )
         return list(session.execute(stmt).scalars().all())
@@ -451,7 +451,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         stmt = (
             select(ScriptParameter)
             .where(ScriptParameter.script_id == script_id)
-            .where(ScriptParameter.is_required == True)
+            .where(ScriptParameter.is_required)
             .order_by(ScriptParameter.order)
         )
         result = await session.execute(stmt)

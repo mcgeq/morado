@@ -56,23 +56,23 @@ from morado.repositories.test_case import (
 from morado.repositories.test_suite import TestSuiteCaseRepository, TestSuiteRepository
 
 __all__ = [
+    "ApiDefinitionRepository",
     # Base
     "BaseRepository",
+    "BodyRepository",
+    "ComponentScriptRepository",
     # Layer 1: API Components
     "HeaderRepository",
-    "BodyRepository",
-    "ApiDefinitionRepository",
-    # Layer 2: Test Scripts
-    "TestScriptRepository",
     "ScriptParameterRepository",
-    # Layer 3: Test Components
-    "TestComponentRepository",
-    "ComponentScriptRepository",
+    "TestCaseComponentRepository",
     # Layer 4: Test Cases
     "TestCaseRepository",
     "TestCaseScriptRepository",
-    "TestCaseComponentRepository",
+    # Layer 3: Test Components
+    "TestComponentRepository",
+    # Layer 2: Test Scripts
+    "TestScriptRepository",
+    "TestSuiteCaseRepository",
     # Test Suites
     "TestSuiteRepository",
-    "TestSuiteCaseRepository",
 ]

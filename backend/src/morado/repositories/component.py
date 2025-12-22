@@ -54,7 +54,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
                 .joinedload(ComponentScript.script)
             )
         )
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_children(
         self,
@@ -80,7 +80,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
             .where(TestComponent.id == id)
             .options(joinedload(TestComponent.child_components))
         )
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_full_hierarchy(
         self,
@@ -110,7 +110,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
                 joinedload(TestComponent.child_components)
             )
         )
-        return session.execute(stmt).scalar_one_or_none()
+        return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_by_type(
         self,
@@ -136,7 +136,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.component_type == component_type)
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -164,7 +164,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.parent_component_id.is_(None))
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -194,7 +194,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.parent_component_id == parent_id)
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -224,7 +224,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.name.ilike(f"%{name}%"))
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -254,7 +254,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.tags.contains(tags))
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -356,7 +356,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.component_type == component_type)
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -382,7 +382,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.parent_component_id.is_(None))
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -410,7 +410,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.parent_component_id == parent_id)
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -438,7 +438,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.name.ilike(f"%{name}%"))
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -466,7 +466,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         stmt = (
             select(TestComponent)
             .where(TestComponent.tags.contains(tags))
-            .where(TestComponent.is_active == True)
+            .where(TestComponent.is_active)
             .offset(skip)
             .limit(limit)
         )
@@ -510,7 +510,7 @@ class ComponentScriptRepository(BaseRepository[ComponentScript]):
         stmt = (
             select(ComponentScript)
             .where(ComponentScript.component_id == component_id)
-            .where(ComponentScript.is_enabled == True)
+            .where(ComponentScript.is_enabled)
             .options(joinedload(ComponentScript.script))
             .order_by(ComponentScript.execution_order)
         )
@@ -561,7 +561,7 @@ class ComponentScriptRepository(BaseRepository[ComponentScript]):
         stmt = (
             select(ComponentScript)
             .where(ComponentScript.component_id == component_id)
-            .where(ComponentScript.is_enabled == True)
+            .where(ComponentScript.is_enabled)
             .options(joinedload(ComponentScript.script))
             .order_by(ComponentScript.execution_order)
         )
