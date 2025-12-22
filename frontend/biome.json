@@ -1,0 +1,192 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "main"
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["src/**/*.{js,jsx,ts,tsx,vue,html,json,css,scss,less}"],
+    "maxSize": 5242880
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "formatWithErrors": false
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "warn",
+        "noUnusedVariables": "warn"
+      },
+      "suspicious": {
+        "noDebugger": "warn",
+        "noConsole": "off",
+        "noDoubleEquals": "error",
+        "noExplicitAny": "warn"
+      },
+      "style": {
+        "noParameterAssign": "error",
+        "useDefaultParameterLast": "error",
+        "useSingleVarDeclarator": "error",
+        "useConst": "warn",
+        "noInferrableTypes": "warn",
+        "noUselessElse": "warn",
+        "useSelfClosingElements": "warn",
+        "useNumberNamespace": "warn",
+        "useAsConstAssertion": "warn",
+        "noUnusedTemplateLiteral": "warn",
+        "useTemplate": "warn",
+        "useEnumInitializers": "warn"
+      },
+      "a11y": {
+        "noAutofocus": "warn",
+        "useButtonType": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useAltText": "error",
+        "useValidAnchor": "warn",
+        "useSemanticElements": "warn",
+        "noAccessKey": "warn",
+        "useAriaPropsForRole": "error"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "warn",
+        "noForEach": "off",
+        "useLiteralKeys": "warn",
+        "useSimplifiedLogicExpression": "warn"
+      },
+      "performance": {
+        "noAccumulatingSpread": "warn",
+        "noDelete": "warn"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "warn",
+        "noDangerouslySetInnerHtmlWithChildren": "error"
+      }
+    }
+  },
+  "javascript": {
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": true
+    },
+    "formatter": {
+      "enabled": true,
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "single",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "all",
+      "semicolons": "always",
+      "arrowParentheses": "asNeeded",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "lineWidth": 100,
+      "indentWidth": 2,
+      "indentStyle": "space"
+    },
+    "globals": [
+      "vi",
+      "vitest",
+      "describe",
+      "it",
+      "test",
+      "expect",
+      "beforeEach",
+      "afterEach",
+      "beforeAll",
+      "afterAll"
+    ]
+  },
+  "json": {
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": false
+    },
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineWidth": 100
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "tailwindDirectives": true
+    },
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineWidth": 100,
+      "quoteStyle": "double"
+    },
+    "linter": {
+      "enabled": true
+    }
+  },
+  "html": {
+    "experimentalFullSupportEnabled": true,
+    "parser": {
+      "interpolation": true
+    },
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentScriptAndStyle": true,
+      "indentWidth": 2,
+      "lineWidth": 100,
+      "lineEnding": "lf",
+      "selfCloseVoidElements": "always"
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off",
+            "noUnusedVariables": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          },
+          "style": {
+            "useConst": "warn"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.{js,ts,jsx,tsx}", "**/*.spec.{js,ts,jsx,tsx}", "**/__tests__/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "style": {
+            "noParameterAssign": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["*.config.js", "*.config.ts", "vite.config.*", "nuxt.config.*"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    }
+  ]
+}
