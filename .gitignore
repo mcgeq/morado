@@ -32,8 +32,14 @@ env/
 # Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .hypothesis/
+*.cover
+.tox/
+nosetests.xml
+coverage.xml
+*.coveragerc
 
 # Code Quality
 .ruff_cache/
@@ -52,13 +58,15 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Frontend (to be added when frontend is set up)
-# node_modules/
-# dist/
-# .nuxt/
-# .output/
-# .cache/
-# bun.lockb
+# Frontend (when set up)
+frontend/node_modules/
+frontend/dist/
+frontend/.nuxt/
+frontend/.output/
+frontend/.cache/
+frontend/bun.lockb
+frontend/.vite/
+frontend/.turbo/
 
 # Logs
 *.log
@@ -73,3 +81,46 @@ logs/
 *.db
 *.sqlite
 *.sqlite3
+
+# Alembic
+backend/alembic/versions/*.pyc
+backend/alembic/__pycache__/
+
+# Jujutsu (jj) version control
+.jj/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Secrets and credentials
+*.pem
+*.key
+*.cert
+secrets/
+credentials/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+*.dockerfile.swp
+
+# Deployment
+deployment/docker/.env
+deployment/k8s/secrets/
+deployment/k8s/*-secret.yaml
+
+# Backend specific
+backend/.env
+backend/.env.*
+backend/config/local.toml
+backend/config/*.local.toml
+
+# UV lock file (optional - some teams commit this)
+# uv.lock
