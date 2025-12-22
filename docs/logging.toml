@@ -1,0 +1,277 @@
+# Morado Logger Configuration Example
+# =====================================
+# This file demonstrates all available configuration options for the Morado logging system.
+# Place this file in one of the following locations (searched in order):
+#   1. Path specified in MORADO_LOG_CONFIG environment variable
+#   2. ./logging.toml (current directory)
+#   3. ./config/logging.toml
+#   4. ~/.morado/logging.toml (user home directory)
+#
+# If no configuration file is found, the system uses sensible defaults.
+
+# =============================================================================
+# BASIC LOGGING CONFIGURATION
+# =============================================================================
+
+[logging]
+# Log level: Controls the minimum severity of messages to log
+# Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+# Default: INFO
+# Environment variable override: MORADO_LOG_LEVEL
+level = "INFO"
+
+# Output format: Controls how log messages are formatted
+# Options:
+#   - "console": Human-readable colored output (best for development)
+#   - "json": Machine-readable JSON format (best for production/log aggregation)
+#   - "structured": Structured key-value format
+# Default: console
+# Environment variable override: MORADO_LOG_FORMAT
+format = "console"
+
+# Output destination: Where to write log messages
+# Options:
+#   - "stdout": Standard output
+#   - "stderr": Standard error
+#   - "/path/to/file.log": File path for log output
+# Default: stdout
+# Environment variable override: MORADO_LOG_OUTPUT
+output = "stdout"
+
+# Context variables: List of context variables to include in logs
+# These are automatically injected when set via request_scope or ContextManager
+# Default: ["request_id", "user_id", "trace_id"]
+context_vars = ["request_id", "user_id", "trace_id"]
+
+
+# =============================================================================
+# MODULE-LEVEL LOG CONFIGURATION
+# =============================================================================
+# Configure different log levels for specific modules or module patterns.
+# More specific patterns take precedence over general ones.
+
+[logging.module_levels]
+# Set DEBUG level for API module (useful during development)
+"morado.api" = "DEBUG"
+
+# Set WARNING level for database module (reduce noise from connection pooling)
+"morado.db" = "WARNING"
+
+# Pattern matching: Use wildcards to match multiple modules
+"morado.services.*" = "INFO"
+
+# Third-party library log levels
+"urllib3" = "WARNING"
+"sqlalchemy.engine" = "WARNING"
+
+
+# =============================================================================
+# CUSTOM PROCESSORS
+# =============================================================================
+# Processors transform log events before they are rendered.
+# Built-in processors (timestamp, log level, stack info) are added automatically.
+# Add custom processors here to extend logging behavior.
+
+[logging.processors]
+# Custom processors should be specified as module paths
+# Example: custom = ["myapp.logging.add_hostname", "myapp.logging.add_version"]
+# 
+# Each processor should be a callable with signature:
+#   def processor(logger, method_name, event_dict) -> dict:
+#       # Modify event_dict
+#       return event_dict
+custom = []
+
+
+# =============================================================================
+# REQUEST ID CONFIGURATION
+# =============================================================================
+# Configure how request IDs are automatically generated when not provided.
+# Request IDs are used to trace requests through the system.
+
+[logging.request_id]
+# Format: Type of ID to generate
+# Options:
+#   - "alphanumeric": Mixed letters and numbers (default)
+#   - "numeric": Numbers only
+#   - "uuid4": Standard RFC 4122 UUID4
+#   - "ulid": ULID-like sortable timestamp-based IDs
+# Default: alphanumeric
+# Environment variable override: MORADO_REQUEST_ID_FORMAT
+format = "alphanumeric"
+
+# Length: Number of characters in the generated ID (ignored for uuid4 and ulid)
+# Default: 24
+# Environment variable override: MORADO_REQUEST_ID_LENGTH
+length = 24
+
+# Prefix: String to prepend to generated IDs
+# Useful for identifying request IDs in logs
+# Default: "" (empty)
+prefix = "REQ-"
+
+# Suffix: String to append to generated IDs
+# Default: "" (empty)
+suffix = ""
+
+# Charset: Characters to use for alphanumeric/numeric formats
+# Default for alphanumeric: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+# Default for numeric: "0123456789"
+charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+# Use timestamp: Include timestamp component for sortability
+# Applies to alphanumeric and numeric formats
+# Default: true
+use_timestamp = true
+
+# Secure: Use cryptographically secure random generation
+# Set to false for better performance in non-security-critical contexts
+# Default: true
+secure = true
+
+
+# =============================================================================
+# COMMON CONFIGURATION SCENARIOS
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SCENARIO 1: Development Environment
+# -----------------------------------------------------------------------------
+# Uncomment and adjust for local development:
+#
+# [logging]
+# level = "DEBUG"
+# format = "console"
+# output = "stdout"
+#
+# [logging.module_levels]
+# "morado" = "DEBUG"
+# "sqlalchemy.engine" = "INFO"  # Show SQL queries
+#
+# [logging.request_id]
+# format = "alphanumeric"
+# length = 12  # Shorter IDs for easier reading
+# prefix = "DEV-"
+
+# -----------------------------------------------------------------------------
+# SCENARIO 2: Production Environment
+# -----------------------------------------------------------------------------
+# Uncomment and adjust for production deployment:
+#
+# [logging]
+# level = "INFO"
+# format = "json"  # Machine-readable for log aggregation
+# output = "stdout"  # Let container runtime handle log collection
+#
+# [logging.module_levels]
+# "morado" = "INFO"
+# "urllib3" = "WARNING"
+# "sqlalchemy.engine" = "WARNING"
+#
+# [logging.request_id]
+# format = "ulid"  # Sortable IDs for time-based analysis
+# secure = true
+
+# -----------------------------------------------------------------------------
+# SCENARIO 3: Testing Environment
+# -----------------------------------------------------------------------------
+# Uncomment and adjust for automated testing:
+#
+# [logging]
+# level = "WARNING"  # Reduce noise in test output
+# format = "console"
+# output = "stderr"
+#
+# [logging.request_id]
+# format = "numeric"
+# length = 16
+# secure = false  # Faster generation for tests
+
+# -----------------------------------------------------------------------------
+# SCENARIO 4: High-Performance Production
+# -----------------------------------------------------------------------------
+# Uncomment and adjust for high-throughput systems:
+#
+# [logging]
+# level = "WARNING"  # Log only important events
+# format = "json"
+# output = "stdout"
+#
+# [logging.module_levels]
+# "morado.api" = "INFO"  # Keep API logs
+# "morado.db" = "ERROR"  # Only DB errors
+#
+# [logging.request_id]
+# format = "numeric"
+# length = 20
+# secure = false  # Trade security for performance
+# use_timestamp = true
+
+# -----------------------------------------------------------------------------
+# SCENARIO 5: Debugging with Distributed Tracing
+# -----------------------------------------------------------------------------
+# Uncomment and adjust for microservices with distributed tracing:
+#
+# [logging]
+# level = "DEBUG"
+# format = "json"
+# output = "stdout"
+# context_vars = ["request_id", "user_id", "trace_id", "span_id", "parent_span_id"]
+#
+# [logging.request_id]
+# format = "uuid4"  # Standard UUIDs for compatibility with tracing systems
+
+
+# =============================================================================
+# ENVIRONMENT VARIABLE OVERRIDES
+# =============================================================================
+# All configuration options can be overridden using environment variables.
+# This is useful for containerized deployments and CI/CD pipelines.
+#
+# Available environment variables:
+#   MORADO_LOG_CONFIG          - Path to configuration file
+#   MORADO_LOG_LEVEL           - Global log level
+#   MORADO_LOG_FORMAT          - Output format (console, json, structured)
+#   MORADO_LOG_OUTPUT          - Output destination (stdout, stderr, file path)
+#   MORADO_REQUEST_ID_FORMAT   - Request ID format
+#   MORADO_REQUEST_ID_LENGTH   - Request ID length
+#
+# Example usage:
+#   export MORADO_LOG_LEVEL=DEBUG
+#   export MORADO_LOG_FORMAT=json
+#   export MORADO_REQUEST_ID_FORMAT=ulid
+#
+# Configuration precedence (highest to lowest):
+#   1. Programmatic configuration (via configure_logger())
+#   2. Environment variables
+#   3. Configuration file
+#   4. Default values
+
+
+# =============================================================================
+# PROGRAMMATIC CONFIGURATION
+# =============================================================================
+# You can also configure the logger programmatically in your code:
+#
+# from morado.common.logger import configure_logger
+# from morado.common.logger.config import LoggerConfig, UUIDConfig
+#
+# config = LoggerConfig(
+#     level="DEBUG",
+#     format="json",
+#     output="stdout",
+#     module_levels={
+#         "morado.api": "DEBUG",
+#         "morado.db": "WARNING"
+#     },
+#     request_id_config=UUIDConfig(
+#         format="ulid",
+#         prefix="REQ-",
+#         secure=True
+#     )
+# )
+#
+# configure_logger(config)
+#
+# Or with overrides:
+# configure_logger(config_file="./logging.toml", level="DEBUG")
