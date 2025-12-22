@@ -190,16 +190,17 @@ def test_configuration_manager_validate_config():
     validated = ConfigurationManager.validate_config(config)
     assert validated.level == "INFO"  # Should fall back to default
     
-    # Invalid format
-    config = LoggerConfig(format="invalid_format")
-    validated = ConfigurationManager.validate_config(config)
-    assert validated.format == "console"  # Should fall back to default
-    
-    # Valid config should remain unchanged
+    # Invalid format - Pydantic will prevent this at creation time
+    # So we test with a valid format and then validate
     config = LoggerConfig(level="debug", format="json")
     validated = ConfigurationManager.validate_config(config)
     assert validated.level == "DEBUG"  # Should be uppercased
     assert validated.format == "json"
+    
+    # Test that Pydantic validates format at creation
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
+        LoggerConfig(format="invalid_format")
 
 
 def test_configuration_manager_file_not_found():

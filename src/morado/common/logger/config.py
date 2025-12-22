@@ -5,24 +5,24 @@ Handles loading, validation, and merging of logger configurations
 """
 import os
 import tomllib
-from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Literal
+
+from pydantic import BaseModel, Field
 
 from morado.common.utils.uuid import UUIDConfig
 
 
-@dataclass
-class ProcessorConfig:
+class ProcessorConfig(BaseModel):
     """Configuration for a log processor"""
     name: str
     module: Optional[str] = None
-    params: Dict[str, Any] = field(default_factory=dict)
+    params: Dict[str, Any] = Field(default_factory=dict)
     enabled: bool = True
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary"""
-        return asdict(self)
+        return self.model_dump()
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ProcessorConfig':
@@ -30,29 +30,23 @@ class ProcessorConfig:
         return cls(**data)
 
 
-@dataclass
-class LoggerConfig:
+class LoggerConfig(BaseModel):
     """Complete logger configuration schema"""
     level: str = "INFO"
-    format: str = "console"  # console, json, structured
+    format: Literal["console", "json", "structured"] = "console"
     output: str = "stdout"  # stdout, stderr, or file path
-    module_levels: Dict[str, str] = field(default_factory=dict)
-    processors: List[ProcessorConfig] = field(default_factory=list)
-    context_vars: List[str] = field(default_factory=lambda: ["request_id", "user_id", "trace_id"])
+    module_levels: Dict[str, str] = Field(default_factory=dict)
+    processors: List[ProcessorConfig] = Field(default_factory=list)
+    context_vars: List[str] = Field(default_factory=lambda: ["request_id", "user_id", "trace_id"])
     request_id_config: Optional[UUIDConfig] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary"""
-        result = {
-            "level": self.level,
-            "format": self.format,
-            "output": self.output,
-            "module_levels": self.module_levels.copy(),
-            "processors": [p.to_dict() for p in self.processors],
-            "context_vars": self.context_vars.copy(),
-        }
-        if self.request_id_config is not None:
+        result = self.model_dump()
+        # Convert nested Pydantic models to dicts
+        if result.get("request_id_config") is not None:
             result["request_id_config"] = self.request_id_config.to_dict()
+        result["processors"] = [p.to_dict() for p in self.processors]
         return result
     
     @classmethod
@@ -81,7 +75,7 @@ class LoggerConfig:
             level=data.get("level", "INFO"),
             format=data.get("format", "console"),
             output=data.get("output", "stdout"),
-            module_levels=data.get("module_levels", {}).copy(),
+            module_levels=data.get("module_levels", {}).copy() if isinstance(data.get("module_levels"), dict) else {},
             processors=processors,
             context_vars=data.get("context_vars", ["request_id", "user_id", "trace_id"]).copy() if isinstance(data.get("context_vars"), list) else ["request_id", "user_id", "trace_id"],
             request_id_config=request_id_config

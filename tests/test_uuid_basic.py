@@ -14,13 +14,15 @@ def test_uuid_config_creation():
     """Test UUIDConfig can be created with defaults"""
     config = UUIDConfig()
     assert config.format == "alphanumeric"
-    assert config.length == 24
+    assert config.length == 38  # Updated default length
     assert config.secure is True
 
 
 def test_uuid_config_validation_invalid_format():
     """Test UUIDConfig validates format"""
-    with pytest.raises(ValueError, match="Invalid format"):
+    # Pydantic raises ValidationError instead of ValueError
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError, match="Input should be"):
         UUIDConfig(format="invalid")
 
 

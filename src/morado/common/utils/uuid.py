@@ -8,48 +8,51 @@ import secrets
 import string
 import time
 import uuid as stdlib_uuid
-from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, Literal
+
+from pydantic import BaseModel, field_validator, model_validator
 
 
-
-@dataclass
-class UUIDConfig:
+class UUIDConfig(BaseModel):
     """Configuration for UUID generation"""
-    format: str = "alphanumeric"  # alphanumeric, numeric, uuid4, ulid, custom
+    format: Literal["alphanumeric", "numeric", "uuid4", "ulid", "custom"] = "alphanumeric"
     prefix: str = ""
     suffix: str = ""
-    length: Optional[int] = 24
+    length: Optional[int] = 38
     charset: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     use_timestamp: bool = True
     secure: bool = True
     
-    def __post_init__(self):
-        """Validate configuration after initialization"""
-        # Validate format
-        valid_formats = {"alphanumeric", "numeric", "uuid4", "ulid", "custom"}
-        if self.format not in valid_formats:
-            raise ValueError(f"Invalid format: {self.format}. Must be one of {valid_formats}")
-        
-        # Validate charset is not empty
-        if not self.charset:
+    @field_validator('charset')
+    @classmethod
+    def validate_charset(cls, v: str) -> str:
+        """Validate charset is not empty"""
+        if not v:
             raise ValueError("Charset cannot be empty")
-        
-        # Validate length if specified
-        if self.length is not None and self.length <= 0:
+        return v
+    
+    @field_validator('length')
+    @classmethod
+    def validate_length(cls, v: Optional[int]) -> Optional[int]:
+        """Validate length if specified"""
+        if v is not None and v <= 0:
             raise ValueError("Length must be positive")
-        
-        # For numeric format, validate prefix and suffix are numeric
+        return v
+    
+    @model_validator(mode='after')
+    def validate_numeric_format(self) -> 'UUIDConfig':
+        """For numeric format, validate prefix and suffix are numeric"""
         if self.format == "numeric":
             if self.prefix and not self.prefix.isdigit():
                 raise ValueError("Prefix must be numeric for numeric format")
             if self.suffix and not self.suffix.isdigit():
                 raise ValueError("Suffix must be numeric for numeric format")
+        return self
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary"""
-        return asdict(self)
+        return self.model_dump()
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'UUIDConfig':
@@ -94,7 +97,7 @@ class UUIDGenerator:
             )
         elif config.format == "alphanumeric":
             return UUIDGenerator.alphanumeric(
-                length=config.length or 24,
+                length=config.length or 38,
                 prefix=config.prefix,
                 suffix=config.suffix,
                 charset=config.charset,
@@ -146,7 +149,7 @@ class UUIDGenerator:
     
     @staticmethod
     def alphanumeric(
-        length: int = 24,
+        length: int = 38,
         prefix: str = "",
         suffix: str = "",
         charset: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -155,7 +158,7 @@ class UUIDGenerator:
     ) -> str:
         """
         Generate alphanumeric ID
-        :param length: Total length of the ID
+        :param length: Total length of the ID (default: 38)
         :param prefix: Prefix string
         :param suffix: Suffix string
         :param charset: Character set to use
@@ -295,14 +298,14 @@ def generate_ulid() -> str:
 
 
 def generate_alphanumeric(
-    length: int = 24,
+    length: int = 38,
     prefix: str = "",
     suffix: str = "",
     charset: str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
     use_timestamp: bool = False,
     secure: bool = True
 ) -> str:
-    """Generate alphanumeric ID"""
+    """Generate alphanumeric ID (default length: 38)"""
     return UUIDGenerator.alphanumeric(
         length=length,
         prefix=prefix,
@@ -376,11 +379,11 @@ def generate_alphanumeric_uuid(
     use_timestamp: bool = False,
     secure: bool = False
 ) -> str:
-    """Generate alphanumeric UUID (legacy compatibility)"""
+    """Generate alphanumeric UUID (legacy compatibility, default length: 38)"""
     charset = UUIDGenerator.ALPHANUMERIC_MIXED if mixed_case else UUIDGenerator.ALPHANUMERIC_UPPER
     actual_length = length if random_part_length is None else (len(prefix) + len(suffix) + random_part_length)
     return UUIDGenerator.alphanumeric(
-        length=actual_length or 24,
+        length=actual_length or 38,
         prefix=prefix,
         suffix=suffix,
         charset=charset,

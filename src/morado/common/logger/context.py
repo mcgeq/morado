@@ -194,9 +194,9 @@ def request_scope(
         # Import here to avoid circular dependency
         from morado.common.utils.uuid import UUIDGenerator, UUIDConfig
         
-        # Use provided config or default to alphanumeric with length 24
+        # Use provided config or default to alphanumeric with length 38
         if request_id_config is None:
-            request_id_config = UUIDConfig(format="alphanumeric", length=24)
+            request_id_config = UUIDConfig(format="alphanumeric", length=38)
         
         request_id = UUIDGenerator.generate(request_id_config)
     
@@ -264,9 +264,9 @@ async def async_request_scope(
         # Import here to avoid circular dependency
         from morado.common.utils.uuid import UUIDGenerator, UUIDConfig
         
-        # Use provided config or default to alphanumeric with length 24
+        # Use provided config or default to alphanumeric with length 38
         if request_id_config is None:
-            request_id_config = UUIDConfig(format="alphanumeric", length=24)
+            request_id_config = UUIDConfig(format="alphanumeric", length=38)
         
         request_id = UUIDGenerator.generate(request_id_config)
     
