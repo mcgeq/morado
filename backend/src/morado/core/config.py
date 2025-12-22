@@ -13,6 +13,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+from morado.common.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class Settings(BaseModel):
     """Application settings with environment-based configuration.
@@ -153,20 +157,36 @@ class Settings(BaseModel):
             config_path = config_dir / f"{self.environment}.toml"
 
         if not config_path.exists():
+            logger.debug(
+                "Config file not found, using defaults",
+                extra={"config_path": str(config_path), "environment": self.environment},
+            )
             return
 
         try:
             with open(config_path, "rb") as f:
                 config_data = tomllib.load(f)
 
+            logger.info(
+                "Loaded configuration from TOML file",
+                extra={"config_path": str(config_path), "environment": self.environment},
+            )
+
             # Update settings from TOML file
             # Only update if the value is present in the TOML file
             for key, value in config_data.items():
                 if hasattr(self, key):
                     setattr(self, key, value)
+                    logger.debug(
+                        "Updated setting from config file",
+                        extra={"key": key, "value": value},
+                    )
         except Exception as e:
             # Log warning but don't fail
-            print(f"Warning: Failed to load config from {config_path}: {e}")
+            logger.warning(
+                "Failed to load config from file",
+                extra={"config_path": str(config_path), "error": str(e)},
+            )
 
 
 @lru_cache
@@ -190,11 +210,26 @@ def get_settings() -> Settings:
     # Get environment from environment variable
     environment = os.getenv("ENVIRONMENT", "development")
 
+    logger.info(
+        "Loading application settings",
+        extra={"environment": environment},
+    )
+
     # Create settings instance
     settings = Settings(environment=environment)
 
     # Load from TOML file if available
     settings.load_from_toml()
+
+    logger.info(
+        "Application settings loaded",
+        extra={
+            "environment": settings.environment,
+            "debug": settings.debug,
+            "app_name": settings.app_name,
+            "version": settings.version,
+        },
+    )
 
     return settings
 
@@ -212,5 +247,6 @@ def reload_settings() -> Settings:
         >>> settings = reload_settings()
         >>> # Settings are reloaded from environment and files
     """
+    logger.info("Reloading application settings (cache cleared)")
     get_settings.cache_clear()
     return get_settings()

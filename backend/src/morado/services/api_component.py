@@ -7,12 +7,16 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from morado.common.logger import get_logger
+from morado.common.logger.context import get_log_context
 from morado.models.api_component import ApiDefinition, Body, Header, HeaderScope
 from morado.repositories.api_component import (
     ApiDefinitionRepository,
     BodyRepository,
     HeaderRepository,
 )
+
+logger = get_logger(__name__)
 
 
 class HeaderService:
@@ -73,25 +77,76 @@ class HeaderService:
             ...     scope=HeaderScope.GLOBAL
             ... )
         """
-        # Validate scope and project_id
-        if scope == HeaderScope.PROJECT and not project_id:
-            raise ValueError("project_id is required when scope is PROJECT")
-
-        # Create header
-        header = self.repository.create(
-            session,
-            name=name,
-            description=description,
-            headers=headers,
-            scope=scope,
-            project_id=project_id,
-            tags=tags,
-            created_by=created_by,
-            **kwargs
+        logger.info(
+            "Creating header component",
+            extra={
+                **get_log_context(),  # Include request_id and other context
+                "name": name,
+                "scope": scope.value,
+                "project_id": project_id,
+                "header_count": len(headers),
+            },
         )
 
-        session.commit()
-        return header
+        # Validate scope and project_id
+        if scope == HeaderScope.PROJECT and not project_id:
+            logger.error(
+                "Validation failed: project_id required for PROJECT scope",
+                extra={
+                    **get_log_context(),
+                    "name": name,
+                    "scope": scope.value,
+                },
+            )
+            raise ValueError("project_id is required when scope is PROJECT")
+
+        try:
+            # Create header
+            header = self.repository.create(
+                session,
+                name=name,
+                description=description,
+                headers=headers,
+                scope=scope,
+                project_id=project_id,
+                tags=tags,
+                created_by=created_by,
+                **kwargs
+            )
+
+            session.commit()
+
+            logger.info(
+                "Header component created successfully",
+                extra={
+                    **get_log_context(),
+                    "header_id": header.id,
+                    "header_uuid": str(header.uuid),
+                    "name": name,
+                },
+            )
+
+            return header
+
+        except Exception as e:
+            logger.exception(
+                "Failed to create header component",
+                extra={
+                    **get_log_context(),
+                    "name": name,
+                    "error": str(e),
+                },
+            )
+            session.rollback()
+            raise
+
+        except Exception as e:
+            logger.exception(
+                "Failed to create header component",
+                extra={"name": name, "error": str(e)},
+            )
+            session.rollback()
+            raise
 
     def get_header(self, session: Session, header_id: int) -> Header | None:
         """Get header by ID.

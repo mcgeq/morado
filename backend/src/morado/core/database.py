@@ -16,7 +16,10 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
+from morado.common.logger import get_logger
 from morado.core.config import get_settings
+
+logger = get_logger(__name__)
 
 
 class Base(DeclarativeBase):
@@ -68,46 +71,67 @@ class DatabaseManager:
             >>> # Database is now ready for use
         """
         if self._initialized:
+            logger.debug("Database manager already initialized, skipping")
             return
 
         settings = get_settings()
         db_url = database_url or settings.database_url
 
+        logger.info(
+            "Initializing database manager",
+            extra={
+                "database_url": db_url.split("@")[-1] if "@" in db_url else db_url,  # Hide credentials
+                "pool_size": settings.database_pool_size,
+                "echo": settings.database_echo,
+            },
+        )
+
         # Convert postgresql:// to postgresql+asyncpg:// for async engine
         async_db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
 
-        # Create synchronous engine
-        self.engine = create_engine(
-            db_url,
-            pool_size=settings.database_pool_size,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=settings.database_echo,
-        )
+        try:
+            # Create synchronous engine
+            self.engine = create_engine(
+                db_url,
+                pool_size=settings.database_pool_size,
+                max_overflow=20,
+                pool_pre_ping=True,
+                echo=settings.database_echo,
+            )
+            logger.debug("Synchronous database engine created")
 
-        # Create asynchronous engine
-        self.async_engine = create_async_engine(
-            async_db_url,
-            pool_size=settings.database_pool_size,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=settings.database_echo,
-        )
+            # Create asynchronous engine
+            self.async_engine = create_async_engine(
+                async_db_url,
+                pool_size=settings.database_pool_size,
+                max_overflow=20,
+                pool_pre_ping=True,
+                echo=settings.database_echo,
+            )
+            logger.debug("Asynchronous database engine created")
 
-        # Create session factories
-        self.session_factory = sessionmaker(
-            bind=self.engine,
-            class_=Session,
-            expire_on_commit=False,
-        )
+            # Create session factories
+            self.session_factory = sessionmaker(
+                bind=self.engine,
+                class_=Session,
+                expire_on_commit=False,
+            )
 
-        self.async_session_factory = async_sessionmaker(
-            bind=self.async_engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-        )
+            self.async_session_factory = async_sessionmaker(
+                bind=self.async_engine,
+                class_=AsyncSession,
+                expire_on_commit=False,
+            )
 
-        self._initialized = True
+            self._initialized = True
+            logger.info("Database manager initialized successfully")
+
+        except Exception as e:
+            logger.exception(
+                "Failed to initialize database manager",
+                extra={"error": str(e)},
+            )
+            raise
 
     def create_tables(self) -> None:
         """Create all database tables.
@@ -123,7 +147,13 @@ class DatabaseManager:
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
 
-        Base.metadata.create_all(bind=self.engine)
+        logger.info("Creating database tables")
+        try:
+            Base.metadata.create_all(bind=self.engine)
+            logger.info("Database tables created successfully")
+        except Exception as e:
+            logger.exception("Failed to create database tables", extra={"error": str(e)})
+            raise
 
     async def create_tables_async(self) -> None:
         """Create all database tables asynchronously.
@@ -225,13 +255,23 @@ class DatabaseManager:
             >>> # ... use database ...
             >>> await db_manager.close()
         """
-        if self.async_engine:
-            await self.async_engine.dispose()
+        logger.info("Closing database connections")
 
-        if self.engine:
-            self.engine.dispose()
+        try:
+            if self.async_engine:
+                await self.async_engine.dispose()
+                logger.debug("Async engine disposed")
 
-        self._initialized = False
+            if self.engine:
+                self.engine.dispose()
+                logger.debug("Sync engine disposed")
+
+            self._initialized = False
+            logger.info("Database connections closed successfully")
+
+        except Exception as e:
+            logger.exception("Error closing database connections", extra={"error": str(e)})
+            raise
 
 
 # Global database manager instance
@@ -280,14 +320,18 @@ def get_db() -> Session:
         ...     return db.query(User).all()
     """
     session = _db_manager.get_session()
+    logger.debug("Database session created")
     try:
         yield session
         session.commit()
-    except Exception:
+        logger.debug("Database session committed")
+    except Exception as e:
         session.rollback()
+        logger.warning("Database session rolled back", extra={"error": str(e)})
         raise
     finally:
         session.close()
+        logger.debug("Database session closed")
 
 
 @asynccontextmanager

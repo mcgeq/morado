@@ -2,6 +2,9 @@
 
 This module provides middleware for logging HTTP requests and responses,
 including request IDs, timing information, and structured logging support.
+
+The middleware automatically sets the request ID in the context, making it
+available throughout the entire call chain (services, repositories, etc.).
 """
 
 import time
@@ -11,6 +14,12 @@ from litestar.middleware import DefineMiddleware
 from litestar.types import ASGIApp, Receive, Scope, Send
 
 from morado.common.logger import get_logger
+from morado.common.logger.context import (
+    clear_context,
+    get_log_context,
+    set_context_data,
+    set_request_id,
+)
 from morado.common.utils.uuid import generate_uuid
 
 if TYPE_CHECKING:
@@ -20,7 +29,7 @@ logger = get_logger(__name__)
 
 
 class LoggingMiddleware:
-    """Middleware for logging HTTP requests and responses.
+    """Middleware for logging HTTP requests and responses with full context tracking.
 
     This middleware logs information about each HTTP request and response,
     including:
@@ -30,8 +39,10 @@ class LoggingMiddleware:
     - Request duration
     - Client IP address
 
-    The middleware uses structured logging to ensure logs are easily
-    parseable and searchable.
+    The middleware automatically sets the request ID in a context variable,
+    making it available throughout the entire call chain. All logs from
+    services, repositories, and other components will automatically include
+    the request ID.
 
     Example:
         >>> from litestar import Litestar
@@ -73,6 +84,10 @@ class LoggingMiddleware:
         if not request_id:
             request_id = generate_uuid()
 
+        # Set request ID in context for the entire call chain
+        # This makes it available to all services, repositories, etc.
+        set_request_id(request_id)
+
         # Add request ID to scope for downstream handlers
         scope["state"] = scope.get("state", {})
         scope["state"]["request_id"] = request_id
@@ -81,18 +96,18 @@ class LoggingMiddleware:
         client = scope.get("client")
         client_ip = client[0] if client else "unknown"
 
+        # Store additional context that will be included in all logs
+        set_context_data("method", method)
+        set_context_data("path", path)
+        set_context_data("client_ip", client_ip)
+
         # Start timing
         start_time = time.time()
 
-        # Log request
+        # Log request with full context
         logger.info(
             "Request started",
-            extra={
-                "request_id": request_id,
-                "method": method,
-                "path": path,
-                "client_ip": client_ip,
-            },
+            extra=get_log_context(),
         )
 
         # Capture response status
@@ -113,37 +128,33 @@ class LoggingMiddleware:
             # Process request
             await self.app(scope, receive, send_wrapper)  # type: ignore[arg-type]
         except Exception as exc:
-            # Log exception
+            # Log exception with full context
             duration = time.time() - start_time
+            set_context_data("duration", duration)
+            set_context_data("error", str(exc))
+            set_context_data("error_type", type(exc).__name__)
+
             logger.exception(
                 "Request failed with exception",
-                extra={
-                    "request_id": request_id,
-                    "method": method,
-                    "path": path,
-                    "duration": duration,
-                    "error": str(exc),
-                    "error_type": type(exc).__name__,
-                },
+                extra=get_log_context(),
             )
             raise
         else:
-            # Log successful response
+            # Log successful response with full context
             duration = time.time() - start_time
-            log_level = "info" if status_code and status_code < 400 else "warning"
+            set_context_data("status_code", status_code)
+            set_context_data("duration", duration)
 
+            log_level = "info" if status_code and status_code < 400 else "warning"
             log_func = logger.info if log_level == "info" else logger.warning
+
             log_func(
                 "Request completed",
-                extra={
-                    "request_id": request_id,
-                    "method": method,
-                    "path": path,
-                    "status_code": status_code,
-                    "duration": duration,
-                    "client_ip": client_ip,
-                },
+                extra=get_log_context(),
             )
+        finally:
+            # Clear context after request completes
+            clear_context()
 
 
 def create_logging_middleware() -> DefineMiddleware:
