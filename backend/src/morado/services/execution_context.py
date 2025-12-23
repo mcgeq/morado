@@ -58,7 +58,7 @@ class VariableResolver:
     """
 
     # Pattern to match ${variable}, ${variable:default}, ${env.path}
-    VARIABLE_PATTERN = re.compile(r'\$\{([^}:]+)(?::([^}]*))?\}')
+    VARIABLE_PATTERN = re.compile(r"\$\{([^}:]+)(?::([^}]*))?\}")
 
     def __init__(self, context: dict[str, Any] | None = None):
         """Initialize variable resolver.
@@ -102,6 +102,7 @@ class VariableResolver:
         Returns:
             String with variables substituted
         """
+
         def replace_variable(match: re.Match) -> str:
             var_name = match.group(1)
             default_value = match.group(2)
@@ -113,10 +114,14 @@ class VariableResolver:
 
             # Handle environment config references (env.path.to.value)
             if var_name.startswith("env."):
-                return self._resolve_env_variable(var_name, default_value, match.group(0))
+                return self._resolve_env_variable(
+                    var_name, default_value, match.group(0)
+                )
 
             # Handle regular variables
-            return self._resolve_regular_variable(var_name, default_value, match.group(0))
+            return self._resolve_regular_variable(
+                var_name, default_value, match.group(0)
+            )
 
         return self.VARIABLE_PATTERN.sub(replace_variable, text)
 
@@ -140,10 +145,12 @@ class VariableResolver:
         elif var_name == "random_int":
             return str(random.randint(1000, 9999))
         elif var_name == "random_string":
-            return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            return "".join(random.choices(string.ascii_letters + string.digits, k=8))
         return None
 
-    def _resolve_env_variable(self, var_name: str, default_value: str | None, original: str) -> str:
+    def _resolve_env_variable(
+        self, var_name: str, default_value: str | None, original: str
+    ) -> str:
         """Resolve environment config variable.
 
         Args:
@@ -163,7 +170,9 @@ class VariableResolver:
         else:
             return original
 
-    def _resolve_regular_variable(self, var_name: str, default_value: str | None, original: str) -> str:
+    def _resolve_regular_variable(
+        self, var_name: str, default_value: str | None, original: str
+    ) -> str:
         """Resolve regular variable.
 
         Args:
@@ -197,7 +206,7 @@ class VariableResolver:
             >>> resolver._get_nested_value(data, "api.base_url")
             'https://example.com'
         """
-        keys = path.split('.')
+        keys = path.split(".")
         value = data
         for key in keys:
             if isinstance(value, dict) and key in value:
@@ -227,9 +236,7 @@ class ExecutionContext:
     """
 
     def __init__(
-        self,
-        environment: str = "development",
-        env_config: dict[str, Any] | None = None
+        self, environment: str = "development", env_config: dict[str, Any] | None = None
     ):
         """Initialize execution context.
 
@@ -355,7 +362,7 @@ class ScriptExecutionContext(ExecutionContext):
         self,
         script: Any,  # TestScript model
         override_params: dict[str, Any] | None = None,
-        env_config: dict[str, Any] | None = None
+        env_config: dict[str, Any] | None = None,
     ):
         """Initialize script execution context.
 
@@ -370,7 +377,7 @@ class ScriptExecutionContext(ExecutionContext):
         self.script = script
 
         # Load script parameter defaults
-        if hasattr(script, 'parameters'):
+        if hasattr(script, "parameters"):
             for param in script.parameters:
                 if param.default_value:
                     self.set_param(param.name, param.default_value)
@@ -389,7 +396,7 @@ class ScriptExecutionContext(ExecutionContext):
         Returns:
             Dictionary of output variables defined in script
         """
-        if hasattr(self.script, 'output_variables') and self.script.output_variables:
+        if hasattr(self.script, "output_variables") and self.script.output_variables:
             return {var: self.get_param(var) for var in self.script.output_variables}
         return {}
 
@@ -426,7 +433,7 @@ class ComponentExecutionContext(ExecutionContext):
         self,
         component: Any,  # TestComponent model
         override_params: dict[str, Any] | None = None,
-        env_config: dict[str, Any] | None = None
+        env_config: dict[str, Any] | None = None,
     ):
         """Initialize component execution context.
 
@@ -452,9 +459,7 @@ class ComponentExecutionContext(ExecutionContext):
         self.script_results: dict[str, Any] = {}
 
     def create_script_context(
-        self,
-        script: Any,
-        script_params: dict[str, Any] | None = None
+        self, script: Any, script_params: dict[str, Any] | None = None
     ) -> ScriptExecutionContext:
         """Create execution context for a script within this component.
 
@@ -475,7 +480,7 @@ class ComponentExecutionContext(ExecutionContext):
         return ScriptExecutionContext(
             script=script,
             override_params=merged_params,
-            env_config=None  # Already loaded in component context
+            env_config=None,  # Already loaded in component context
         )
 
     def save_script_result(self, script_name: str, result: dict[str, Any]) -> None:
@@ -488,8 +493,8 @@ class ComponentExecutionContext(ExecutionContext):
         self.script_results[script_name] = result
 
         # Update shared variables with script output
-        if 'output_variables' in result:
-            self.update_params(result['output_variables'])
+        if "output_variables" in result:
+            self.update_params(result["output_variables"])
 
     def get_script_result(self, script_name: str) -> dict[str, Any] | None:
         """Get script execution result.
@@ -544,7 +549,7 @@ class TestCaseExecutionContext(ExecutionContext):
         self,
         test_case: Any,  # TestCase model
         runtime_params: dict[str, Any] | None = None,
-        env_config: dict[str, Any] | None = None
+        env_config: dict[str, Any] | None = None,
     ):
         """Initialize test case execution context.
 
@@ -554,15 +559,17 @@ class TestCaseExecutionContext(ExecutionContext):
             env_config: Environment configuration
         """
         super().__init__(
-            environment=test_case.environment if hasattr(test_case, 'environment') else "development",
-            env_config=env_config
+            environment=test_case.environment
+            if hasattr(test_case, "environment")
+            else "development",
+            env_config=env_config,
         )
 
         # Store test case reference
         self.test_case = test_case
 
         # Load test case data
-        if hasattr(test_case, 'test_data') and test_case.test_data:
+        if hasattr(test_case, "test_data") and test_case.test_data:
             self.update_params(test_case.test_data)
 
         # Apply runtime parameters (highest priority)
@@ -573,9 +580,7 @@ class TestCaseExecutionContext(ExecutionContext):
         self.execution_history: list[dict[str, Any]] = []
 
     def create_script_context(
-        self,
-        script: Any,
-        script_params: dict[str, Any] | None = None
+        self, script: Any, script_params: dict[str, Any] | None = None
     ) -> ScriptExecutionContext:
         """Create execution context for a script within this test case.
 
@@ -596,13 +601,11 @@ class TestCaseExecutionContext(ExecutionContext):
         return ScriptExecutionContext(
             script=script,
             override_params=merged_params,
-            env_config=None  # Already loaded in test case context
+            env_config=None,  # Already loaded in test case context
         )
 
     def create_component_context(
-        self,
-        component: Any,
-        component_params: dict[str, Any] | None = None
+        self, component: Any, component_params: dict[str, Any] | None = None
     ) -> ComponentExecutionContext:
         """Create execution context for a component within this test case.
 
@@ -623,14 +626,11 @@ class TestCaseExecutionContext(ExecutionContext):
         return ComponentExecutionContext(
             component=component,
             override_params=merged_params,
-            env_config=None  # Already loaded in test case context
+            env_config=None,  # Already loaded in test case context
         )
 
     def add_execution_record(
-        self,
-        item_type: str,
-        item_name: str,
-        result: dict[str, Any]
+        self, item_type: str, item_name: str, result: dict[str, Any]
     ) -> None:
         """Add execution record to history.
 
@@ -640,16 +640,16 @@ class TestCaseExecutionContext(ExecutionContext):
             result: Execution result dictionary
         """
         record = {
-            'type': item_type,
-            'name': item_name,
-            'result': result,
-            'timestamp': TimeUtil.now_utc().isoformat()
+            "type": item_type,
+            "name": item_name,
+            "result": result,
+            "timestamp": TimeUtil.now_utc().isoformat(),
         }
         self.execution_history.append(record)
 
         # Update context with output variables
-        if 'output_variables' in result:
-            self.update_params(result['output_variables'])
+        if "output_variables" in result:
+            self.update_params(result["output_variables"])
 
     def get_execution_history(self) -> list[dict[str, Any]]:
         """Get execution history.
@@ -666,13 +666,16 @@ class TestCaseExecutionContext(ExecutionContext):
             Dictionary with execution statistics
         """
         total = len(self.execution_history)
-        successful = sum(1 for record in self.execution_history
-                        if record['result'].get('success', False))
+        successful = sum(
+            1
+            for record in self.execution_history
+            if record["result"].get("success", False)
+        )
         failed = total - successful
 
         return {
-            'total': total,
-            'successful': successful,
-            'failed': failed,
-            'success_rate': (successful / total * 100) if total > 0 else 0
+            "total": total,
+            "successful": successful,
+            "failed": failed,
+            "success_rate": (successful / total * 100) if total > 0 else 0,
         }

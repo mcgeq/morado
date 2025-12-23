@@ -44,7 +44,11 @@ class HttpResponse:
         Returns:
             The HTTP status code (e.g., 200, 404, 500)
         """
-        return self._response.status_code
+        status = self._response.status_code
+        if status is None:
+            # This should never happen with a valid Response object
+            return 0
+        return status
 
     @property
     def headers(self) -> dict[str, str]:
@@ -207,7 +211,7 @@ class HttpResponse:
             path.parent.mkdir(parents=True, exist_ok=True)
 
             # Use streaming for potentially large files
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 for chunk in self.iter_content(chunk_size=chunk_size):
                     if chunk:  # Filter out keep-alive chunks
                         f.write(chunk)
@@ -263,7 +267,7 @@ class HttpResponse:
             path.parent.mkdir(parents=True, exist_ok=True)
 
             total_bytes = 0
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 for chunk in self.iter_content(chunk_size=chunk_size):
                     if chunk:  # Filter out keep-alive chunks
                         f.write(chunk)

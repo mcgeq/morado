@@ -7,16 +7,20 @@ from function arguments and log function execution.
 import functools
 import inspect
 from collections.abc import Callable
+from typing import Any, TypeVar, cast
 
 from morado.common.logger.context import async_request_scope, request_scope
 
+# Type variable for preserving function signatures
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 def with_request_context(
-    request_id_arg: str = 'request_id',
-    user_id_arg: str = 'user_id',
-    trace_id_arg: str = 'trace_id',
-    auto_generate: bool = True
-) -> Callable:
+    request_id_arg: str = "request_id",
+    user_id_arg: str = "user_id",
+    trace_id_arg: str = "trace_id",
+    auto_generate: bool = True,
+) -> Callable[[F], F]:
     """Decorator to automatically apply request context from function arguments.
 
     Extracts context values from function arguments and creates a request scope
@@ -39,11 +43,13 @@ def with_request_context(
 
     Requirements: 7.1, 7.3
     """
-    def decorator(func: Callable) -> Callable:
+
+    def decorator(func: F) -> F:
         # Check if function is async
         if inspect.iscoroutinefunction(func):
+
             @functools.wraps(func)
-            async def async_wrapper(*args, **kwargs):
+            async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Extract context values from arguments
                 sig = inspect.signature(func)
                 bound_args = sig.bind(*args, **kwargs)
@@ -60,16 +66,15 @@ def with_request_context(
 
                 # Create async request scope with extracted context
                 async with async_request_scope(
-                    request_id=request_id,
-                    user_id=user_id,
-                    trace_id=trace_id
+                    request_id=request_id, user_id=user_id, trace_id=trace_id
                 ):
                     return await func(*args, **kwargs)
 
-            return async_wrapper
+            return cast(F, async_wrapper)
         else:
+
             @functools.wraps(func)
-            def sync_wrapper(*args, **kwargs):
+            def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Extract context values from arguments
                 sig = inspect.signature(func)
                 bound_args = sig.bind(*args, **kwargs)
@@ -86,23 +91,21 @@ def with_request_context(
 
                 # Create request scope with extracted context
                 with request_scope(
-                    request_id=request_id,
-                    user_id=user_id,
-                    trace_id=trace_id
+                    request_id=request_id, user_id=user_id, trace_id=trace_id
                 ):
                     return func(*args, **kwargs)
 
-            return sync_wrapper
+            return cast(F, sync_wrapper)
 
     return decorator
 
 
 def async_with_request_context(
-    request_id_arg: str = 'request_id',
-    user_id_arg: str = 'user_id',
-    trace_id_arg: str = 'trace_id',
-    auto_generate: bool = True
-) -> Callable:
+    request_id_arg: str = "request_id",
+    user_id_arg: str = "user_id",
+    trace_id_arg: str = "trace_id",
+    auto_generate: bool = True,
+) -> Callable[[F], F]:
     """Async-specific decorator to apply request context from function arguments.
 
     This is an async-specific version of with_request_context that uses
@@ -126,18 +129,18 @@ def async_with_request_context(
 
     Requirements: 10.1, 10.4
     """
-    def decorator(func: Callable) -> Callable:
+
+    def decorator(func: F) -> F:
         if not inspect.iscoroutinefunction(func):
+            func_name = getattr(func, "__name__", "<unknown>")
             msg = (
                 f"async_with_request_context can only be applied to async functions. "
-                f"Function '{func.__name__}' is not async."
+                f"Function '{func_name}' is not async."
             )
-            raise TypeError(
-                msg
-            )
+            raise TypeError(msg)
 
         @functools.wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Extract context values from arguments
             sig = inspect.signature(func)
             bound_args = sig.bind(*args, **kwargs)
@@ -154,22 +157,18 @@ def async_with_request_context(
 
             # Create async request scope with extracted context
             async with async_request_scope(
-                request_id=request_id,
-                user_id=user_id,
-                trace_id=trace_id
+                request_id=request_id, user_id=user_id, trace_id=trace_id
             ):
                 return await func(*args, **kwargs)
 
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator
 
 
 def log_execution(
-    level: str = "INFO",
-    include_args: bool = False,
-    include_result: bool = False
-) -> Callable:
+    level: str = "INFO", include_args: bool = False, include_result: bool = False
+) -> Callable[[F], F]:
     """Decorator to log function execution entry, exit, and exceptions.
 
     Logs when a function is entered and exited, optionally including
@@ -194,23 +193,28 @@ def log_execution(
 
     Requirements: General logging utility
     """
-    def decorator(func: Callable) -> Callable:
+
+    def decorator(func: F) -> F:
         # Check if function is async
         if inspect.iscoroutinefunction(func):
+
             @functools.wraps(func)
-            async def async_wrapper(*args, **kwargs):
+            async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Try to get a logger
                 try:
                     import structlog
-                    logger = structlog.get_logger(func.__module__)
+
+                    func_module = getattr(func, "__module__", "unknown")
+                    logger = structlog.get_logger(func_module)
                     log_func = getattr(logger, level.lower(), logger.info)
                 except (ImportError, AttributeError):
                     # Fallback to print if structlog not available
-                    def log_func(event, **kw):
+                    def log_func(event: str, **kw: Any) -> None:
                         print(f"[{level}] {event} {kw}")
 
                 # Build entry log data
-                entry_data = {"function": func.__name__}
+                func_name = getattr(func, "__name__", "<unknown>")
+                entry_data: dict[str, Any] = {"function": func_name}
                 if include_args:
                     sig = inspect.signature(func)
                     bound_args = sig.bind(*args, **kwargs)
@@ -225,7 +229,7 @@ def log_execution(
                     result = await func(*args, **kwargs)
 
                     # Build exit log data
-                    exit_data = {"function": func.__name__}
+                    exit_data: dict[str, Any] = {"function": func_name}
                     if include_result:
                         exit_data["result"] = result
 
@@ -238,28 +242,32 @@ def log_execution(
                     # Log exception
                     log_func(
                         "function_exception",
-                        function=func.__name__,
+                        function=func_name,
                         exception_type=type(e).__name__,
-                        exception_message=str(e)
+                        exception_message=str(e),
                     )
                     raise
 
-            return async_wrapper
+            return cast(F, async_wrapper)
         else:
+
             @functools.wraps(func)
-            def sync_wrapper(*args, **kwargs):
+            def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Try to get a logger
                 try:
                     import structlog
-                    logger = structlog.get_logger(func.__module__)
+
+                    func_module = getattr(func, "__module__", "unknown")
+                    logger = structlog.get_logger(func_module)
                     log_func = getattr(logger, level.lower(), logger.info)
                 except (ImportError, AttributeError):
                     # Fallback to print if structlog not available
-                    def log_func(event, **kw):
+                    def log_func(event: str, **kw: Any) -> None:
                         print(f"[{level}] {event} {kw}")
 
                 # Build entry log data
-                entry_data = {"function": func.__name__}
+                func_name = getattr(func, "__name__", "<unknown>")
+                entry_data: dict[str, Any] = {"function": func_name}
                 if include_args:
                     sig = inspect.signature(func)
                     bound_args = sig.bind(*args, **kwargs)
@@ -274,7 +282,7 @@ def log_execution(
                     result = func(*args, **kwargs)
 
                     # Build exit log data
-                    exit_data = {"function": func.__name__}
+                    exit_data: dict[str, Any] = {"function": func_name}
                     if include_result:
                         exit_data["result"] = result
 
@@ -287,12 +295,12 @@ def log_execution(
                     # Log exception
                     log_func(
                         "function_exception",
-                        function=func.__name__,
+                        function=func_name,
                         exception_type=type(e).__name__,
-                        exception_message=str(e)
+                        exception_message=str(e),
                     )
                     raise
 
-            return sync_wrapper
+            return cast(F, sync_wrapper)
 
     return decorator

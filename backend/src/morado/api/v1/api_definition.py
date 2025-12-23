@@ -63,8 +63,7 @@ class ApiDefinitionController(Controller):
             ```
         """
         api_def = api_definition_service.create_api_definition(
-            db_session,
-            **data.model_dump()
+            db_session, **data.model_dump()
         )
         return ApiDefinitionResponse.model_validate(api_def)
 
@@ -92,18 +91,19 @@ class ApiDefinitionController(Controller):
             List of API definitions with pagination info
         """
         api_defs = api_definition_service.list_api_definitions(
-            db_session,
-            method=method,
-            header_id=header_id,
-            skip=skip,
-            limit=limit
+            db_session, method=method, header_id=header_id, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(api_defs) + limit - 1) // limit if limit > 0 else 1
 
         return ApiDefinitionListResponse(
             items=[ApiDefinitionResponse.model_validate(a) for a in api_defs],
             total=len(api_defs),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/search")
@@ -128,17 +128,19 @@ class ApiDefinitionController(Controller):
             List of matching API definitions
         """
         api_defs = api_definition_service.search_api_definitions(
-            db_session,
-            path=path,
-            skip=skip,
-            limit=limit
+            db_session, path=path, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(api_defs) + limit - 1) // limit if limit > 0 else 1
 
         return ApiDefinitionListResponse(
             items=[ApiDefinitionResponse.model_validate(a) for a in api_defs],
             total=len(api_defs),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/{api_def_id:int}")
@@ -164,13 +166,14 @@ class ApiDefinitionController(Controller):
             NotFoundException: If API definition not found
         """
         api_def = api_definition_service.get_api_definition(
-            db_session,
-            api_def_id,
-            with_relations=with_relations
+            db_session, api_def_id, with_relations=with_relations
         )
         if not api_def:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"API definition with ID {api_def_id} not found")
+
+            raise NotFoundException(
+                detail=f"API definition with ID {api_def_id} not found"
+            )
 
         return ApiDefinitionResponse.model_validate(api_def)
 
@@ -198,12 +201,14 @@ class ApiDefinitionController(Controller):
             NotFoundException: If API definition not found
         """
         full_api_def = api_definition_service.get_full_api_definition(
-            db_session,
-            api_def_id
+            db_session, api_def_id
         )
         if not full_api_def:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"API definition with ID {api_def_id} not found")
+
+            raise NotFoundException(
+                detail=f"API definition with ID {api_def_id} not found"
+            )
 
         return full_api_def
 
@@ -230,6 +235,7 @@ class ApiDefinitionController(Controller):
         api_def = api_definition_service.get_api_definition_by_uuid(db_session, uuid)
         if not api_def:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"API definition with UUID {uuid} not found")
 
         return ApiDefinitionResponse.model_validate(api_def)
@@ -260,14 +266,15 @@ class ApiDefinitionController(Controller):
         update_data = data.model_dump(exclude_unset=True)
 
         api_def = api_definition_service.update_api_definition(
-            db_session,
-            api_def_id,
-            **update_data
+            db_session, api_def_id, **update_data
         )
 
         if not api_def:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"API definition with ID {api_def_id} not found")
+
+            raise NotFoundException(
+                detail=f"API definition with ID {api_def_id} not found"
+            )
 
         return ApiDefinitionResponse.model_validate(api_def)
 
@@ -295,6 +302,9 @@ class ApiDefinitionController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"API definition with ID {api_def_id} not found")
+
+            raise NotFoundException(
+                detail=f"API definition with ID {api_def_id} not found"
+            )
 
         return {"message": "API definition deleted successfully"}

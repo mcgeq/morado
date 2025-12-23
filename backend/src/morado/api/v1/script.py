@@ -63,10 +63,7 @@ class TestScriptController(Controller):
             }
             ```
         """
-        script = script_service.create_script(
-            db_session,
-            **data.model_dump()
-        )
+        script = script_service.create_script(db_session, **data.model_dump())
         return TestScriptResponse.model_validate(script)
 
     @get("/")
@@ -74,8 +71,12 @@ class TestScriptController(Controller):
         self,
         script_service: TestScriptService,
         db_session: Session,
-        api_definition_id: Annotated[int | None, Parameter(query="api_definition_id")] = None,
-        script_type: Annotated[ScriptType | None, Parameter(query="script_type")] = None,
+        api_definition_id: Annotated[
+            int | None, Parameter(query="api_definition_id")
+        ] = None,
+        script_type: Annotated[
+            ScriptType | None, Parameter(query="script_type")
+        ] = None,
         skip: Annotated[int, Parameter(query="skip", ge=0)] = 0,
         limit: Annotated[int, Parameter(query="limit", ge=1, le=100)] = 100,
     ) -> TestScriptListResponse:
@@ -97,14 +98,19 @@ class TestScriptController(Controller):
             api_definition_id=api_definition_id,
             script_type=script_type,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(scripts) + limit - 1) // limit if limit > 0 else 1
 
         return TestScriptListResponse(
             items=[TestScriptResponse.model_validate(s) for s in scripts],
             total=len(scripts),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/search")
@@ -129,17 +135,19 @@ class TestScriptController(Controller):
             List of matching scripts
         """
         scripts = script_service.search_scripts(
-            db_session,
-            name=name,
-            skip=skip,
-            limit=limit
+            db_session, name=name, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(scripts) + limit - 1) // limit if limit > 0 else 1
 
         return TestScriptListResponse(
             items=[TestScriptResponse.model_validate(s) for s in scripts],
             total=len(scripts),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/{script_id:int}")
@@ -165,12 +173,11 @@ class TestScriptController(Controller):
             NotFoundException: If script not found
         """
         script = script_service.get_script(
-            db_session,
-            script_id,
-            with_relations=with_relations
+            db_session, script_id, with_relations=with_relations
         )
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         return TestScriptResponse.model_validate(script)
@@ -201,6 +208,7 @@ class TestScriptController(Controller):
         config = script_service.get_script_execution_config(db_session, script_id)
         if not config:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         return config
@@ -228,6 +236,7 @@ class TestScriptController(Controller):
         script = script_service.get_script_by_uuid(db_session, uuid)
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with UUID {uuid} not found")
 
         return TestScriptResponse.model_validate(script)
@@ -257,14 +266,11 @@ class TestScriptController(Controller):
         # Only include fields that were actually provided
         update_data = data.model_dump(exclude_unset=True)
 
-        script = script_service.update_script(
-            db_session,
-            script_id,
-            **update_data
-        )
+        script = script_service.update_script(db_session, script_id, **update_data)
 
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         return TestScriptResponse.model_validate(script)
@@ -293,6 +299,7 @@ class TestScriptController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         return {"message": "Script deleted successfully"}
@@ -321,6 +328,7 @@ class TestScriptController(Controller):
 
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         return TestScriptResponse.model_validate(script)
@@ -349,6 +357,7 @@ class TestScriptController(Controller):
 
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         return TestScriptResponse.model_validate(script)
@@ -381,12 +390,11 @@ class TestScriptController(Controller):
         script = script_service.get_script(db_session, script_id)
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         parameter = script_service.add_parameter(
-            db_session,
-            script_id=script_id,
-            **data.model_dump(exclude={"script_id"})
+            db_session, script_id=script_id, **data.model_dump(exclude={"script_id"})
         )
 
         return ScriptParameterResponse.model_validate(parameter)
@@ -417,19 +425,25 @@ class TestScriptController(Controller):
         script = script_service.get_script(db_session, script_id)
         if not script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Script with ID {script_id} not found")
 
         parameters = script_service.get_script_parameters(
-            db_session,
-            script_id,
-            required_only=required_only
+            db_session, script_id, required_only=required_only
         )
+
+        # Calculate pagination values
+        total = len(parameters)
+        page = 1
+        page_size = total
+        total_pages = 1 if total > 0 else 0
 
         return ScriptParameterListResponse(
             items=[ScriptParameterResponse.model_validate(p) for p in parameters],
-            total=len(parameters),
-            skip=0,
-            limit=len(parameters)
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
         )
 
     @patch("/parameters/{parameter_id:int}")
@@ -458,14 +472,15 @@ class TestScriptController(Controller):
         update_data = data.model_dump(exclude_unset=True)
 
         parameter = script_service.update_parameter(
-            db_session,
-            parameter_id,
-            **update_data
+            db_session, parameter_id, **update_data
         )
 
         if not parameter:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Parameter with ID {parameter_id} not found")
+
+            raise NotFoundException(
+                detail=f"Parameter with ID {parameter_id} not found"
+            )
 
         return ScriptParameterResponse.model_validate(parameter)
 
@@ -493,6 +508,9 @@ class TestScriptController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Parameter with ID {parameter_id} not found")
+
+            raise NotFoundException(
+                detail=f"Parameter with ID {parameter_id} not found"
+            )
 
         return {"message": "Parameter deleted successfully"}

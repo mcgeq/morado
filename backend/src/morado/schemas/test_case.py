@@ -12,6 +12,7 @@ from morado.schemas.common import PaginatedResponse, TimestampMixin, UUIDMixin
 
 class TestCasePriority(str, Enum):
     """测试用例优先级"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -20,6 +21,7 @@ class TestCasePriority(str, Enum):
 
 class TestCaseStatus(str, Enum):
     """测试用例状态"""
+
     DRAFT = "draft"
     ACTIVE = "active"
     DEPRECATED = "deprecated"
@@ -34,13 +36,17 @@ class TestCaseBase(BaseModel):
 
     name: str = Field(min_length=1, max_length=200, description="用例名称")
     description: str | None = Field(default=None, description="用例描述")
-    priority: TestCasePriority = Field(default=TestCasePriority.MEDIUM, description="优先级")
+    priority: TestCasePriority = Field(
+        default=TestCasePriority.MEDIUM, description="优先级"
+    )
     status: TestCaseStatus = Field(default=TestCaseStatus.DRAFT, description="状态")
     category: str | None = Field(default=None, max_length=100, description="分类")
     tags: list[str] | None = Field(default=None, description="标签")
     preconditions: str | None = Field(default=None, description="前置条件")
     postconditions: str | None = Field(default=None, description="后置条件")
-    execution_order: str = Field(default="sequential", pattern="^(sequential|parallel)$", description="执行顺序")
+    execution_order: str = Field(
+        default="sequential", pattern="^(sequential|parallel)$", description="执行顺序"
+    )
     timeout: int = Field(default=300, ge=1, description="超时时间（秒）")
     retry_count: int = Field(default=0, ge=0, description="重试次数")
     continue_on_failure: bool = Field(default=False, description="失败时是否继续")
@@ -60,9 +66,9 @@ class TestCaseBase(BaseModel):
                 "category": "用户管理",
                 "tags": ["登录", "认证"],
                 "timeout": 300,
-                "environment": "test"
+                "environment": "test",
             }
-        }
+        },
     )
 
 
@@ -81,7 +87,9 @@ class TestCaseUpdate(BaseModel):
     所有字段都是可选的，只更新提供的字段。
     """
 
-    name: str | None = Field(default=None, min_length=1, max_length=200, description="用例名称")
+    name: str | None = Field(
+        default=None, min_length=1, max_length=200, description="用例名称"
+    )
     description: str | None = Field(default=None, description="用例描述")
     priority: TestCasePriority | None = Field(default=None, description="优先级")
     status: TestCaseStatus | None = Field(default=None, description="状态")
@@ -89,7 +97,9 @@ class TestCaseUpdate(BaseModel):
     tags: list[str] | None = Field(default=None, description="标签")
     preconditions: str | None = Field(default=None, description="前置条件")
     postconditions: str | None = Field(default=None, description="后置条件")
-    execution_order: str | None = Field(default=None, pattern="^(sequential|parallel)$", description="执行顺序")
+    execution_order: str | None = Field(
+        default=None, pattern="^(sequential|parallel)$", description="执行顺序"
+    )
     timeout: int | None = Field(default=None, ge=1, description="超时时间（秒）")
     retry_count: int | None = Field(default=None, ge=0, description="重试次数")
     continue_on_failure: bool | None = Field(default=None, description="失败时是否继续")
@@ -128,9 +138,9 @@ class TestCaseResponse(TestCaseBase, TimestampMixin, UUIDMixin):
                 "is_automated": True,
                 "created_by": 1,
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             }
-        }
+        },
     )
 
 
@@ -139,6 +149,7 @@ class TestCaseListResponse(PaginatedResponse[TestCaseResponse]):
 
 
 # Test Case Script Schemas
+
 
 class TestCaseScriptBase(BaseModel):
     """测试用例-脚本关联基础schema"""
@@ -166,6 +177,7 @@ class TestCaseScriptResponse(TestCaseScriptBase, TimestampMixin):
 
 
 # Test Case Component Schemas
+
 
 class TestCaseComponentBase(BaseModel):
     """测试用例-组件关联基础schema"""

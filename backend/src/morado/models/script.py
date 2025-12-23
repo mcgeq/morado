@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 class ScriptType(str, PyEnum):
     """脚本类型"""
+
     SETUP = "setup"  # 前置脚本（准备测试环境）
     MAIN = "main"  # 主脚本（核心测试逻辑）
     TEARDOWN = "teardown"  # 后置脚本（清理测试环境）
@@ -33,6 +34,7 @@ class ScriptType(str, PyEnum):
 
 class AssertionType(str, PyEnum):
     """断言类型"""
+
     EQUALS = "equals"  # 相等断言
     NOT_EQUALS = "not_equals"  # 不相等断言
     CONTAINS = "contains"  # 包含断言
@@ -48,6 +50,7 @@ class AssertionType(str, PyEnum):
 
 class ParameterType(str, PyEnum):
     """参数类型"""
+
     STRING = "string"
     INTEGER = "integer"
     FLOAT = "float"
@@ -161,130 +164,72 @@ class TestScript(Base, TimestampMixin, UUIDMixin):
         Integer,
         ForeignKey("api_definitions.id", ondelete="CASCADE"),
         nullable=False,
-        comment="引用的API定义ID"
+        comment="引用的API定义ID",
     )
 
     # 脚本类型和配置
     script_type: Mapped[ScriptType] = mapped_column(
-        Enum(ScriptType),
-        default=ScriptType.MAIN,
-        comment="脚本类型"
+        Enum(ScriptType), default=ScriptType.MAIN, comment="脚本类型"
     )
-    execution_order: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
-        comment="执行顺序"
-    )
+    execution_order: Mapped[int] = mapped_column(Integer, default=0, comment="执行顺序")
 
     # 脚本变量
-    variables: Mapped[dict | None] = mapped_column(
-        JSON,
-        comment="脚本级变量"
-    )
+    variables: Mapped[dict | None] = mapped_column(JSON, comment="脚本级变量")
 
     # 断言配置
-    assertions: Mapped[list | None] = mapped_column(
-        JSON,
-        comment="断言列表"
-    )
-    validators: Mapped[dict | None] = mapped_column(
-        JSON,
-        comment="验证器配置"
-    )
+    assertions: Mapped[list | None] = mapped_column(JSON, comment="断言列表")
+    validators: Mapped[dict | None] = mapped_column(JSON, comment="验证器配置")
 
     # 前置和后置脚本
-    pre_script: Mapped[str | None] = mapped_column(
-        Text,
-        comment="前置脚本代码"
-    )
-    post_script: Mapped[str | None] = mapped_column(
-        Text,
-        comment="后置脚本代码"
-    )
+    pre_script: Mapped[str | None] = mapped_column(Text, comment="前置脚本代码")
+    post_script: Mapped[str | None] = mapped_column(Text, comment="后置脚本代码")
 
     # 输出配置
     extract_variables: Mapped[dict | None] = mapped_column(
-        JSON,
-        comment="从响应中提取的变量配置"
+        JSON, comment="从响应中提取的变量配置"
     )
-    output_variables: Mapped[list | None] = mapped_column(
-        JSON,
-        comment="输出变量列表"
-    )
+    output_variables: Mapped[list | None] = mapped_column(JSON, comment="输出变量列表")
 
     # 调试配置
     debug_mode: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        comment="是否启用调试模式"
+        Boolean, default=False, comment="是否启用调试模式"
     )
-    debug_breakpoints: Mapped[list | None] = mapped_column(
-        JSON,
-        comment="调试断点配置"
-    )
+    debug_breakpoints: Mapped[list | None] = mapped_column(JSON, comment="调试断点配置")
 
     # 重试和超时配置
-    retry_count: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
-        comment="重试次数"
-    )
+    retry_count: Mapped[int] = mapped_column(Integer, default=0, comment="重试次数")
     retry_interval: Mapped[float] = mapped_column(
-        Float,
-        default=1.0,
-        comment="重试间隔（秒）"
+        Float, default=1.0, comment="重试间隔（秒）"
     )
     timeout_override: Mapped[int | None] = mapped_column(
-        Integer,
-        comment="超时时间覆盖（秒）"
+        Integer, comment="超时时间覆盖（秒）"
     )
 
     # 配置
-    is_active: Mapped[bool] = mapped_column(
-        Boolean,
-        default=True,
-        comment="是否激活"
-    )
-    version: Mapped[str] = mapped_column(
-        String(20),
-        default="1.0.0",
-        comment="版本号"
-    )
-    tags: Mapped[list | None] = mapped_column(
-        JSON,
-        comment="标签"
-    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, comment="是否激活")
+    version: Mapped[str] = mapped_column(String(20), default="1.0.0", comment="版本号")
+    tags: Mapped[list | None] = mapped_column(JSON, comment="标签")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
-    creator: Mapped[Optional["User"]] = relationship(
-        "User",
-        back_populates="scripts"
-    )
+    creator: Mapped[Optional["User"]] = relationship("User", back_populates="scripts")
     api_definition: Mapped["ApiDefinition"] = relationship(
-        "ApiDefinition",
-        back_populates="scripts"
+        "ApiDefinition", back_populates="scripts"
     )
     parameters: Mapped[list["ScriptParameter"]] = relationship(
         "ScriptParameter",
         back_populates="script",
         cascade="all, delete-orphan",
-        order_by="ScriptParameter.order"
+        order_by="ScriptParameter.order",
     )
     component_scripts: Mapped[list["ComponentScript"]] = relationship(
-        "ComponentScript",
-        back_populates="script",
-        cascade="all, delete-orphan"
+        "ComponentScript", back_populates="script", cascade="all, delete-orphan"
     )
     test_case_scripts: Mapped[list["TestCaseScript"]] = relationship(
-        "TestCaseScript",
-        back_populates="script",
-        cascade="all, delete-orphan"
+        "TestCaseScript", back_populates="script", cascade="all, delete-orphan"
     )
 
 
@@ -370,60 +315,35 @@ class ScriptParameter(Base, TimestampMixin, UUIDMixin):
         Integer,
         ForeignKey("test_scripts.id", ondelete="CASCADE"),
         nullable=False,
-        comment="所属脚本ID"
+        comment="所属脚本ID",
     )
 
     # 参数定义
-    name: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False,
-        comment="参数名称"
-    )
-    description: Mapped[str | None] = mapped_column(
-        Text,
-        comment="参数描述"
-    )
+    name: Mapped[str] = mapped_column(String(100), nullable=False, comment="参数名称")
+    description: Mapped[str | None] = mapped_column(Text, comment="参数描述")
     parameter_type: Mapped[ParameterType] = mapped_column(
-        Enum(ParameterType),
-        default=ParameterType.STRING,
-        comment="参数类型"
+        Enum(ParameterType), default=ParameterType.STRING, comment="参数类型"
     )
 
     # 默认值和验证
     default_value: Mapped[str | None] = mapped_column(
-        Text,
-        comment="默认值（JSON字符串）"
+        Text, comment="默认值（JSON字符串）"
     )
     is_required: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        comment="是否必需"
+        Boolean, default=False, comment="是否必需"
     )
-    validation_rules: Mapped[dict | None] = mapped_column(
-        JSON,
-        comment="验证规则"
-    )
+    validation_rules: Mapped[dict | None] = mapped_column(JSON, comment="验证规则")
 
     # 显示配置
-    order: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
-        comment="显示顺序"
-    )
-    group: Mapped[str | None] = mapped_column(
-        String(100),
-        comment="参数分组"
-    )
+    order: Mapped[int] = mapped_column(Integer, default=0, comment="显示顺序")
+    group: Mapped[str | None] = mapped_column(String(100), comment="参数分组")
 
     # 配置
     is_sensitive: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        comment="是否敏感信息"
+        Boolean, default=False, comment="是否敏感信息"
     )
 
     # Relationships
     script: Mapped["TestScript"] = relationship(
-        "TestScript",
-        back_populates="parameters"
+        "TestScript", back_populates="parameters"
     )

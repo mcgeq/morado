@@ -62,7 +62,7 @@ class ReportController(Controller):
             end_date=end_date,
             environment=environment,
             test_case_id=test_case_id,
-            test_suite_id=test_suite_id
+            test_suite_id=test_suite_id,
         )
 
     @get("/test-case/{test_case_id:int}")
@@ -87,9 +87,7 @@ class ReportController(Controller):
             Test case execution history and statistics
         """
         return report_service.get_test_case_report(
-            db_session,
-            test_case_id,
-            limit=limit
+            db_session, test_case_id, limit=limit
         )
 
     @get("/test-suite/{test_suite_id:int}")
@@ -114,9 +112,7 @@ class ReportController(Controller):
             Test suite execution history and statistics
         """
         return report_service.get_test_suite_report(
-            db_session,
-            test_suite_id,
-            limit=limit
+            db_session, test_suite_id, limit=limit
         )
 
     @get("/trend")
@@ -144,9 +140,7 @@ class ReportController(Controller):
             GET /reports/trend?days=30&environment=test
         """
         return report_service.get_trend_report(
-            db_session,
-            days=days,
-            environment=environment
+            db_session, days=days, environment=environment
         )
 
     @get("/environment-comparison")
@@ -175,9 +169,7 @@ class ReportController(Controller):
             GET /reports/environment-comparison?start_date=2024-01-01
         """
         return report_service.get_environment_comparison_report(
-            db_session,
-            start_date=start_date,
-            end_date=end_date
+            db_session, start_date=start_date, end_date=end_date
         )
 
     @get("/failure-analysis")
@@ -208,8 +200,5 @@ class ReportController(Controller):
             GET /reports/failure-analysis?limit=20
         """
         return report_service.get_failure_analysis_report(
-            db_session,
-            start_date=start_date,
-            end_date=end_date,
-            limit=limit
+            db_session, start_date=start_date, end_date=end_date, limit=limit
         )

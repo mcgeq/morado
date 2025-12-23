@@ -117,7 +117,7 @@ class TimeParseError(Exception):
         self,
         time_string: str,
         format_string: str | None = None,
-        message: str | None = None
+        message: str | None = None,
     ) -> None:
         """Initialize the TimeParseError.
 

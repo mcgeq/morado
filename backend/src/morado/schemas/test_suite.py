@@ -3,7 +3,6 @@
 This module provides schemas for test suite API request/response validation.
 """
 
-
 from pydantic import BaseModel, ConfigDict, Field
 
 from morado.schemas.common import PaginatedResponse, TimestampMixin, UUIDMixin
@@ -17,7 +16,9 @@ class TestSuiteBase(BaseModel):
 
     name: str = Field(min_length=1, max_length=200, description="套件名称")
     description: str | None = Field(default=None, description="套件描述")
-    execution_order: str = Field(default="sequential", pattern="^(sequential|parallel)$", description="执行顺序")
+    execution_order: str = Field(
+        default="sequential", pattern="^(sequential|parallel)$", description="执行顺序"
+    )
     parallel_execution: bool = Field(default=False, description="是否并行执行")
     continue_on_failure: bool = Field(default=True, description="失败时是否继续")
     schedule_config: dict | None = Field(default=None, description="调度配置")
@@ -38,9 +39,9 @@ class TestSuiteBase(BaseModel):
                 "continue_on_failure": True,
                 "environment": "test",
                 "tags": ["回归测试", "用户模块"],
-                "version": "1.0.0"
+                "version": "1.0.0",
             }
-        }
+        },
     )
 
 
@@ -59,9 +60,13 @@ class TestSuiteUpdate(BaseModel):
     所有字段都是可选的，只更新提供的字段。
     """
 
-    name: str | None = Field(default=None, min_length=1, max_length=200, description="套件名称")
+    name: str | None = Field(
+        default=None, min_length=1, max_length=200, description="套件名称"
+    )
     description: str | None = Field(default=None, description="套件描述")
-    execution_order: str | None = Field(default=None, pattern="^(sequential|parallel)$", description="执行顺序")
+    execution_order: str | None = Field(
+        default=None, pattern="^(sequential|parallel)$", description="执行顺序"
+    )
     parallel_execution: bool | None = Field(default=None, description="是否并行执行")
     continue_on_failure: bool | None = Field(default=None, description="失败时是否继续")
     schedule_config: dict | None = Field(default=None, description="调度配置")
@@ -99,9 +104,9 @@ class TestSuiteResponse(TestSuiteBase, TimestampMixin, UUIDMixin):
                 "version": "1.0.0",
                 "created_by": 1,
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             }
-        }
+        },
     )
 
 
@@ -110,6 +115,7 @@ class TestSuiteListResponse(PaginatedResponse[TestSuiteResponse]):
 
 
 # Test Suite Case Schemas
+
 
 class TestSuiteCaseBase(BaseModel):
     """测试套件-用例关联基础schema"""

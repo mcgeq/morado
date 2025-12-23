@@ -4,7 +4,7 @@ This module provides password hashing, JWT token generation and verification,
 and other security-related utilities for the Morado application.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from pydantic import BaseModel
@@ -13,7 +13,8 @@ from morado.core.config import get_settings
 
 # Try to import password hashing and JWT libraries
 try:
-    from passlib.context import CryptContext
+    from passlib.context import CryptContext  # type: ignore[import-untyped]
+
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     PASSLIB_AVAILABLE = True
 except ImportError:
@@ -21,7 +22,8 @@ except ImportError:
     pwd_context = None
 
 try:
-    from jose import JWTError, jwt
+    from jose import JWTError, jwt  # type: ignore[import-untyped]
+
     JOSE_AVAILABLE = True
 except ImportError:
     JOSE_AVAILABLE = False
@@ -37,6 +39,7 @@ class SecurityConfig(BaseModel):
         algorithm: JWT algorithm (default: HS256)
         access_token_expire_minutes: Access token expiration time
     """
+
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
@@ -52,6 +55,7 @@ class TokenData(BaseModel):
         is_admin: Admin flag
         exp: Expiration timestamp
     """
+
     user_id: int
     username: str
     email: str | None = None
@@ -73,8 +77,10 @@ def get_password_hash(password: str) -> str:
         >>> print(hashed)
         $2b$12$...
     """
-    if not PASSLIB_AVAILABLE:
-        raise ImportError("passlib is required for password hashing. Install with: pip install passlib[bcrypt]")
+    if not PASSLIB_AVAILABLE or pwd_context is None:
+        raise ImportError(
+            "passlib is required for password hashing. Install with: pip install passlib[bcrypt]"
+        )
     return pwd_context.hash(password)
 
 
@@ -95,14 +101,15 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         >>> verify_password("wrong_password", hashed)
         False
     """
-    if not PASSLIB_AVAILABLE:
-        raise ImportError("passlib is required for password verification. Install with: pip install passlib[bcrypt]")
+    if not PASSLIB_AVAILABLE or pwd_context is None:
+        raise ImportError(
+            "passlib is required for password verification. Install with: pip install passlib[bcrypt]"
+        )
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def create_access_token(
-    data: dict[str, Any],
-    expires_delta: timedelta | None = None
+    data: dict[str, Any], expires_delta: timedelta | None = None
 ) -> str:
     """Create a JWT access token.
 
@@ -120,26 +127,27 @@ def create_access_token(
         >>> print(token)
         eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     """
-    if not JOSE_AVAILABLE:
-        raise ImportError("python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]")
+    if not JOSE_AVAILABLE or jwt is None:
+        raise ImportError(
+            "python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]"
+        )
 
     settings = get_settings()
 
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
+
     else:
-        expire = datetime.utcnow() + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.access_token_expire_minutes
         )
 
     to_encode.update({"exp": expire})
 
     encoded_jwt = jwt.encode(
-        to_encode,
-        settings.secret_key,
-        algorithm=settings.algorithm
+        to_encode, settings.secret_key, algorithm=settings.algorithm
     )
 
     return encoded_jwt
@@ -164,16 +172,16 @@ def verify_access_token(token: str) -> TokenData | None:
         >>> print(token_data.username)
         john
     """
-    if not JOSE_AVAILABLE:
-        raise ImportError("python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]")
+    if not JOSE_AVAILABLE or jwt is None:
+        raise ImportError(
+            "python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]"
+        )
 
     settings = get_settings()
 
     try:
         payload = jwt.decode(
-            token,
-            settings.secret_key,
-            algorithms=[settings.algorithm]
+            token, settings.secret_key, algorithms=[settings.algorithm]
         )
 
         user_id: int = payload.get("user_id")
@@ -187,15 +195,14 @@ def verify_access_token(token: str) -> TokenData | None:
             username=username,
             email=payload.get("email"),
             is_admin=payload.get("is_admin", False),
-            exp=datetime.fromtimestamp(payload.get("exp"))
+            exp=datetime.fromtimestamp(payload.get("exp")),
         )
     except JWTError:
         return None
 
 
 def create_refresh_token(
-    data: dict[str, Any],
-    expires_delta: timedelta | None = None
+    data: dict[str, Any], expires_delta: timedelta | None = None
 ) -> str:
     """Create a JWT refresh token.
 
@@ -214,25 +221,25 @@ def create_refresh_token(
         ...     data={"user_id": 1, "username": "john"}
         ... )
     """
-    if not JOSE_AVAILABLE:
-        raise ImportError("python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]")
+    if not JOSE_AVAILABLE or jwt is None:
+        raise ImportError(
+            "python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]"
+        )
 
     settings = get_settings()
 
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
         # Default refresh token expiration: 7 days
-        expire = datetime.utcnow() + timedelta(days=7)
+        expire = datetime.now(UTC) + timedelta(days=7)
 
     to_encode.update({"exp": expire, "type": "refresh"})
 
     encoded_jwt = jwt.encode(
-        to_encode,
-        settings.secret_key,
-        algorithm=settings.algorithm
+        to_encode, settings.secret_key, algorithm=settings.algorithm
     )
 
     return encoded_jwt
@@ -258,16 +265,16 @@ def verify_refresh_token(token: str) -> TokenData | None:
         ...         data={"user_id": token_data.user_id, "username": token_data.username}
         ...     )
     """
-    if not JOSE_AVAILABLE:
-        raise ImportError("python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]")
+    if not JOSE_AVAILABLE or jwt is None:
+        raise ImportError(
+            "python-jose is required for JWT tokens. Install with: pip install python-jose[cryptography]"
+        )
 
     settings = get_settings()
 
     try:
         payload = jwt.decode(
-            token,
-            settings.secret_key,
-            algorithms=[settings.algorithm]
+            token, settings.secret_key, algorithms=[settings.algorithm]
         )
 
         # Verify this is a refresh token
@@ -285,7 +292,7 @@ def verify_refresh_token(token: str) -> TokenData | None:
             username=username,
             email=payload.get("email"),
             is_admin=payload.get("is_admin", False),
-            exp=datetime.fromtimestamp(payload.get("exp"))
+            exp=datetime.fromtimestamp(payload.get("exp")),
         )
     except JWTError:
         return None

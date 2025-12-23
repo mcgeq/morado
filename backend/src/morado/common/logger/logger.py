@@ -16,7 +16,7 @@ import structlog
 from structlog.types import FilteringBoundLogger
 
 from morado.common.logger.config import ConfigurationManager, LoggerConfig
-from morado.common.logger.context import get_request_id, get_context_data
+from morado.common.logger.context import get_context_data, get_request_id
 
 
 class LoggerSystem:
@@ -34,7 +34,7 @@ class LoggerSystem:
         cls,
         config: LoggerConfig | None = None,
         config_file: str | Path | None = None,
-        **overrides: Any
+        **overrides: Any,
     ) -> None:
         """Configure the logger system.
 
@@ -51,7 +51,9 @@ class LoggerSystem:
         # Load configuration
         if config is None:
             if config_file:
-                config = ConfigurationManager.load_from_file(config_file, **overrides)
+                config = ConfigurationManager.load_from_file(
+                    str(config_file), **overrides
+                )
             else:
                 config = ConfigurationManager.load_from_env(**overrides)
 
@@ -86,21 +88,29 @@ class LoggerSystem:
 
         # Add format-specific processors
         if config.format == "json":
-            processors.extend([
-                structlog.processors.format_exc_info,
-                structlog.processors.JSONRenderer()
-            ])
+            processors.extend(
+                [
+                    structlog.processors.format_exc_info,
+                    structlog.processors.JSONRenderer(),
+                ]
+            )
         elif config.format == "structured":
-            processors.extend([
-                structlog.processors.format_exc_info,
-                structlog.processors.KeyValueRenderer(
-                    key_order=["timestamp", "level", "event", "request_id", "user_id"]
-                )
-            ])
+            processors.extend(
+                [
+                    structlog.processors.format_exc_info,
+                    structlog.processors.KeyValueRenderer(
+                        key_order=[
+                            "timestamp",
+                            "level",
+                            "event",
+                            "request_id",
+                            "user_id",
+                        ]
+                    ),
+                ]
+            )
         else:  # console
-            processors.extend([
-                structlog.dev.ConsoleRenderer(colors=True)
-            ])
+            processors.extend([structlog.dev.ConsoleRenderer(colors=True)])
 
         # Configure structlog
         structlog.configure(
@@ -224,7 +234,7 @@ class LoggerSystem:
 def configure_logger(
     config: LoggerConfig | None = None,
     config_file: str | Path | None = None,
-    **overrides: Any
+    **overrides: Any,
 ) -> None:
     """Configure the logger system.
 

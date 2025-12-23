@@ -5,7 +5,10 @@ the entire call chain, from HTTP entry point through services to database.
 """
 
 import contextvars
+from collections.abc import AsyncGenerator, Generator
+from contextlib import asynccontextmanager, contextmanager
 from typing import Any
+from uuid import uuid4
 
 # Context variable to store request ID across async calls
 request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
@@ -14,8 +17,8 @@ request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 
 # Context variable to store additional context data
 # Note: ContextVar doesn't support default_factory, so we use None as default
-context_data_var: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar(
-    "context_data", default=None
+context_data_var: contextvars.ContextVar[dict[str, Any] | None] = (
+    contextvars.ContextVar("context_data", default=None)
 )
 
 
@@ -121,3 +124,97 @@ def get_log_context() -> dict[str, Any]:
         context.update(context_data)
 
     return context
+
+
+@contextmanager
+def request_scope(
+    request_id: str | None = None,
+    user_id: int | None = None,
+    trace_id: str | None = None,
+    **extra_context: Any,
+) -> Generator[None, None, None]:
+    """Context manager for request scope with automatic context management.
+
+    Sets up request context at the beginning and clears it at the end.
+    Auto-generates request_id if not provided.
+
+    Args:
+        request_id: Optional request ID (auto-generated if None)
+        user_id: Optional user ID
+        trace_id: Optional trace ID
+        **extra_context: Additional context key-value pairs
+
+    Yields:
+        None
+
+    Example:
+        >>> with request_scope(user_id=123):
+        ...     logger.info("Processing request")
+    """
+    # Auto-generate request_id if not provided
+    if request_id is None:
+        request_id = str(uuid4())
+
+    # Set request ID
+    set_request_id(request_id)
+
+    # Set additional context
+    if user_id is not None:
+        set_context_data("user_id", user_id)
+    if trace_id is not None:
+        set_context_data("trace_id", trace_id)
+    for key, value in extra_context.items():
+        set_context_data(key, value)
+
+    try:
+        yield
+    finally:
+        # Clear context when done
+        clear_context()
+
+
+@asynccontextmanager
+async def async_request_scope(
+    request_id: str | None = None,
+    user_id: int | None = None,
+    trace_id: str | None = None,
+    **extra_context: Any,
+) -> AsyncGenerator[None, None]:
+    """Async context manager for request scope with automatic context management.
+
+    Sets up request context at the beginning and clears it at the end.
+    Auto-generates request_id if not provided.
+
+    Args:
+        request_id: Optional request ID (auto-generated if None)
+        user_id: Optional user ID
+        trace_id: Optional trace ID
+        **extra_context: Additional context key-value pairs
+
+    Yields:
+        None
+
+    Example:
+        >>> async with async_request_scope(user_id=123):
+        ...     logger.info("Processing async request")
+    """
+    # Auto-generate request_id if not provided
+    if request_id is None:
+        request_id = str(uuid4())
+
+    # Set request ID
+    set_request_id(request_id)
+
+    # Set additional context
+    if user_id is not None:
+        set_context_data("user_id", user_id)
+    if trace_id is not None:
+        set_context_data("trace_id", trace_id)
+    for key, value in extra_context.items():
+        set_context_data(key, value)
+
+    try:
+        yield
+    finally:
+        # Clear context when done
+        clear_context()

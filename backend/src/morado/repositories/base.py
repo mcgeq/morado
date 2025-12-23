@@ -45,12 +45,12 @@ class BaseRepository[ModelType: Base]:
 
     # Synchronous methods
 
-    def get_by_id(self, session: Session, id: int) -> ModelType | None:
+    def get_by_id(self, session: Session, record_id: int) -> ModelType | None:
         """Get a record by ID.
 
         Args:
             session: Database session
-            id: Record ID
+            record_id: Record ID
 
         Returns:
             Model instance or None if not found
@@ -58,7 +58,7 @@ class BaseRepository[ModelType: Base]:
         Example:
             >>> user = repo.get_by_id(session, 1)
         """
-        return session.get(self.model, id)
+        return session.get(self.model, record_id)
 
     def get_by_uuid(self, session: Session, uuid: str) -> ModelType | None:
         """Get a record by UUID.
@@ -73,7 +73,7 @@ class BaseRepository[ModelType: Base]:
         Example:
             >>> user = repo.get_by_uuid(session, "abc-123")
         """
-        stmt = select(self.model).where(self.model.uuid == uuid)
+        stmt = select(self.model).where(self.model.uuid == uuid)  # type: ignore[attr-defined]
         return session.execute(stmt).scalar_one_or_none()
 
     def get_all(
@@ -81,7 +81,7 @@ class BaseRepository[ModelType: Base]:
         session: Session,
         skip: int = 0,
         limit: int = 100,
-        filters: dict[str, Any] | None = None
+        filters: dict[str, Any] | None = None,
     ) -> list[ModelType]:
         """Get all records with optional filtering and pagination.
 
@@ -152,12 +152,7 @@ class BaseRepository[ModelType: Base]:
         session.refresh(instance)
         return instance
 
-    def update(
-        self,
-        session: Session,
-        instance: ModelType,
-        **kwargs: Any
-    ) -> ModelType:
+    def update(self, session: Session, instance: ModelType, **kwargs: Any) -> ModelType:
         """Update an existing record.
 
         Args:
@@ -194,12 +189,12 @@ class BaseRepository[ModelType: Base]:
         session.delete(instance)
         session.flush()
 
-    def delete_by_id(self, session: Session, id: int) -> bool:
+    def delete_by_id(self, session: Session, record_id: int) -> bool:
         """Delete a record by ID.
 
         Args:
             session: Database session
-            id: Record ID
+            record_id: Record ID
 
         Returns:
             True if deleted, False if not found
@@ -207,7 +202,7 @@ class BaseRepository[ModelType: Base]:
         Example:
             >>> success = repo.delete_by_id(session, 1)
         """
-        instance = self.get_by_id(session, id)
+        instance = self.get_by_id(session, record_id)
         if instance:
             self.delete(session, instance)
             return True
@@ -216,15 +211,13 @@ class BaseRepository[ModelType: Base]:
     # Asynchronous methods
 
     async def get_by_id_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, record_id: int
     ) -> ModelType | None:
         """Get a record by ID (async).
 
         Args:
             session: Async database session
-            id: Record ID
+            record_id: Record ID
 
         Returns:
             Model instance or None if not found
@@ -232,12 +225,10 @@ class BaseRepository[ModelType: Base]:
         Example:
             >>> user = await repo.get_by_id_async(session, 1)
         """
-        return await session.get(self.model, id)
+        return await session.get(self.model, record_id)
 
     async def get_by_uuid_async(
-        self,
-        session: AsyncSession,
-        uuid: str
+        self, session: AsyncSession, uuid: str
     ) -> ModelType | None:
         """Get a record by UUID (async).
 
@@ -251,7 +242,7 @@ class BaseRepository[ModelType: Base]:
         Example:
             >>> user = await repo.get_by_uuid_async(session, "abc-123")
         """
-        stmt = select(self.model).where(self.model.uuid == uuid)
+        stmt = select(self.model).where(self.model.uuid == uuid)  # type: ignore[attr-defined]
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -260,7 +251,7 @@ class BaseRepository[ModelType: Base]:
         session: AsyncSession,
         skip: int = 0,
         limit: int = 100,
-        filters: dict[str, Any] | None = None
+        filters: dict[str, Any] | None = None,
     ) -> list[ModelType]:
         """Get all records with optional filtering and pagination (async).
 
@@ -288,9 +279,7 @@ class BaseRepository[ModelType: Base]:
         return list(result.scalars().all())
 
     async def count_async(
-        self,
-        session: AsyncSession,
-        filters: dict[str, Any] | None = None
+        self, session: AsyncSession, filters: dict[str, Any] | None = None
     ) -> int:
         """Count records with optional filtering (async).
 
@@ -314,11 +303,7 @@ class BaseRepository[ModelType: Base]:
         result = await session.execute(stmt)
         return result.scalar()
 
-    async def create_async(
-        self,
-        session: AsyncSession,
-        **kwargs: Any
-    ) -> ModelType:
+    async def create_async(self, session: AsyncSession, **kwargs: Any) -> ModelType:
         """Create a new record (async).
 
         Args:
@@ -338,10 +323,7 @@ class BaseRepository[ModelType: Base]:
         return instance
 
     async def update_async(
-        self,
-        session: AsyncSession,
-        instance: ModelType,
-        **kwargs: Any
+        self, session: AsyncSession, instance: ModelType, **kwargs: Any
     ) -> ModelType:
         """Update an existing record (async).
 
@@ -365,11 +347,7 @@ class BaseRepository[ModelType: Base]:
         await session.refresh(instance)
         return instance
 
-    async def delete_async(
-        self,
-        session: AsyncSession,
-        instance: ModelType
-    ) -> None:
+    async def delete_async(self, session: AsyncSession, instance: ModelType) -> None:
         """Delete a record (async).
 
         Args:
@@ -383,16 +361,12 @@ class BaseRepository[ModelType: Base]:
         await session.delete(instance)
         await session.flush()
 
-    async def delete_by_id_async(
-        self,
-        session: AsyncSession,
-        id: int
-    ) -> bool:
+    async def delete_by_id_async(self, session: AsyncSession, record_id: int) -> bool:
         """Delete a record by ID (async).
 
         Args:
             session: Async database session
-            id: Record ID
+            record_id: Record ID
 
         Returns:
             True if deleted, False if not found
@@ -400,7 +374,7 @@ class BaseRepository[ModelType: Base]:
         Example:
             >>> success = await repo.delete_by_id_async(session, 1)
         """
-        instance = await self.get_by_id_async(session, id)
+        instance = await self.get_by_id_async(session, record_id)
         if instance:
             await self.delete_async(session, instance)
             return True

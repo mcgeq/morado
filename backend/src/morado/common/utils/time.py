@@ -175,9 +175,7 @@ class TimeUtil:
 
         if not isinstance(format_string, str):
             msg = f"Expected string format, got {type(format_string).__name__}"
-            raise TypeError(
-                msg
-            )
+            raise TypeError(msg)
 
         if dt.tzinfo is None:
             raise ValueError(
@@ -297,15 +295,13 @@ class TimeUtil:
         """
         if not isinstance(time_string, str):
             msg = f"Expected string for time_string, got {type(time_string).__name__}"
-            raise TypeError(
-                msg
-            )
+            raise TypeError(msg)
 
         if not isinstance(format_string, str):
-            msg = f"Expected string for format_string, got {type(format_string).__name__}"
-            raise TypeError(
-                msg
+            msg = (
+                f"Expected string for format_string, got {type(format_string).__name__}"
             )
+            raise TypeError(msg)
 
         try:
             return datetime.strptime(time_string, format_string)
@@ -622,9 +618,7 @@ class TimeUtil:
         else:
             if not isinstance(dt, datetime):
                 msg = f"Expected datetime object or None, got {type(dt).__name__}"
-                raise TypeError(
-                    msg
-                )
+                raise TypeError(msg)
             base_time = dt
 
         return TimeUtil.add_duration(base_time, **kwargs)
@@ -676,9 +670,7 @@ class TimeUtil:
         else:
             if not isinstance(dt, datetime):
                 msg = f"Expected datetime object or None, got {type(dt).__name__}"
-                raise TypeError(
-                    msg
-                )
+                raise TypeError(msg)
             base_time = dt
 
         return TimeUtil.subtract_duration(base_time, **kwargs)
@@ -760,16 +752,12 @@ class TimeUtil:
                     f"'Europe/London', 'Asia/Tokyo', etc. "
                     f"See ZoneInfo.available_timezones() for all available names."
                 )
-                raise ValueError(
-                    msg
-                )
+                raise ValueError(msg)
         elif isinstance(target_tz, ZoneInfo):
             target_zone = target_tz
         else:
             msg = f"Expected string or ZoneInfo for target_tz, got {type(target_tz).__name__}"
-            raise TypeError(
-                msg
-            )
+            raise TypeError(msg)
 
         # Convert to target timezone
         return dt.astimezone(target_zone)

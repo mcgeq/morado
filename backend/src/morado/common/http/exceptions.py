@@ -3,6 +3,7 @@
 This module defines all custom exceptions used by the HTTP client wrapper.
 """
 
+from typing import Any
 
 
 class HttpClientError(Exception):
@@ -10,7 +11,6 @@ class HttpClientError(Exception):
 
     All custom exceptions in the HTTP client wrapper inherit from this class.
     """
-
 
 
 class HttpRequestError(HttpClientError):
@@ -27,7 +27,7 @@ class HttpRequestError(HttpClientError):
         self,
         message: str,
         status_code: int | None = None,
-        response: any | None = None,
+        response: Any | None = None,
     ):
         super().__init__(message)
         self.status_code = status_code
@@ -52,7 +52,6 @@ class HttpConnectionError(HttpClientError):
     This exception is raised for network-level errors like DNS resolution
     failures, connection refused, etc.
     """
-
 
 
 class RetryExhaustedError(HttpClientError):

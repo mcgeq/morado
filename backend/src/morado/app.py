@@ -4,30 +4,18 @@ This module creates and configures the Litestar application with all
 necessary middleware, exception handlers, and route handlers.
 """
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from litestar import Litestar
 from litestar.di import Provide
 from litestar.openapi import OpenAPIConfig
 
-from morado.api.v1 import (
-    api_definition,
-    body,
-    component,
-    header,
-    report,
-    script,
-    test_case,
-    test_execution,
-    test_suite,
-)
 from morado.common.logger import configure_logger, get_logger
 from morado.common.logger.config import LoggerConfig
 from morado.core.config import get_settings
 from morado.core.database import close_database, get_db, init_database
 from morado.middleware import (
-    LoggingMiddleware,
     create_cors_config,
     create_exception_handlers,
     create_logging_middleware,
@@ -37,7 +25,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: Litestar) -> AsyncGenerator[None, None]:
+async def lifespan(app: Litestar) -> AsyncGenerator[None]:
     """Application lifespan manager.
 
     This context manager handles application startup and shutdown tasks:
@@ -130,16 +118,31 @@ def create_app() -> Litestar:
         path="/docs",
         use_handler_docstrings=True,
         tags=[
-            {"name": "Headers", "description": "HTTP header component management (Layer 1)"},
-            {"name": "Bodies", "description": "Request/response body component management (Layer 1)"},
-            {"name": "API Definitions", "description": "API definition management (Layer 1)"},
-            {"name": "Scripts", "description": "Test script management and execution (Layer 2)"},
-            {"name": "Components", "description": "Test component management and execution (Layer 3)"},
+            {
+                "name": "Headers",
+                "description": "HTTP header component management (Layer 1)",
+            },
+            {
+                "name": "Bodies",
+                "description": "Request/response body component management (Layer 1)",
+            },
+            {
+                "name": "API Definitions",
+                "description": "API definition management (Layer 1)",
+            },
+            {
+                "name": "Scripts",
+                "description": "Test script management and execution (Layer 2)",
+            },
+            {
+                "name": "Components",
+                "description": "Test component management and execution (Layer 3)",
+            },
             {"name": "Test Cases", "description": "Test case management (Layer 4)"},
             {"name": "Test Suites", "description": "Test suite management"},
             {"name": "Test Execution", "description": "Test execution and results"},
             {"name": "Reports", "description": "Test reports and analytics"},
-        ],
+        ],  # type: ignore[arg-type]
     )
 
     # Create application

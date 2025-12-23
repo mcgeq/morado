@@ -1,4 +1,4 @@
-"""Layer 3: Test Component Models
+"""Layer 3: Test Component Modelsd
 
 This module defines the third layer of the test platform architecture:
 - TestComponent: Composite components that combine multiple scripts
@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 class ComponentType(str, PyEnum):
     """组件类型"""
+
     SIMPLE = "simple"  # 简单组件（仅包含脚本）
     COMPOSITE = "composite"  # 复合组件（包含脚本和子组件）
     TEMPLATE = "template"  # 模板组件（可被复制使用）
@@ -31,6 +32,7 @@ class ComponentType(str, PyEnum):
 
 class ExecutionMode(str, PyEnum):
     """执行模式"""
+
     SEQUENTIAL = "sequential"  # 顺序执行
     PARALLEL = "parallel"  # 并行执行
     CONDITIONAL = "conditional"  # 条件执行
@@ -112,92 +114,60 @@ class TestComponent(Base, TimestampMixin, UUIDMixin):
 
     # 组件类型和配置
     component_type: Mapped[ComponentType] = mapped_column(
-        Enum(ComponentType),
-        default=ComponentType.SIMPLE,
-        comment="组件类型"
+        Enum(ComponentType), default=ComponentType.SIMPLE, comment="组件类型"
     )
     execution_mode: Mapped[ExecutionMode] = mapped_column(
-        Enum(ExecutionMode),
-        default=ExecutionMode.SEQUENTIAL,
-        comment="执行模式"
+        Enum(ExecutionMode), default=ExecutionMode.SEQUENTIAL, comment="执行模式"
     )
 
     # 组件嵌套
     parent_component_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("test_components.id", ondelete="CASCADE"),
-        comment="父组件ID"
+        comment="父组件ID",
     )
 
     # 共享变量
     shared_variables: Mapped[dict[str, object] | None] = mapped_column(
-        JSON,
-        comment="组件级共享变量"
+        JSON, comment="组件级共享变量"
     )
 
     # 执行配置
-    timeout: Mapped[int] = mapped_column(
-        Integer,
-        default=300,
-        comment="超时时间（秒）"
-    )
-    retry_count: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
-        comment="重试次数"
-    )
+    timeout: Mapped[int] = mapped_column(Integer, default=300, comment="超时时间（秒）")
+    retry_count: Mapped[int] = mapped_column(Integer, default=0, comment="重试次数")
     continue_on_failure: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        comment="失败时是否继续"
+        Boolean, default=False, comment="失败时是否继续"
     )
 
     # 条件执行配置
     execution_condition: Mapped[str | None] = mapped_column(
-        Text,
-        comment="执行条件（用于conditional模式）"
+        Text, comment="执行条件（用于conditional模式）"
     )
 
     # 配置
-    is_active: Mapped[bool] = mapped_column(
-        Boolean,
-        default=True,
-        comment="是否激活"
-    )
-    version: Mapped[str] = mapped_column(
-        String(20),
-        default="1.0.0",
-        comment="版本号"
-    )
-    tags: Mapped[list[str] | None] = mapped_column(
-        JSON,
-        comment="标签"
-    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, comment="是否激活")
+    version: Mapped[str] = mapped_column(String(20), default="1.0.0", comment="版本号")
+    tags: Mapped[list[str] | None] = mapped_column(JSON, comment="标签")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
-    creator: Mapped["User | None"] = relationship(
-        "User",
-        back_populates="components"
-    )
+    creator: Mapped["User | None"] = relationship("User", back_populates="components")
 
     # 组件嵌套关系
     parent_component: Mapped["TestComponent | None"] = relationship(
         "TestComponent",
         remote_side=[id],
         back_populates="child_components",
-        foreign_keys=[parent_component_id]
+        foreign_keys=[parent_component_id],
     )
     child_components: Mapped[list["TestComponent"]] = relationship(
         "TestComponent",
         back_populates="parent_component",
         cascade="all, delete-orphan",
-        foreign_keys=[parent_component_id]
+        foreign_keys=[parent_component_id],
     )
 
     # 组件-脚本关联
@@ -205,14 +175,12 @@ class TestComponent(Base, TimestampMixin, UUIDMixin):
         "ComponentScript",
         back_populates="component",
         cascade="all, delete-orphan",
-        order_by="ComponentScript.execution_order"
+        order_by="ComponentScript.execution_order",
     )
 
     # 测试用例-组件关联
     test_case_components: Mapped[list["TestCaseComponent"]] = relationship(
-        "TestCaseComponent",
-        back_populates="component",
-        cascade="all, delete-orphan"
+        "TestCaseComponent", back_populates="component", cascade="all, delete-orphan"
     )
 
 
@@ -276,56 +244,37 @@ class ComponentScript(Base, TimestampMixin):
         Integer,
         ForeignKey("test_components.id", ondelete="CASCADE"),
         nullable=False,
-        comment="组件ID"
+        comment="组件ID",
     )
     script_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("test_scripts.id", ondelete="CASCADE"),
         nullable=False,
-        comment="脚本ID"
+        comment="脚本ID",
     )
 
     # 执行配置
-    execution_order: Mapped[int] = mapped_column(
-        Integer,
-        default=0,
-        comment="执行顺序"
-    )
-    is_enabled: Mapped[bool] = mapped_column(
-        Boolean,
-        default=True,
-        comment="是否启用"
-    )
+    execution_order: Mapped[int] = mapped_column(Integer, default=0, comment="执行顺序")
+    is_enabled: Mapped[bool] = mapped_column(Boolean, default=True, comment="是否启用")
 
     # 参数覆盖
     script_parameters: Mapped[dict[str, object] | None] = mapped_column(
-        JSON,
-        comment="脚本参数覆盖"
+        JSON, comment="脚本参数覆盖"
     )
 
     # 条件执行
-    execution_condition: Mapped[str | None] = mapped_column(
-        Text,
-        comment="执行条件"
-    )
+    execution_condition: Mapped[str | None] = mapped_column(Text, comment="执行条件")
     skip_on_condition: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        comment="条件不满足时是否跳过"
+        Boolean, default=False, comment="条件不满足时是否跳过"
     )
 
     # 说明
-    description: Mapped[str | None] = mapped_column(
-        Text,
-        comment="说明"
-    )
+    description: Mapped[str | None] = mapped_column(Text, comment="说明")
 
     # Relationships
     component: Mapped["TestComponent"] = relationship(
-        "TestComponent",
-        back_populates="component_scripts"
+        "TestComponent", back_populates="component_scripts"
     )
     script: Mapped["TestScript"] = relationship(
-        "TestScript",
-        back_populates="component_scripts"
+        "TestScript", back_populates="component_scripts"
     )

@@ -39,7 +39,7 @@ class TestExecutionService:
         executor: str | None = None,
         execution_parameters: dict | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TestExecution:
         """Create a new test execution.
 
@@ -71,17 +71,14 @@ class TestExecutionService:
             executor=executor,
             execution_parameters=execution_parameters,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
         return execution
 
     def get_execution(
-        self,
-        session: Session,
-        execution_id: int,
-        with_results: bool = False
+        self, session: Session, execution_id: int, with_results: bool = False
     ) -> TestExecution | None:
         """Get execution by ID.
 
@@ -99,9 +96,7 @@ class TestExecutionService:
             return self.repository.get_by_id(session, execution_id)
 
     def get_execution_by_uuid(
-        self,
-        session: Session,
-        uuid: str
+        self, session: Session, uuid: str
     ) -> TestExecution | None:
         """Get execution by UUID.
 
@@ -122,7 +117,7 @@ class TestExecutionService:
         status: ExecutionStatus | None = None,
         environment: str | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestExecution]:
         """List executions with optional filtering.
 
@@ -139,9 +134,7 @@ class TestExecutionService:
             List of TestExecution instances
         """
         if test_case_id:
-            return self.repository.get_by_test_case(
-                session, test_case_id, skip, limit
-            )
+            return self.repository.get_by_test_case(session, test_case_id, skip, limit)
         elif test_suite_id:
             return self.repository.get_by_test_suite(
                 session, test_suite_id, skip, limit
@@ -151,13 +144,11 @@ class TestExecutionService:
         else:
             filters = {}
             if environment:
-                filters['environment'] = environment
+                filters["environment"] = environment
             return self.repository.get_all(session, skip, limit, filters)
 
     def start_execution(
-        self,
-        session: Session,
-        execution_id: int
+        self, session: Session, execution_id: int
     ) -> TestExecution | None:
         """Start execution.
 
@@ -176,7 +167,7 @@ class TestExecutionService:
             session,
             execution,
             status=ExecutionStatus.RUNNING,
-            start_time=datetime.now()
+            start_time=datetime.now(),
         )
 
         session.commit()
@@ -188,7 +179,7 @@ class TestExecutionService:
         execution_id: int,
         status: ExecutionStatus,
         error_message: str | None = None,
-        stack_trace: str | None = None
+        stack_trace: str | None = None,
     ) -> TestExecution | None:
         """Complete execution.
 
@@ -219,16 +210,14 @@ class TestExecutionService:
             end_time=end_time,
             duration=duration,
             error_message=error_message,
-            stack_trace=stack_trace
+            stack_trace=stack_trace,
         )
 
         session.commit()
         return updated
 
     def cancel_execution(
-        self,
-        session: Session,
-        execution_id: int
+        self, session: Session, execution_id: int
     ) -> TestExecution | None:
         """Cancel execution.
 
@@ -239,11 +228,7 @@ class TestExecutionService:
         Returns:
             Updated TestExecution instance or None if not found
         """
-        return self.complete_execution(
-            session,
-            execution_id,
-            ExecutionStatus.CANCELLED
-        )
+        return self.complete_execution(session, execution_id, ExecutionStatus.CANCELLED)
 
     def update_execution_stats(
         self,
@@ -253,7 +238,7 @@ class TestExecutionService:
         passed_count: int | None = None,
         failed_count: int | None = None,
         error_count: int | None = None,
-        skipped_count: int | None = None
+        skipped_count: int | None = None,
     ) -> TestExecution | None:
         """Update execution statistics.
 
@@ -275,15 +260,15 @@ class TestExecutionService:
 
         updates = {}
         if total_count is not None:
-            updates['total_count'] = total_count
+            updates["total_count"] = total_count
         if passed_count is not None:
-            updates['passed_count'] = passed_count
+            updates["passed_count"] = passed_count
         if failed_count is not None:
-            updates['failed_count'] = failed_count
+            updates["failed_count"] = failed_count
         if error_count is not None:
-            updates['error_count'] = error_count
+            updates["error_count"] = error_count
         if skipped_count is not None:
-            updates['skipped_count'] = skipped_count
+            updates["skipped_count"] = skipped_count
 
         updated = self.repository.update(session, execution, **updates)
         session.commit()
@@ -302,7 +287,7 @@ class TestExecutionService:
         error_message: str | None = None,
         stack_trace: str | None = None,
         logs: str | None = None,
-        screenshots: list | None = None
+        screenshots: list | None = None,
     ) -> ExecutionResult:
         """Add execution result.
 
@@ -334,7 +319,7 @@ class TestExecutionService:
             error_message=error_message,
             stack_trace=stack_trace,
             logs=logs,
-            screenshots=screenshots
+            screenshots=screenshots,
         )
 
         session.add(result)
@@ -344,10 +329,7 @@ class TestExecutionService:
         return result
 
     def update_execution_result(
-        self,
-        session: Session,
-        result_id: int,
-        **kwargs: Any
+        self, session: Session, result_id: int, **kwargs: Any
     ) -> ExecutionResult | None:
         """Update execution result.
 
@@ -372,9 +354,7 @@ class TestExecutionService:
         return result
 
     def get_execution_results(
-        self,
-        session: Session,
-        execution_id: int
+        self, session: Session, execution_id: int
     ) -> list[ExecutionResult]:
         """Get execution results.
 
@@ -392,9 +372,7 @@ class TestExecutionService:
         return execution.execution_results
 
     def get_execution_summary(
-        self,
-        session: Session,
-        execution_id: int
+        self, session: Session, execution_id: int
     ) -> dict[str, Any] | None:
         """Get execution summary.
 
@@ -410,34 +388,38 @@ class TestExecutionService:
             return None
 
         return {
-            'execution': {
-                'id': execution.id,
-                'uuid': execution.uuid,
-                'status': execution.status,
-                'start_time': execution.start_time.isoformat() if execution.start_time else None,
-                'end_time': execution.end_time.isoformat() if execution.end_time else None,
-                'duration': execution.duration,
-                'environment': execution.environment,
-                'executor': execution.executor
+            "execution": {
+                "id": execution.id,
+                "uuid": execution.uuid,
+                "status": execution.status,
+                "start_time": execution.start_time.isoformat()
+                if execution.start_time
+                else None,
+                "end_time": execution.end_time.isoformat()
+                if execution.end_time
+                else None,
+                "duration": execution.duration,
+                "environment": execution.environment,
+                "executor": execution.executor,
             },
-            'statistics': {
-                'total': execution.total_count,
-                'passed': execution.passed_count,
-                'failed': execution.failed_count,
-                'error': execution.error_count,
-                'skipped': execution.skipped_count
+            "statistics": {
+                "total": execution.total_count,
+                "passed": execution.passed_count,
+                "failed": execution.failed_count,
+                "error": execution.error_count,
+                "skipped": execution.skipped_count,
             },
-            'results': [
+            "results": [
                 {
-                    'id': result.id,
-                    'script_id': result.script_id,
-                    'component_id': result.component_id,
-                    'status': result.status,
-                    'duration': result.duration,
-                    'error_message': result.error_message
+                    "id": result.id,
+                    "script_id": result.script_id,
+                    "component_id": result.component_id,
+                    "status": result.status,
+                    "duration": result.duration,
+                    "error_message": result.error_message,
                 }
                 for result in execution.execution_results
-            ]
+            ],
         }
 
     def get_recent_executions(
@@ -445,7 +427,7 @@ class TestExecutionService:
         session: Session,
         test_case_id: int | None = None,
         test_suite_id: int | None = None,
-        limit: int = 10
+        limit: int = 10,
     ) -> list[TestExecution]:
         """Get recent executions.
 

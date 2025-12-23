@@ -52,7 +52,7 @@ class TestScriptService:
         timeout_override: int | None = None,
         tags: list[str] | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TestScript:
         """Create a new test script.
 
@@ -101,17 +101,14 @@ class TestScriptService:
             timeout_override=timeout_override,
             tags=tags,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
         return script
 
     def get_script(
-        self,
-        session: Session,
-        script_id: int,
-        with_relations: bool = False
+        self, session: Session, script_id: int, with_relations: bool = False
     ) -> TestScript | None:
         """Get script by ID.
 
@@ -147,7 +144,7 @@ class TestScriptService:
         script_type: ScriptType | None = None,
         tags: list[str] | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestScript]:
         """List scripts with optional filtering.
 
@@ -174,11 +171,7 @@ class TestScriptService:
             return self.repository.get_all(session, skip, limit)
 
     def search_scripts(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Search scripts by name.
 
@@ -194,10 +187,7 @@ class TestScriptService:
         return self.repository.search_by_name(session, name, skip, limit)
 
     def update_script(
-        self,
-        session: Session,
-        script_id: int,
-        **kwargs: Any
+        self, session: Session, script_id: int, **kwargs: Any
     ) -> TestScript | None:
         """Update script.
 
@@ -244,7 +234,7 @@ class TestScriptService:
         validation_rules: dict | None = None,
         order: int = 0,
         group: str | None = None,
-        is_sensitive: bool = False
+        is_sensitive: bool = False,
     ) -> ScriptParameter:
         """Add parameter to script.
 
@@ -275,17 +265,14 @@ class TestScriptService:
             validation_rules=validation_rules,
             order=order,
             group=group,
-            is_sensitive=is_sensitive
+            is_sensitive=is_sensitive,
         )
 
         session.commit()
         return parameter
 
     def get_script_parameters(
-        self,
-        session: Session,
-        script_id: int,
-        required_only: bool = False
+        self, session: Session, script_id: int, required_only: bool = False
     ) -> list[ScriptParameter]:
         """Get script parameters.
 
@@ -303,10 +290,7 @@ class TestScriptService:
             return self.parameter_repository.get_by_script(session, script_id)
 
     def update_parameter(
-        self,
-        session: Session,
-        parameter_id: int,
-        **kwargs: Any
+        self, session: Session, parameter_id: int, **kwargs: Any
     ) -> ScriptParameter | None:
         """Update script parameter.
 
@@ -322,7 +306,9 @@ class TestScriptService:
         if not parameter:
             return None
 
-        updated_parameter = self.parameter_repository.update(session, parameter, **kwargs)
+        updated_parameter = self.parameter_repository.update(
+            session, parameter, **kwargs
+        )
         session.commit()
         return updated_parameter
 
@@ -366,10 +352,7 @@ class TestScriptService:
         return self.update_script(session, script_id, debug_mode=False)
 
     def validate_script_parameters(
-        self,
-        session: Session,
-        script_id: int,
-        parameters: dict[str, Any]
+        self, session: Session, script_id: int, parameters: dict[str, Any]
     ) -> tuple[bool, list[str]]:
         """Validate script parameters.
 
@@ -400,9 +383,7 @@ class TestScriptService:
         return len(errors) == 0, errors
 
     def get_script_execution_config(
-        self,
-        session: Session,
-        script_id: int
+        self, session: Session, script_id: int
     ) -> dict[str, Any] | None:
         """Get complete script execution configuration.
 
@@ -421,42 +402,42 @@ class TestScriptService:
             return None
 
         return {
-            'script': {
-                'id': script.id,
-                'uuid': script.uuid,
-                'name': script.name,
-                'description': script.description,
-                'script_type': script.script_type,
-                'execution_order': script.execution_order,
-                'variables': script.variables,
-                'assertions': script.assertions,
-                'validators': script.validators,
-                'pre_script': script.pre_script,
-                'post_script': script.post_script,
-                'extract_variables': script.extract_variables,
-                'output_variables': script.output_variables,
-                'debug_mode': script.debug_mode,
-                'retry_count': script.retry_count,
-                'retry_interval': script.retry_interval,
-                'timeout_override': script.timeout_override
+            "script": {
+                "id": script.id,
+                "uuid": script.uuid,
+                "name": script.name,
+                "description": script.description,
+                "script_type": script.script_type,
+                "execution_order": script.execution_order,
+                "variables": script.variables,
+                "assertions": script.assertions,
+                "validators": script.validators,
+                "pre_script": script.pre_script,
+                "post_script": script.post_script,
+                "extract_variables": script.extract_variables,
+                "output_variables": script.output_variables,
+                "debug_mode": script.debug_mode,
+                "retry_count": script.retry_count,
+                "retry_interval": script.retry_interval,
+                "timeout_override": script.timeout_override,
             },
-            'api_definition': {
-                'id': script.api_definition.id,
-                'name': script.api_definition.name,
-                'method': script.api_definition.method,
-                'path': script.api_definition.path,
-                'base_url': script.api_definition.base_url,
-                'timeout': script.api_definition.timeout
+            "api_definition": {
+                "id": script.api_definition.id,
+                "name": script.api_definition.name,
+                "method": script.api_definition.method,
+                "path": script.api_definition.path,
+                "base_url": script.api_definition.base_url,
+                "timeout": script.api_definition.timeout,
             },
-            'parameters': [
+            "parameters": [
                 {
-                    'name': p.name,
-                    'type': p.parameter_type,
-                    'default_value': p.default_value,
-                    'is_required': p.is_required,
-                    'validation_rules': p.validation_rules,
-                    'is_sensitive': p.is_sensitive
+                    "name": p.name,
+                    "type": p.parameter_type,
+                    "default_value": p.default_value,
+                    "is_required": p.is_required,
+                    "validation_rules": p.validation_rules,
+                    "is_sensitive": p.is_sensitive,
                 }
                 for p in script.parameters
-            ]
+            ],
         }

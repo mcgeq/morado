@@ -122,7 +122,10 @@ class Settings(BaseModel):
         """Validate secret key in production."""
         # Get environment from values if available
         environment = info.data.get("environment", "development")
-        if environment == "production" and v == "your-secret-key-change-this-in-production":
+        if (
+            environment == "production"
+            and v == "your-secret-key-change-this-in-production"
+        ):
             raise ValueError(
                 "Secret key must be changed in production environment. "
                 "Set the SECRET_KEY environment variable."
@@ -159,7 +162,10 @@ class Settings(BaseModel):
         if not config_path.exists():
             logger.debug(
                 "Config file not found, using defaults",
-                extra={"config_path": str(config_path), "environment": self.environment},
+                extra={
+                    "config_path": str(config_path),
+                    "environment": self.environment,
+                },
             )
             return
 
@@ -169,7 +175,10 @@ class Settings(BaseModel):
 
             logger.info(
                 "Loaded configuration from TOML file",
-                extra={"config_path": str(config_path), "environment": self.environment},
+                extra={
+                    "config_path": str(config_path),
+                    "environment": self.environment,
+                },
             )
 
             # Update settings from TOML file
@@ -208,7 +217,18 @@ def get_settings() -> Settings:
         postgresql://morado:morado@localhost:5432/morado
     """
     # Get environment from environment variable
-    environment = os.getenv("ENVIRONMENT", "development")
+    environment_str = os.getenv("ENVIRONMENT", "development")
+
+    # Validate and cast to Literal type
+    valid_environments = {"development", "testing", "production"}
+    if environment_str not in valid_environments:
+        logger.warning(
+            f"Invalid environment '{environment_str}', defaulting to 'development'",
+            extra={"provided_environment": environment_str},
+        )
+        environment_str = "development"
+
+    environment: Literal["development", "testing", "production"] = environment_str  # type: ignore[assignment]
 
     logger.info(
         "Loading application settings",

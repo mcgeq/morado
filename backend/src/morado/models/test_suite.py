@@ -64,19 +64,23 @@ class TestSuite(Base, TimestampMixin, UUIDMixin):
 
     # 执行配置
     execution_order: Mapped[str] = mapped_column(
-        String(20),
-        default="sequential",
-        comment="执行顺序（sequential/parallel）"
+        String(20), default="sequential", comment="执行顺序（sequential/parallel）"
     )
-    parallel_execution: Mapped[bool] = mapped_column(default=False, comment="是否并行执行")
-    continue_on_failure: Mapped[bool] = mapped_column(default=True, comment="失败时是否继续")
+    parallel_execution: Mapped[bool] = mapped_column(
+        default=False, comment="是否并行执行"
+    )
+    continue_on_failure: Mapped[bool] = mapped_column(
+        default=True, comment="失败时是否继续"
+    )
 
     # 调度配置
     schedule_config: Mapped[dict | None] = mapped_column(JSON, comment="调度配置")
     is_scheduled: Mapped[bool] = mapped_column(default=False, comment="是否启用调度")
 
     # 环境和数据
-    environment: Mapped[str] = mapped_column(String(20), default="test", comment="执行环境")
+    environment: Mapped[str] = mapped_column(
+        String(20), default="test", comment="执行环境"
+    )
     global_variables: Mapped[dict | None] = mapped_column(JSON, comment="全局变量")
 
     # 配置
@@ -84,18 +88,18 @@ class TestSuite(Base, TimestampMixin, UUIDMixin):
     version: Mapped[str] = mapped_column(String(20), default="1.0.0", comment="版本号")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
-    creator: Mapped[Optional["User"]] = relationship("User", back_populates="test_suites")
+    creator: Mapped[Optional["User"]] = relationship(
+        "User", back_populates="test_suites"
+    )
     test_suite_cases: Mapped[list["TestSuiteCase"]] = relationship(
         "TestSuiteCase",
         back_populates="test_suite",
         cascade="all, delete-orphan",
-        order_by="TestSuiteCase.execution_order"
+        order_by="TestSuiteCase.execution_order",
     )
 
 
@@ -123,13 +127,13 @@ class TestSuiteCase(Base, TimestampMixin):
         Integer,
         ForeignKey("test_suites.id", ondelete="CASCADE"),
         nullable=False,
-        comment="测试套件ID"
+        comment="测试套件ID",
     )
     test_case_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("test_cases.id", ondelete="CASCADE"),
         nullable=False,
-        comment="测试用例ID"
+        comment="测试用例ID",
     )
     execution_order: Mapped[int] = mapped_column(Integer, default=0, comment="执行顺序")
     is_enabled: Mapped[bool] = mapped_column(default=True, comment="是否启用")
@@ -137,5 +141,9 @@ class TestSuiteCase(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, comment="说明")
 
     # Relationships
-    test_suite: Mapped["TestSuite"] = relationship("TestSuite", back_populates="test_suite_cases")
-    test_case: Mapped["TestCase"] = relationship("TestCase", back_populates="test_suite_cases")
+    test_suite: Mapped["TestSuite"] = relationship(
+        "TestSuite", back_populates="test_suite_cases"
+    )
+    test_case: Mapped["TestCase"] = relationship(
+        "TestCase", back_populates="test_suite_cases"
+    )

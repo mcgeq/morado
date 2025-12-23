@@ -45,6 +45,7 @@ except ImportError:
     class LoggerSystem:
         """Logger system placeholder"""
 
+
 # Context management
 # Configuration
 from morado.common.logger.config import (
@@ -53,48 +54,23 @@ from morado.common.logger.config import (
     ProcessorConfig,
 )
 
-# Import only what exists in our new context module
+# Import context management functions from context module
 from morado.common.logger.context import (
+    async_request_scope,
     clear_context,
     get_context_data,
     get_log_context,
     get_request_id,
+    request_scope,
     set_context_data,
     set_request_id,
 )
 
 # Keep the old context imports for backward compatibility
-try:
-    from morado.common.logger.context import (
-        ContextManager,
-        RequestContext,
-        async_request_scope,
-        request_scope,
-    )
-except ImportError:
-    # These may not exist yet, provide placeholders
-    ContextManager = None  # type: ignore
-    RequestContext = None  # type: ignore
+# These may not exist yet, provide placeholders
+ContextManager = None  # type: ignore[assignment]
+RequestContext = None  # type: ignore[assignment]
 
-    def request_scope(*args, **kwargs):  # type: ignore
-        """Placeholder for request_scope"""
-        from contextlib import contextmanager
-
-        @contextmanager
-        def _scope():
-            yield {}
-
-        return _scope()
-
-    def async_request_scope(*args, **kwargs):  # type: ignore
-        """Placeholder for async_request_scope"""
-        from contextlib import asynccontextmanager
-
-        @asynccontextmanager
-        async def _scope():
-            yield {}
-
-        return _scope()
 
 # Decorators
 try:
@@ -105,29 +81,30 @@ try:
     )
 except ImportError:
     # Decorators may not be fully compatible yet
-    def log_execution(*args, **kwargs):  # type: ignore
+    def log_execution(*args, **kwargs):  # type: ignore[no-untyped-def]
         """Placeholder for log_execution decorator"""
 
-        def decorator(func):  # type: ignore
+        def decorator(func):  # type: ignore[no-untyped-def]
             return func
 
         return decorator
 
-    def with_request_context(*args, **kwargs):  # type: ignore
+    def with_request_context(*args, **kwargs):  # type: ignore[no-untyped-def]
         """Placeholder for with_request_context decorator"""
 
-        def decorator(func):  # type: ignore
+        def decorator(func):  # type: ignore[no-untyped-def]
             return func
 
         return decorator
 
-    def async_with_request_context(*args, **kwargs):  # type: ignore
+    def async_with_request_context(*args, **kwargs):  # type: ignore[no-untyped-def]
         """Placeholder for async_with_request_context decorator"""
 
-        def decorator(func):  # type: ignore
+        def decorator(func):  # type: ignore[no-untyped-def]
             return func
 
         return decorator
+
 
 # UUID configuration (re-exported for convenience)
 from morado.common.utils.uuid import UUIDConfig
@@ -135,25 +112,23 @@ from morado.common.utils.uuid import UUIDConfig
 # Public API
 __all__ = [
     "ConfigurationManager",
+    "ContextManager",
     "LoggerConfig",
     "LoggerSystem",
     "ProcessorConfig",
-    "UUIDConfig",
-    "configure_logger",
-    "get_logger",
-    "log_execution",
-    # New context functions
-    "clear_context",
-    "get_context_data",
-    "get_log_context",
-    "get_request_id",
-    "set_context_data",
-    "set_request_id",
-    # Old context functions (for backward compatibility)
-    "ContextManager",
     "RequestContext",
+    "UUIDConfig",
     "async_request_scope",
     "async_with_request_context",
+    "clear_context",
+    "configure_logger",
+    "get_context_data",
+    "get_log_context",
+    "get_logger",
+    "get_request_id",
+    "log_execution",
     "request_scope",
+    "set_context_data",
+    "set_request_id",
     "with_request_context",
 ]

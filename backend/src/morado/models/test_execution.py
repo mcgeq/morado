@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 class ExecutionStatus(str, PyEnum):
     """执行状态"""
+
     PENDING = "pending"  # 等待执行
     RUNNING = "running"  # 执行中
     PASSED = "passed"  # 通过
@@ -83,28 +84,28 @@ class TestExecution(Base, TimestampMixin, UUIDMixin):
 
     # 关联
     test_case_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("test_cases.id", ondelete="CASCADE"),
-        comment="测试用例ID"
+        Integer, ForeignKey("test_cases.id", ondelete="CASCADE"), comment="测试用例ID"
     )
     test_suite_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("test_suites.id", ondelete="CASCADE"),
-        comment="测试套件ID"
+        Integer, ForeignKey("test_suites.id", ondelete="CASCADE"), comment="测试套件ID"
     )
 
     # 执行信息
     status: Mapped[ExecutionStatus] = mapped_column(
-        Enum(ExecutionStatus),
-        default=ExecutionStatus.PENDING,
-        comment="执行状态"
+        Enum(ExecutionStatus), default=ExecutionStatus.PENDING, comment="执行状态"
     )
-    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment="开始时间")
-    end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment="结束时间")
+    start_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment="开始时间"
+    )
+    end_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment="结束时间"
+    )
     duration: Mapped[float | None] = mapped_column(Float, comment="执行时长（秒）")
 
     # 环境和配置
-    environment: Mapped[str] = mapped_column(String(20), default="test", comment="执行环境")
+    environment: Mapped[str] = mapped_column(
+        String(20), default="test", comment="执行环境"
+    )
     executor: Mapped[str | None] = mapped_column(String(100), comment="执行者")
     execution_parameters: Mapped[dict | None] = mapped_column(JSON, comment="执行参数")
 
@@ -121,18 +122,18 @@ class TestExecution(Base, TimestampMixin, UUIDMixin):
     logs: Mapped[str | None] = mapped_column(Text, comment="执行日志")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
-    creator: Mapped[Optional["User"]] = relationship("User", back_populates="executions")
-    test_case: Mapped[Optional["TestCase"]] = relationship("TestCase", back_populates="executions")
+    creator: Mapped[Optional["User"]] = relationship(
+        "User", back_populates="executions"
+    )
+    test_case: Mapped[Optional["TestCase"]] = relationship(
+        "TestCase", back_populates="executions"
+    )
     execution_results: Mapped[list["ExecutionResult"]] = relationship(
-        "ExecutionResult",
-        back_populates="execution",
-        cascade="all, delete-orphan"
+        "ExecutionResult", back_populates="execution", cascade="all, delete-orphan"
     )
 
 
@@ -181,29 +182,27 @@ class ExecutionResult(Base, TimestampMixin):
         Integer,
         ForeignKey("test_executions.id", ondelete="CASCADE"),
         nullable=False,
-        comment="执行记录ID"
+        comment="执行记录ID",
     )
 
     # 关联
     script_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("test_scripts.id", ondelete="SET NULL"),
-        comment="脚本ID"
+        Integer, ForeignKey("test_scripts.id", ondelete="SET NULL"), comment="脚本ID"
     )
     component_id: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("test_components.id", ondelete="SET NULL"),
-        comment="组件ID"
+        Integer, ForeignKey("test_components.id", ondelete="SET NULL"), comment="组件ID"
     )
 
     # 结果信息
     status: Mapped[ExecutionStatus] = mapped_column(
-        Enum(ExecutionStatus),
-        default=ExecutionStatus.PENDING,
-        comment="执行状态"
+        Enum(ExecutionStatus), default=ExecutionStatus.PENDING, comment="执行状态"
     )
-    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment="开始时间")
-    end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), comment="结束时间")
+    start_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment="开始时间"
+    )
+    end_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), comment="结束时间"
+    )
     duration: Mapped[float | None] = mapped_column(Float, comment="执行时长（秒）")
 
     # 请求和响应
@@ -222,4 +221,6 @@ class ExecutionResult(Base, TimestampMixin):
     screenshots: Mapped[list | None] = mapped_column(JSON, comment="截图")
 
     # Relationships
-    execution: Mapped["TestExecution"] = relationship("TestExecution", back_populates="execution_results")
+    execution: Mapped["TestExecution"] = relationship(
+        "TestExecution", back_populates="execution_results"
+    )

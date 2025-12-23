@@ -54,8 +54,6 @@ Context manager for automatic cleanup:
     ...     print(response.json())
 """
 
-from typing import Optional
-
 # Core client
 from morado.common.http.client import HttpClient
 
@@ -97,6 +95,7 @@ from morado.common.http.utils import (
 
 # Factory Functions
 # -----------------
+
 
 def create_http_client(
     config: HttpClientConfig | None = None,
@@ -285,7 +284,7 @@ def load_config_from_toml(filepath: str) -> HttpClientConfig:
         import tomllib
     except ImportError:
         try:
-            import tomli as tomllib  # type: ignore
+            import tomli as tomllib  # type: ignore[import-not-found]
         except ImportError:
             raise ImportError(
                 "TOML support requires Python 3.11+ or the 'tomli' package. "

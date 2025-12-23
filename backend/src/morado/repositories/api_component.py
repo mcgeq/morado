@@ -3,7 +3,6 @@
 This module provides data access methods for Header, Body, and ApiDefinition models.
 """
 
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
@@ -28,11 +27,7 @@ class HeaderRepository(BaseRepository[Header]):
         super().__init__(Header)
 
     def get_by_scope(
-        self,
-        session: Session,
-        scope: HeaderScope,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, scope: HeaderScope, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Get headers by scope.
 
@@ -58,11 +53,7 @@ class HeaderRepository(BaseRepository[Header]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_project(
-        self,
-        session: Session,
-        project_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, project_id: int, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Get headers by project ID.
 
@@ -88,11 +79,7 @@ class HeaderRepository(BaseRepository[Header]):
         return list(session.execute(stmt).scalars().all())
 
     def search_by_name(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Search headers by name (case-insensitive).
 
@@ -120,11 +107,7 @@ class HeaderRepository(BaseRepository[Header]):
     # Async methods
 
     async def get_by_scope_async(
-        self,
-        session: AsyncSession,
-        scope: HeaderScope,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, scope: HeaderScope, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Get headers by scope (async).
 
@@ -148,11 +131,7 @@ class HeaderRepository(BaseRepository[Header]):
         return list(result.scalars().all())
 
     async def get_by_project_async(
-        self,
-        session: AsyncSession,
-        project_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, project_id: int, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Get headers by project ID (async).
 
@@ -176,11 +155,7 @@ class HeaderRepository(BaseRepository[Header]):
         return list(result.scalars().all())
 
     async def search_by_name_async(
-        self,
-        session: AsyncSession,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, name: str, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Search headers by name (async).
 
@@ -220,11 +195,7 @@ class BodyRepository(BaseRepository[Body]):
         super().__init__(Body)
 
     def get_by_scope(
-        self,
-        session: Session,
-        scope: HeaderScope,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, scope: HeaderScope, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Get bodies by scope.
 
@@ -247,11 +218,7 @@ class BodyRepository(BaseRepository[Body]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_type(
-        self,
-        session: Session,
-        body_type: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, body_type: str, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Get bodies by type.
 
@@ -274,11 +241,7 @@ class BodyRepository(BaseRepository[Body]):
         return list(session.execute(stmt).scalars().all())
 
     def search_by_name(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Search bodies by name (case-insensitive).
 
@@ -303,11 +266,7 @@ class BodyRepository(BaseRepository[Body]):
     # Async methods
 
     async def get_by_scope_async(
-        self,
-        session: AsyncSession,
-        scope: HeaderScope,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, scope: HeaderScope, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Get bodies by scope (async).
 
@@ -331,11 +290,7 @@ class BodyRepository(BaseRepository[Body]):
         return list(result.scalars().all())
 
     async def get_by_type_async(
-        self,
-        session: AsyncSession,
-        body_type: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, body_type: str, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Get bodies by type (async).
 
@@ -359,11 +314,7 @@ class BodyRepository(BaseRepository[Body]):
         return list(result.scalars().all())
 
     async def search_by_name_async(
-        self,
-        session: AsyncSession,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, name: str, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Search bodies by name (async).
 
@@ -403,16 +354,12 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         """Initialize ApiDefinition repository."""
         super().__init__(ApiDefinition)
 
-    def get_with_relations(
-        self,
-        session: Session,
-        id: int
-    ) -> ApiDefinition | None:
+    def get_with_relations(self, session: Session, api_id: int) -> ApiDefinition | None:
         """Get API definition with related Header and Body components.
 
         Args:
             session: Database session
-            id: API definition ID
+            api_id: API definition ID
 
         Returns:
             ApiDefinition instance with relations loaded, or None
@@ -424,21 +371,17 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         """
         stmt = (
             select(ApiDefinition)
-            .where(ApiDefinition.id == id)
+            .where(ApiDefinition.id == api_id)
             .options(
                 joinedload(ApiDefinition.header),
                 joinedload(ApiDefinition.request_body),
-                joinedload(ApiDefinition.response_body)
+                joinedload(ApiDefinition.response_body),
             )
         )
         return session.execute(stmt).scalar_one_or_none()
 
     def get_by_method(
-        self,
-        session: Session,
-        method: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, method: str, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Get API definitions by HTTP method.
 
@@ -461,11 +404,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         return list(session.execute(stmt).scalars().all())
 
     def search_by_path(
-        self,
-        session: Session,
-        path: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, path: str, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Search API definitions by path (case-insensitive).
 
@@ -488,11 +427,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_header(
-        self,
-        session: Session,
-        header_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, header_id: int, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Get API definitions that use a specific header.
 
@@ -517,37 +452,31 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
     # Async methods
 
     async def get_with_relations_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, api_id: int
     ) -> ApiDefinition | None:
         """Get API definition with relations (async).
 
         Args:
             session: Async database session
-            id: API definition ID
+            api_id: API definition ID
 
         Returns:
             ApiDefinition instance with relations loaded, or None
         """
         stmt = (
             select(ApiDefinition)
-            .where(ApiDefinition.id == id)
+            .where(ApiDefinition.id == api_id)
             .options(
                 joinedload(ApiDefinition.header),
                 joinedload(ApiDefinition.request_body),
-                joinedload(ApiDefinition.response_body)
+                joinedload(ApiDefinition.response_body),
             )
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_by_method_async(
-        self,
-        session: AsyncSession,
-        method: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, method: str, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Get API definitions by HTTP method (async).
 
@@ -571,11 +500,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         return list(result.scalars().all())
 
     async def search_by_path_async(
-        self,
-        session: AsyncSession,
-        path: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, path: str, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Search API definitions by path (async).
 
@@ -599,11 +524,7 @@ class ApiDefinitionRepository(BaseRepository[ApiDefinition]):
         return list(result.scalars().all())
 
     async def get_by_header_async(
-        self,
-        session: AsyncSession,
-        header_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, header_id: int, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Get API definitions by header (async).
 

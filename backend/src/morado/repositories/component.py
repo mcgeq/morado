@@ -28,15 +28,13 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         super().__init__(TestComponent)
 
     def get_with_scripts(
-        self,
-        session: Session,
-        id: int
+        self, session: Session, component_id: int
     ) -> TestComponent | None:
         """Get component with associated scripts.
 
         Args:
             session: Database session
-            id: Component ID
+            component_id: Component ID
 
         Returns:
             TestComponent instance with scripts loaded, or None
@@ -48,24 +46,23 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         """
         stmt = (
             select(TestComponent)
-            .where(TestComponent.id == id)
+            .where(TestComponent.id == component_id)
             .options(
-                joinedload(TestComponent.component_scripts)
-                .joinedload(ComponentScript.script)
+                joinedload(TestComponent.component_scripts).joinedload(
+                    ComponentScript.script
+                )
             )
         )
         return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_children(
-        self,
-        session: Session,
-        id: int
+        self, session: Session, component_id: int
     ) -> TestComponent | None:
         """Get component with child components.
 
         Args:
             session: Database session
-            id: Component ID
+            component_id: Component ID
 
         Returns:
             TestComponent instance with children loaded, or None
@@ -77,21 +74,19 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         """
         stmt = (
             select(TestComponent)
-            .where(TestComponent.id == id)
+            .where(TestComponent.id == component_id)
             .options(joinedload(TestComponent.child_components))
         )
         return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_full_hierarchy(
-        self,
-        session: Session,
-        id: int
+        self, session: Session, component_id: int
     ) -> TestComponent | None:
         """Get component with scripts and child components.
 
         Args:
             session: Database session
-            id: Component ID
+            component_id: Component ID
 
         Returns:
             TestComponent instance with full hierarchy loaded, or None
@@ -103,11 +98,12 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         """
         stmt = (
             select(TestComponent)
-            .where(TestComponent.id == id)
+            .where(TestComponent.id == component_id)
             .options(
-                joinedload(TestComponent.component_scripts)
-                .joinedload(ComponentScript.script),
-                joinedload(TestComponent.child_components)
+                joinedload(TestComponent.component_scripts).joinedload(
+                    ComponentScript.script
+                ),
+                joinedload(TestComponent.child_components),
             )
         )
         return session.execute(stmt).unique().scalar_one_or_none()
@@ -117,7 +113,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         session: Session,
         component_type: ComponentType,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestComponent]:
         """Get components by type.
 
@@ -143,10 +139,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(session.execute(stmt).scalars().all())
 
     def get_root_components(
-        self,
-        session: Session,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Get root components (components without parent).
 
@@ -171,11 +164,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(session.execute(stmt).scalars().all())
 
     def get_children(
-        self,
-        session: Session,
-        parent_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, parent_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Get child components of a parent.
 
@@ -201,11 +190,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(session.execute(stmt).scalars().all())
 
     def search_by_name(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Search components by name (case-insensitive).
 
@@ -231,11 +216,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_tags(
-        self,
-        session: Session,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Get components by tags.
 
@@ -263,73 +244,69 @@ class TestComponentRepository(BaseRepository[TestComponent]):
     # Async methods
 
     async def get_with_scripts_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, component_id: int
     ) -> TestComponent | None:
         """Get component with scripts (async).
 
         Args:
             session: Async database session
-            id: Component ID
+            component_id: Component ID
 
         Returns:
             TestComponent instance with scripts loaded, or None
         """
         stmt = (
             select(TestComponent)
-            .where(TestComponent.id == id)
+            .where(TestComponent.id == component_id)
             .options(
-                joinedload(TestComponent.component_scripts)
-                .joinedload(ComponentScript.script)
+                joinedload(TestComponent.component_scripts).joinedload(
+                    ComponentScript.script
+                )
             )
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_with_children_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, component_id: int
     ) -> TestComponent | None:
         """Get component with children (async).
 
         Args:
             session: Async database session
-            id: Component ID
+            component_id: Component ID
 
         Returns:
             TestComponent instance with children loaded, or None
         """
         stmt = (
             select(TestComponent)
-            .where(TestComponent.id == id)
+            .where(TestComponent.id == component_id)
             .options(joinedload(TestComponent.child_components))
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_with_full_hierarchy_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, component_id: int
     ) -> TestComponent | None:
         """Get component with full hierarchy (async).
 
         Args:
             session: Async database session
-            id: Component ID
+            component_id: Component ID
 
         Returns:
             TestComponent instance with full hierarchy loaded, or None
         """
         stmt = (
             select(TestComponent)
-            .where(TestComponent.id == id)
+            .where(TestComponent.id == component_id)
             .options(
-                joinedload(TestComponent.component_scripts)
-                .joinedload(ComponentScript.script),
-                joinedload(TestComponent.child_components)
+                joinedload(TestComponent.component_scripts).joinedload(
+                    ComponentScript.script
+                ),
+                joinedload(TestComponent.child_components),
             )
         )
         result = await session.execute(stmt)
@@ -340,7 +317,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         session: AsyncSession,
         component_type: ComponentType,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestComponent]:
         """Get components by type (async).
 
@@ -364,10 +341,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(result.scalars().all())
 
     async def get_root_components_async(
-        self,
-        session: AsyncSession,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Get root components (async).
 
@@ -390,11 +364,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(result.scalars().all())
 
     async def get_children_async(
-        self,
-        session: AsyncSession,
-        parent_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, parent_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Get child components (async).
 
@@ -418,11 +388,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(result.scalars().all())
 
     async def search_by_name_async(
-        self,
-        session: AsyncSession,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Search components by name (async).
 
@@ -446,11 +412,7 @@ class TestComponentRepository(BaseRepository[TestComponent]):
         return list(result.scalars().all())
 
     async def get_by_tags_async(
-        self,
-        session: AsyncSession,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Get components by tags (async).
 
@@ -489,9 +451,7 @@ class ComponentScriptRepository(BaseRepository[ComponentScript]):
         super().__init__(ComponentScript)
 
     def get_by_component(
-        self,
-        session: Session,
-        component_id: int
+        self, session: Session, component_id: int
     ) -> list[ComponentScript]:
         """Get script associations for a component.
 
@@ -516,11 +476,7 @@ class ComponentScriptRepository(BaseRepository[ComponentScript]):
         )
         return list(session.execute(stmt).scalars().all())
 
-    def get_by_script(
-        self,
-        session: Session,
-        script_id: int
-    ) -> list[ComponentScript]:
+    def get_by_script(self, session: Session, script_id: int) -> list[ComponentScript]:
         """Get component associations for a script.
 
         Args:
@@ -545,9 +501,7 @@ class ComponentScriptRepository(BaseRepository[ComponentScript]):
     # Async methods
 
     async def get_by_component_async(
-        self,
-        session: AsyncSession,
-        component_id: int
+        self, session: AsyncSession, component_id: int
     ) -> list[ComponentScript]:
         """Get script associations for a component (async).
 
@@ -569,9 +523,7 @@ class ComponentScriptRepository(BaseRepository[ComponentScript]):
         return list(result.scalars().all())
 
     async def get_by_script_async(
-        self,
-        session: AsyncSession,
-        script_id: int
+        self, session: AsyncSession, script_id: int
     ) -> list[ComponentScript]:
         """Get component associations for a script (async).
 

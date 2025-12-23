@@ -34,16 +34,12 @@ class TestCaseRepository(BaseRepository[TestCase]):
         """Initialize TestCase repository."""
         super().__init__(TestCase)
 
-    def get_with_scripts(
-        self,
-        session: Session,
-        id: int
-    ) -> TestCase | None:
+    def get_with_scripts(self, session: Session, test_case_id: int) -> TestCase | None:
         """Get test case with associated scripts.
 
         Args:
             session: Database session
-            id: Test case ID
+            test_case_id: Test case ID
 
         Returns:
             TestCase instance with scripts loaded, or None
@@ -55,24 +51,21 @@ class TestCaseRepository(BaseRepository[TestCase]):
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.id == id)
+            .where(TestCase.id == test_case_id)
             .options(
-                joinedload(TestCase.test_case_scripts)
-                .joinedload(TestCaseScript.script)
+                joinedload(TestCase.test_case_scripts).joinedload(TestCaseScript.script)
             )
         )
         return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_components(
-        self,
-        session: Session,
-        id: int
+        self, session: Session, test_case_id: int
     ) -> TestCase | None:
         """Get test case with associated components.
 
         Args:
             session: Database session
-            id: Test case ID
+            test_case_id: Test case ID
 
         Returns:
             TestCase instance with components loaded, or None
@@ -84,24 +77,23 @@ class TestCaseRepository(BaseRepository[TestCase]):
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.id == id)
+            .where(TestCase.id == test_case_id)
             .options(
-                joinedload(TestCase.test_case_components)
-                .joinedload(TestCaseComponent.component)
+                joinedload(TestCase.test_case_components).joinedload(
+                    TestCaseComponent.component
+                )
             )
         )
         return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_with_relations(
-        self,
-        session: Session,
-        id: int
+        self, session: Session, test_case_id: int
     ) -> TestCase | None:
         """Get test case with all relations (scripts and components).
 
         Args:
             session: Database session
-            id: Test case ID
+            test_case_id: Test case ID
 
         Returns:
             TestCase instance with all relations loaded, or None
@@ -113,22 +105,20 @@ class TestCaseRepository(BaseRepository[TestCase]):
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.id == id)
+            .where(TestCase.id == test_case_id)
             .options(
-                joinedload(TestCase.test_case_scripts)
-                .joinedload(TestCaseScript.script),
-                joinedload(TestCase.test_case_components)
-                .joinedload(TestCaseComponent.component)
+                joinedload(TestCase.test_case_scripts).joinedload(
+                    TestCaseScript.script
+                ),
+                joinedload(TestCase.test_case_components).joinedload(
+                    TestCaseComponent.component
+                ),
             )
         )
         return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_by_status(
-        self,
-        session: Session,
-        status: TestCaseStatus,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, status: TestCaseStatus, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Get test cases by status.
 
@@ -145,10 +135,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
             >>> active_cases = repo.get_by_status(session, TestCaseStatus.ACTIVE)
         """
         stmt = (
-            select(TestCase)
-            .where(TestCase.status == status)
-            .offset(skip)
-            .limit(limit)
+            select(TestCase).where(TestCase.status == status).offset(skip).limit(limit)
         )
         return list(session.execute(stmt).scalars().all())
 
@@ -157,7 +144,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         session: Session,
         priority: TestCasePriority,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestCase]:
         """Get test cases by priority.
 
@@ -182,11 +169,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_category(
-        self,
-        session: Session,
-        category: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, category: str, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Get test cases by category.
 
@@ -211,11 +194,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_environment(
-        self,
-        session: Session,
-        environment: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, environment: str, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Get test cases by environment.
 
@@ -240,11 +219,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(session.execute(stmt).scalars().all())
 
     def search_by_name(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Search test cases by name (case-insensitive).
 
@@ -269,11 +244,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_tags(
-        self,
-        session: Session,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Get test cases by tags.
 
@@ -298,10 +269,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(session.execute(stmt).scalars().all())
 
     def get_automated_cases(
-        self,
-        session: Session,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Get automated test cases.
 
@@ -328,77 +296,73 @@ class TestCaseRepository(BaseRepository[TestCase]):
     # Async methods
 
     async def get_with_scripts_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, test_case_id: int
     ) -> TestCase | None:
         """Get test case with scripts (async).
 
         Args:
             session: Async database session
-            id: Test case ID
+            test_case_id: Test case ID
 
         Returns:
             TestCase instance with scripts loaded, or None
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.id == id)
+            .where(TestCase.id == test_case_id)
             .options(
-                joinedload(TestCase.test_case_scripts)
-                .joinedload(TestCaseScript.script)
+                joinedload(TestCase.test_case_scripts).joinedload(TestCaseScript.script)
             )
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_with_components_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, test_case_id: int
     ) -> TestCase | None:
         """Get test case with components (async).
 
         Args:
             session: Async database session
-            id: Test case ID
+            test_case_id: Test case ID
 
         Returns:
             TestCase instance with components loaded, or None
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.id == id)
+            .where(TestCase.id == test_case_id)
             .options(
-                joinedload(TestCase.test_case_components)
-                .joinedload(TestCaseComponent.component)
+                joinedload(TestCase.test_case_components).joinedload(
+                    TestCaseComponent.component
+                )
             )
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_with_relations_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, test_case_id: int
     ) -> TestCase | None:
         """Get test case with all relations (async).
 
         Args:
             session: Async database session
-            id: Test case ID
+            test_case_id: Test case ID
 
         Returns:
             TestCase instance with all relations loaded, or None
         """
         stmt = (
             select(TestCase)
-            .where(TestCase.id == id)
+            .where(TestCase.id == test_case_id)
             .options(
-                joinedload(TestCase.test_case_scripts)
-                .joinedload(TestCaseScript.script),
-                joinedload(TestCase.test_case_components)
-                .joinedload(TestCaseComponent.component)
+                joinedload(TestCase.test_case_scripts).joinedload(
+                    TestCaseScript.script
+                ),
+                joinedload(TestCase.test_case_components).joinedload(
+                    TestCaseComponent.component
+                ),
             )
         )
         result = await session.execute(stmt)
@@ -409,7 +373,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         session: AsyncSession,
         status: TestCaseStatus,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestCase]:
         """Get test cases by status (async).
 
@@ -423,10 +387,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
             List of TestCase instances
         """
         stmt = (
-            select(TestCase)
-            .where(TestCase.status == status)
-            .offset(skip)
-            .limit(limit)
+            select(TestCase).where(TestCase.status == status).offset(skip).limit(limit)
         )
         result = await session.execute(stmt)
         return list(result.scalars().all())
@@ -436,7 +397,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         session: AsyncSession,
         priority: TestCasePriority,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestCase]:
         """Get test cases by priority (async).
 
@@ -459,11 +420,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(result.scalars().all())
 
     async def search_by_name_async(
-        self,
-        session: AsyncSession,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Search test cases by name (async).
 
@@ -486,10 +443,7 @@ class TestCaseRepository(BaseRepository[TestCase]):
         return list(result.scalars().all())
 
     async def get_automated_cases_async(
-        self,
-        session: AsyncSession,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Get automated test cases (async).
 
@@ -527,9 +481,7 @@ class TestCaseScriptRepository(BaseRepository[TestCaseScript]):
         super().__init__(TestCaseScript)
 
     def get_by_test_case(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> list[TestCaseScript]:
         """Get script associations for a test case.
 
@@ -554,11 +506,7 @@ class TestCaseScriptRepository(BaseRepository[TestCaseScript]):
         )
         return list(session.execute(stmt).scalars().all())
 
-    def get_by_script(
-        self,
-        session: Session,
-        script_id: int
-    ) -> list[TestCaseScript]:
+    def get_by_script(self, session: Session, script_id: int) -> list[TestCaseScript]:
         """Get test case associations for a script.
 
         Args:
@@ -583,9 +531,7 @@ class TestCaseScriptRepository(BaseRepository[TestCaseScript]):
     # Async methods
 
     async def get_by_test_case_async(
-        self,
-        session: AsyncSession,
-        test_case_id: int
+        self, session: AsyncSession, test_case_id: int
     ) -> list[TestCaseScript]:
         """Get script associations for a test case (async).
 
@@ -607,9 +553,7 @@ class TestCaseScriptRepository(BaseRepository[TestCaseScript]):
         return list(result.scalars().all())
 
     async def get_by_script_async(
-        self,
-        session: AsyncSession,
-        script_id: int
+        self, session: AsyncSession, script_id: int
     ) -> list[TestCaseScript]:
         """Get test case associations for a script (async).
 
@@ -644,9 +588,7 @@ class TestCaseComponentRepository(BaseRepository[TestCaseComponent]):
         super().__init__(TestCaseComponent)
 
     def get_by_test_case(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> list[TestCaseComponent]:
         """Get component associations for a test case.
 
@@ -672,9 +614,7 @@ class TestCaseComponentRepository(BaseRepository[TestCaseComponent]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_component(
-        self,
-        session: Session,
-        component_id: int
+        self, session: Session, component_id: int
     ) -> list[TestCaseComponent]:
         """Get test case associations for a component.
 
@@ -700,9 +640,7 @@ class TestCaseComponentRepository(BaseRepository[TestCaseComponent]):
     # Async methods
 
     async def get_by_test_case_async(
-        self,
-        session: AsyncSession,
-        test_case_id: int
+        self, session: AsyncSession, test_case_id: int
     ) -> list[TestCaseComponent]:
         """Get component associations for a test case (async).
 
@@ -724,9 +662,7 @@ class TestCaseComponentRepository(BaseRepository[TestCaseComponent]):
         return list(result.scalars().all())
 
     async def get_by_component_async(
-        self,
-        session: AsyncSession,
-        component_id: int
+        self, session: AsyncSession, component_id: int
     ) -> list[TestCaseComponent]:
         """Get test case associations for a component (async).
 

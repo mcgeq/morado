@@ -62,10 +62,7 @@ class TestCaseController(Controller):
             }
             ```
         """
-        test_case = test_case_service.create_test_case(
-            db_session,
-            **data.model_dump()
-        )
+        test_case = test_case_service.create_test_case(db_session, **data.model_dump())
         return TestCaseResponse.model_validate(test_case)
 
     @get("/")
@@ -74,7 +71,9 @@ class TestCaseController(Controller):
         test_case_service: TestCaseService,
         db_session: Session,
         status: Annotated[TestCaseStatus | None, Parameter(query="status")] = None,
-        priority: Annotated[TestCasePriority | None, Parameter(query="priority")] = None,
+        priority: Annotated[
+            TestCasePriority | None, Parameter(query="priority")
+        ] = None,
         category: Annotated[str | None, Parameter(query="category")] = None,
         environment: Annotated[str | None, Parameter(query="environment")] = None,
         automated_only: Annotated[bool, Parameter(query="automated_only")] = False,
@@ -105,14 +104,19 @@ class TestCaseController(Controller):
             environment=environment,
             automated_only=automated_only,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(test_cases) + limit - 1) // limit if limit > 0 else 1
 
         return TestCaseListResponse(
             items=[TestCaseResponse.model_validate(tc) for tc in test_cases],
             total=len(test_cases),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/search")
@@ -137,17 +141,19 @@ class TestCaseController(Controller):
             List of matching test cases
         """
         test_cases = test_case_service.search_test_cases(
-            db_session,
-            name=name,
-            skip=skip,
-            limit=limit
+            db_session, name=name, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(test_cases) + limit - 1) // limit if limit > 0 else 1
 
         return TestCaseListResponse(
             items=[TestCaseResponse.model_validate(tc) for tc in test_cases],
             total=len(test_cases),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/{test_case_id:int}")
@@ -181,11 +187,14 @@ class TestCaseController(Controller):
             test_case_id,
             load_scripts=load_scripts,
             load_components=load_components,
-            load_all=load_all
+            load_all=load_all,
         )
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return TestCaseResponse.model_validate(test_case)
 
@@ -215,7 +224,10 @@ class TestCaseController(Controller):
         plan = test_case_service.get_test_case_execution_plan(db_session, test_case_id)
         if not plan:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return plan
 
@@ -242,6 +254,7 @@ class TestCaseController(Controller):
         test_case = test_case_service.get_test_case_by_uuid(db_session, uuid)
         if not test_case:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Test case with UUID {uuid} not found")
 
         return TestCaseResponse.model_validate(test_case)
@@ -272,14 +285,15 @@ class TestCaseController(Controller):
         update_data = data.model_dump(exclude_unset=True)
 
         test_case = test_case_service.update_test_case(
-            db_session,
-            test_case_id,
-            **update_data
+            db_session, test_case_id, **update_data
         )
 
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return TestCaseResponse.model_validate(test_case)
 
@@ -307,7 +321,10 @@ class TestCaseController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return {"message": "Test case deleted successfully"}
 
@@ -335,7 +352,10 @@ class TestCaseController(Controller):
 
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return TestCaseResponse.model_validate(test_case)
 
@@ -363,7 +383,10 @@ class TestCaseController(Controller):
 
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return TestCaseResponse.model_validate(test_case)
 
@@ -391,7 +414,10 @@ class TestCaseController(Controller):
 
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return TestCaseResponse.model_validate(test_case)
 
@@ -417,15 +443,14 @@ class TestCaseController(Controller):
         Raises:
             NotFoundException: If test case not found
         """
-        cloned = test_case_service.clone_test_case(
-            db_session,
-            test_case_id,
-            new_name
-        )
+        cloned = test_case_service.clone_test_case(db_session, test_case_id, new_name)
 
         if not cloned:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         return TestCaseResponse.model_validate(cloned)
 
@@ -457,12 +482,15 @@ class TestCaseController(Controller):
         test_case = test_case_service.get_test_case(db_session, test_case_id)
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         test_case_script = test_case_service.add_script_to_test_case(
             db_session,
             test_case_id=test_case_id,
-            **data.model_dump(exclude={"test_case_id"})
+            **data.model_dump(exclude={"test_case_id"}),
         )
 
         return TestCaseScriptResponse.model_validate(test_case_script)
@@ -493,12 +521,15 @@ class TestCaseController(Controller):
         test_case = test_case_service.get_test_case(db_session, test_case_id)
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         test_case_component = test_case_service.add_component_to_test_case(
             db_session,
             test_case_id=test_case_id,
-            **data.model_dump(exclude={"test_case_id"})
+            **data.model_dump(exclude={"test_case_id"}),
         )
 
         return TestCaseComponentResponse.model_validate(test_case_component)
@@ -527,11 +558,13 @@ class TestCaseController(Controller):
         test_case = test_case_service.get_test_case(db_session, test_case_id)
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         test_case_scripts = test_case_service.get_test_case_scripts(
-            db_session,
-            test_case_id
+            db_session, test_case_id
         )
 
         return [TestCaseScriptResponse.model_validate(tcs) for tcs in test_case_scripts]
@@ -560,11 +593,16 @@ class TestCaseController(Controller):
         test_case = test_case_service.get_test_case(db_session, test_case_id)
         if not test_case:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Test case with ID {test_case_id} not found")
+
+            raise NotFoundException(
+                detail=f"Test case with ID {test_case_id} not found"
+            )
 
         test_case_components = test_case_service.get_test_case_components(
-            db_session,
-            test_case_id
+            db_session, test_case_id
         )
 
-        return [TestCaseComponentResponse.model_validate(tcc) for tcc in test_case_components]
+        return [
+            TestCaseComponentResponse.model_validate(tcc)
+            for tcc in test_case_components
+        ]

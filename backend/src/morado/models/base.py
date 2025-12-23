@@ -29,7 +29,7 @@ class TimestampMixin:
         DateTime(timezone=True),
         server_default=func.now(),
         nullable=False,
-        comment="创建时间"
+        comment="创建时间",
     )
 
     updated_at: Mapped[datetime] = mapped_column(
@@ -37,7 +37,7 @@ class TimestampMixin:
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False,
-        comment="更新时间"
+        comment="更新时间",
     )
 
 
@@ -49,9 +49,5 @@ class UUIDMixin:
     """
 
     uuid: Mapped[str] = mapped_column(
-        String(50),
-        unique=True,
-        nullable=False,
-        index=True,
-        comment="唯一标识符"
+        String(50), unique=True, nullable=False, index=True, comment="唯一标识符"
     )

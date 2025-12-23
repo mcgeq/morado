@@ -44,7 +44,7 @@ class TestSuiteService:
         global_variables: dict | None = None,
         tags: list[str] | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TestSuite:
         """Create a new test suite.
 
@@ -79,7 +79,7 @@ class TestSuiteService:
             global_variables=global_variables,
             tags=tags,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
@@ -89,7 +89,7 @@ class TestSuiteService:
         self,
         session: Session,
         suite_id: int,
-        with_test_cases: bool = False  # noqa: ARG002
+        with_test_cases: bool = False,  # noqa: ARG002
     ) -> TestSuite | None:
         """Get test suite by ID.
 
@@ -105,11 +105,7 @@ class TestSuiteService:
         # For now, just get the suite and let relationships load lazily
         return self.repository.get_by_id(session, suite_id)
 
-    def get_test_suite_by_uuid(
-        self,
-        session: Session,
-        uuid: str
-    ) -> TestSuite | None:
+    def get_test_suite_by_uuid(self, session: Session, uuid: str) -> TestSuite | None:
         """Get test suite by UUID.
 
         Args:
@@ -128,7 +124,7 @@ class TestSuiteService:
         scheduled_only: bool = False,
         tags: list[str] | None = None,  # noqa: ARG002
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestSuite]:
         """List test suites with optional filtering.
 
@@ -146,18 +142,15 @@ class TestSuiteService:
         filters = {}
 
         if environment:
-            filters['environment'] = environment
+            filters["environment"] = environment
 
         if scheduled_only:
-            filters['is_scheduled'] = True
+            filters["is_scheduled"] = True
 
         return self.repository.get_all(session, skip, limit, filters)
 
     def update_test_suite(
-        self,
-        session: Session,
-        suite_id: int,
-        **kwargs: Any
+        self, session: Session, suite_id: int, **kwargs: Any
     ) -> TestSuite | None:
         """Update test suite.
 
@@ -200,7 +193,7 @@ class TestSuiteService:
         execution_order: int = 0,
         is_enabled: bool = True,
         case_parameters: dict | None = None,
-        description: str | None = None
+        description: str | None = None,
     ) -> TestSuiteCase:
         """Add test case to suite.
 
@@ -223,7 +216,7 @@ class TestSuiteService:
             execution_order=execution_order,
             is_enabled=is_enabled,
             case_parameters=case_parameters,
-            description=description
+            description=description,
         )
 
         session.add(suite_case)
@@ -233,9 +226,7 @@ class TestSuiteService:
         return suite_case
 
     def get_suite_test_cases(
-        self,
-        session: Session,
-        suite_id: int
+        self, session: Session, suite_id: int
     ) -> list[TestSuiteCase]:
         """Get test cases in suite.
 
@@ -253,10 +244,7 @@ class TestSuiteService:
         return sorted(suite.test_suite_cases, key=lambda x: x.execution_order)
 
     def update_suite_test_case(
-        self,
-        session: Session,
-        suite_case_id: int,
-        **kwargs: Any
+        self, session: Session, suite_case_id: int, **kwargs: Any
     ) -> TestSuiteCase | None:
         """Update suite-test case association.
 
@@ -280,11 +268,7 @@ class TestSuiteService:
         session.refresh(suite_case)
         return suite_case
 
-    def remove_test_case_from_suite(
-        self,
-        session: Session,
-        suite_case_id: int
-    ) -> bool:
+    def remove_test_case_from_suite(self, session: Session, suite_case_id: int) -> bool:
         """Remove test case from suite.
 
         Args:
@@ -303,10 +287,7 @@ class TestSuiteService:
         return True
 
     def enable_scheduling(
-        self,
-        session: Session,
-        suite_id: int,
-        schedule_config: dict
+        self, session: Session, suite_id: int, schedule_config: dict
     ) -> TestSuite | None:
         """Enable scheduling for test suite.
 
@@ -319,17 +300,10 @@ class TestSuiteService:
             Updated TestSuite instance or None if not found
         """
         return self.update_test_suite(
-            session,
-            suite_id,
-            is_scheduled=True,
-            schedule_config=schedule_config
+            session, suite_id, is_scheduled=True, schedule_config=schedule_config
         )
 
-    def disable_scheduling(
-        self,
-        session: Session,
-        suite_id: int
-    ) -> TestSuite | None:
+    def disable_scheduling(self, session: Session, suite_id: int) -> TestSuite | None:
         """Disable scheduling for test suite.
 
         Args:
@@ -342,9 +316,7 @@ class TestSuiteService:
         return self.update_test_suite(session, suite_id, is_scheduled=False)
 
     def get_suite_execution_plan(
-        self,
-        session: Session,
-        suite_id: int
+        self, session: Session, suite_id: int
     ) -> dict[str, Any] | None:
         """Get complete suite execution plan.
 
@@ -366,34 +338,33 @@ class TestSuiteService:
         test_cases = []
         for tsc in sorted(suite.test_suite_cases, key=lambda x: x.execution_order):
             if tsc.is_enabled:
-                test_cases.append({
-                    'order': tsc.execution_order,
-                    'test_case_id': tsc.test_case_id,
-                    'test_case_name': tsc.test_case.name,
-                    'parameters': tsc.case_parameters,
-                    'description': tsc.description
-                })
+                test_cases.append(
+                    {
+                        "order": tsc.execution_order,
+                        "test_case_id": tsc.test_case_id,
+                        "test_case_name": tsc.test_case.name,
+                        "parameters": tsc.case_parameters,
+                        "description": tsc.description,
+                    }
+                )
 
         return {
-            'suite': {
-                'id': suite.id,
-                'uuid': suite.uuid,
-                'name': suite.name,
-                'description': suite.description,
-                'execution_order': suite.execution_order,
-                'parallel_execution': suite.parallel_execution,
-                'continue_on_failure': suite.continue_on_failure,
-                'environment': suite.environment,
-                'global_variables': suite.global_variables
+            "suite": {
+                "id": suite.id,
+                "uuid": suite.uuid,
+                "name": suite.name,
+                "description": suite.description,
+                "execution_order": suite.execution_order,
+                "parallel_execution": suite.parallel_execution,
+                "continue_on_failure": suite.continue_on_failure,
+                "environment": suite.environment,
+                "global_variables": suite.global_variables,
             },
-            'test_cases': test_cases
+            "test_cases": test_cases,
         }
 
     def clone_test_suite(
-        self,
-        session: Session,
-        suite_id: int,
-        new_name: str
+        self, session: Session, suite_id: int, new_name: str
     ) -> TestSuite | None:
         """Clone a test suite.
 
@@ -422,7 +393,7 @@ class TestSuiteService:
             environment=source.environment,
             global_variables=source.global_variables,
             tags=source.tags,
-            created_by=source.created_by
+            created_by=source.created_by,
         )
 
         # Clone test case associations
@@ -433,7 +404,7 @@ class TestSuiteService:
                 execution_order=tsc.execution_order,
                 is_enabled=tsc.is_enabled,
                 case_parameters=tsc.case_parameters,
-                description=tsc.description
+                description=tsc.description,
             )
             session.add(suite_case)
 

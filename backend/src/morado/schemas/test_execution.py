@@ -13,6 +13,7 @@ from morado.schemas.common import PaginatedResponse, TimestampMixin, UUIDMixin
 
 class ExecutionStatus(str, Enum):
     """执行状态"""
+
     PENDING = "pending"
     RUNNING = "running"
     PASSED = "passed"
@@ -30,7 +31,9 @@ class TestExecutionBase(BaseModel):
 
     test_case_id: int | None = Field(default=None, description="测试用例ID")
     test_suite_id: int | None = Field(default=None, description="测试套件ID")
-    status: ExecutionStatus = Field(default=ExecutionStatus.PENDING, description="执行状态")
+    status: ExecutionStatus = Field(
+        default=ExecutionStatus.PENDING, description="执行状态"
+    )
     start_time: datetime | None = Field(default=None, description="开始时间")
     end_time: datetime | None = Field(default=None, description="结束时间")
     duration: float | None = Field(default=None, ge=0, description="执行时长（秒）")
@@ -58,9 +61,9 @@ class TestExecutionBase(BaseModel):
                 "passed_count": 8,
                 "failed_count": 2,
                 "error_count": 0,
-                "skipped_count": 0
+                "skipped_count": 0,
             }
-        }
+        },
     )
 
 
@@ -127,9 +130,9 @@ class TestExecutionResponse(TestExecutionBase, TimestampMixin, UUIDMixin):
                 "skipped_count": 0,
                 "created_by": 1,
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:05:00Z"
+                "updated_at": "2024-01-01T00:05:00Z",
             }
-        }
+        },
     )
 
 
@@ -139,13 +142,16 @@ class TestExecutionListResponse(PaginatedResponse[TestExecutionResponse]):
 
 # Execution Result Schemas
 
+
 class ExecutionResultBase(BaseModel):
     """执行结果基础schema"""
 
     execution_id: int = Field(description="执行记录ID")
     script_id: int | None = Field(default=None, description="脚本ID")
     component_id: int | None = Field(default=None, description="组件ID")
-    status: ExecutionStatus = Field(default=ExecutionStatus.PENDING, description="执行状态")
+    status: ExecutionStatus = Field(
+        default=ExecutionStatus.PENDING, description="执行状态"
+    )
     start_time: datetime | None = Field(default=None, description="开始时间")
     end_time: datetime | None = Field(default=None, description="结束时间")
     duration: float | None = Field(default=None, ge=0, description="执行时长（秒）")
@@ -182,9 +188,16 @@ class ExecutionResultResponse(ExecutionResultBase, TimestampMixin):
                 "duration": 30.5,
                 "request_data": {"url": "https://api.example.com", "method": "GET"},
                 "response_data": {"status": 200, "body": {"success": True}},
-                "assertions": [{"type": "status_code", "expected": 200, "actual": 200, "passed": True}],
+                "assertions": [
+                    {
+                        "type": "status_code",
+                        "expected": 200,
+                        "actual": 200,
+                        "passed": True,
+                    }
+                ],
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:30Z"
+                "updated_at": "2024-01-01T00:00:30Z",
             }
-        }
+        },
     )

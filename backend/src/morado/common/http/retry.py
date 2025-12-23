@@ -1,5 +1,6 @@
 """Retry strategy implementation for HTTP client wrapper.
 
+
 This module provides configurable retry logic for HTTP requests, supporting
 different retry strategies (fixed, exponential backoff, linear) and retry
 conditions based on error types and status codes.
@@ -7,7 +8,7 @@ conditions based on error types and status codes.
 
 import time
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -78,22 +79,32 @@ class RetryConfig:
         if max_delay < initial_delay:
             raise ValueError("max_delay must be greater than or equal to initial_delay")
         if multiplier <= 1.0 and strategy == RetryStrategy.EXPONENTIAL:
-            raise ValueError("multiplier must be greater than 1.0 for exponential strategy")
+            raise ValueError(
+                "multiplier must be greater than 1.0 for exponential strategy"
+            )
 
         self.max_retries = max_retries
-        self.strategy = strategy if isinstance(strategy, RetryStrategy) else RetryStrategy(strategy)
+        self.strategy = (
+            strategy if isinstance(strategy, RetryStrategy) else RetryStrategy(strategy)
+        )
         self.initial_delay = initial_delay
         self.max_delay = max_delay
         self.multiplier = multiplier
 
         # Default to retrying on 5xx status codes
-        self.retry_on_status = retry_on_status if retry_on_status is not None else list(range(500, 600))
+        self.retry_on_status = (
+            retry_on_status if retry_on_status is not None else list(range(500, 600))
+        )
 
         # Default to retrying on network and timeout errors
-        self.retry_on_exceptions = retry_on_exceptions if retry_on_exceptions is not None else [
-            HttpConnectionError,
-            HttpTimeoutError,
-        ]
+        self.retry_on_exceptions = (
+            retry_on_exceptions
+            if retry_on_exceptions is not None
+            else [
+                HttpConnectionError,
+                HttpTimeoutError,
+            ]
+        )
 
 
 class RetryHandler:
@@ -146,7 +157,9 @@ class RetryHandler:
                     return True
 
         # Check if we should retry based on status code
-        return bool(status_code is not None and status_code in self.config.retry_on_status)
+        return bool(
+            status_code is not None and status_code in self.config.retry_on_status
+        )
 
     def calculate_delay(self, attempt: int) -> float:
         """Calculate the delay before the next retry attempt.
@@ -167,7 +180,7 @@ class RetryHandler:
         if self.config.strategy == RetryStrategy.FIXED:
             delay = self.config.initial_delay
         elif self.config.strategy == RetryStrategy.EXPONENTIAL:
-            delay = self.config.initial_delay * (self.config.multiplier ** attempt)
+            delay = self.config.initial_delay * (self.config.multiplier**attempt)
         elif self.config.strategy == RetryStrategy.LINEAR:
             delay = self.config.initial_delay * (attempt + 1)
         else:
@@ -210,7 +223,7 @@ class RetryHandler:
         for attempt in range(self.config.max_retries + 1):
             try:
                 # Record attempt start time
-                start_time = datetime.utcnow()
+                start_time = datetime.now(UTC)
 
                 # Execute the function
                 result = func(*args, **kwargs)
@@ -218,12 +231,16 @@ class RetryHandler:
                 # If we get here, the function succeeded
                 if attempt > 0:
                     # Record successful retry
-                    self._retry_history.append({
-                        "attempt": attempt,
-                        "success": True,
-                        "timestamp": start_time.isoformat(),
-                        "delay": self.calculate_delay(attempt - 1) if attempt > 0 else 0,
-                    })
+                    self._retry_history.append(
+                        {
+                            "attempt": attempt,
+                            "success": True,
+                            "timestamp": start_time.isoformat(),
+                            "delay": self.calculate_delay(attempt - 1)
+                            if attempt > 0
+                            else 0,
+                        }
+                    )
 
                 return result
 
@@ -237,18 +254,22 @@ class RetryHandler:
                     last_status_code = None
 
                 # Check if we should retry
-                should_retry = self.should_retry(exception=e, status_code=last_status_code)
+                should_retry = self.should_retry(
+                    exception=e, status_code=last_status_code
+                )
 
                 # Record the failed attempt
-                self._retry_history.append({
-                    "attempt": attempt,
-                    "success": False,
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "exception_type": type(e).__name__,
-                    "exception_message": str(e),
-                    "status_code": last_status_code,
-                    "should_retry": should_retry,
-                })
+                self._retry_history.append(
+                    {
+                        "attempt": attempt,
+                        "success": False,
+                        "timestamp": datetime.now(UTC).isoformat(),
+                        "exception_type": type(e).__name__,
+                        "exception_message": str(e),
+                        "status_code": last_status_code,
+                        "should_retry": should_retry,
+                    }
+                )
 
                 # If this is the last attempt or we shouldn't retry, raise the exception
                 if attempt >= self.config.max_retries or not should_retry:

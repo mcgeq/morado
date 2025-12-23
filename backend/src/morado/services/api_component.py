@@ -48,7 +48,7 @@ class HeaderService:
         project_id: int | None = None,
         tags: list[str] | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Header:
         """Create a new header component.
 
@@ -81,7 +81,7 @@ class HeaderService:
             "Creating header component",
             extra={
                 **get_log_context(),  # Include request_id and other context
-                "name": name,
+                "header_name": name,
                 "scope": scope.value,
                 "project_id": project_id,
                 "header_count": len(headers),
@@ -94,7 +94,7 @@ class HeaderService:
                 "Validation failed: project_id required for PROJECT scope",
                 extra={
                     **get_log_context(),
-                    "name": name,
+                    "header_name": name,
                     "scope": scope.value,
                 },
             )
@@ -111,7 +111,7 @@ class HeaderService:
                 project_id=project_id,
                 tags=tags,
                 created_by=created_by,
-                **kwargs
+                **kwargs,
             )
 
             session.commit()
@@ -122,7 +122,7 @@ class HeaderService:
                     **get_log_context(),
                     "header_id": header.id,
                     "header_uuid": str(header.uuid),
-                    "name": name,
+                    "header_name": name,
                 },
             )
 
@@ -133,17 +133,9 @@ class HeaderService:
                 "Failed to create header component",
                 extra={
                     **get_log_context(),
-                    "name": name,
+                    "header_name": name,
                     "error": str(e),
                 },
-            )
-            session.rollback()
-            raise
-
-        except Exception as e:
-            logger.exception(
-                "Failed to create header component",
-                extra={"name": name, "error": str(e)},
             )
             session.rollback()
             raise
@@ -178,7 +170,7 @@ class HeaderService:
         scope: HeaderScope | None = None,
         project_id: int | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[Header]:
         """List headers with optional filtering.
 
@@ -200,11 +192,7 @@ class HeaderService:
             return self.repository.get_all(session, skip, limit)
 
     def search_headers(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[Header]:
         """Search headers by name.
 
@@ -220,10 +208,7 @@ class HeaderService:
         return self.repository.search_by_name(session, name, skip, limit)
 
     def update_header(
-        self,
-        session: Session,
-        header_id: int,
-        **kwargs: Any
+        self, session: Session, header_id: int, **kwargs: Any
     ) -> Header | None:
         """Update header.
 
@@ -315,7 +300,7 @@ class BodyService:
         project_id: int | None = None,
         tags: list[str] | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Body:
         """Create a new body component.
 
@@ -356,7 +341,7 @@ class BodyService:
             project_id=project_id,
             tags=tags,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
@@ -392,7 +377,7 @@ class BodyService:
         body_type: str | None = None,
         scope: HeaderScope | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[Body]:
         """List bodies with optional filtering.
 
@@ -414,11 +399,7 @@ class BodyService:
             return self.repository.get_all(session, skip, limit)
 
     def search_bodies(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[Body]:
         """Search bodies by name.
 
@@ -433,12 +414,7 @@ class BodyService:
         """
         return self.repository.search_by_name(session, name, skip, limit)
 
-    def update_body(
-        self,
-        session: Session,
-        body_id: int,
-        **kwargs: Any
-    ) -> Body | None:
+    def update_body(self, session: Session, body_id: int, **kwargs: Any) -> Body | None:
         """Update body.
 
         Args:
@@ -513,7 +489,7 @@ class ApiDefinitionService:
         timeout: int = 30,
         tags: list[str] | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> ApiDefinition:
         """Create a new API definition.
 
@@ -561,17 +537,14 @@ class ApiDefinitionService:
             timeout=timeout,
             tags=tags,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
         return api_def
 
     def get_api_definition(
-        self,
-        session: Session,
-        api_def_id: int,
-        with_relations: bool = False
+        self, session: Session, api_def_id: int, with_relations: bool = False
     ) -> ApiDefinition | None:
         """Get API definition by ID.
 
@@ -589,9 +562,7 @@ class ApiDefinitionService:
             return self.repository.get_by_id(session, api_def_id)
 
     def get_api_definition_by_uuid(
-        self,
-        session: Session,
-        uuid: str
+        self, session: Session, uuid: str
     ) -> ApiDefinition | None:
         """Get API definition by UUID.
 
@@ -610,7 +581,7 @@ class ApiDefinitionService:
         method: str | None = None,
         header_id: int | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[ApiDefinition]:
         """List API definitions with optional filtering.
 
@@ -632,11 +603,7 @@ class ApiDefinitionService:
             return self.repository.get_all(session, skip, limit)
 
     def search_api_definitions(
-        self,
-        session: Session,
-        path: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, path: str, skip: int = 0, limit: int = 100
     ) -> list[ApiDefinition]:
         """Search API definitions by path.
 
@@ -652,10 +619,7 @@ class ApiDefinitionService:
         return self.repository.search_by_path(session, path, skip, limit)
 
     def update_api_definition(
-        self,
-        session: Session,
-        api_def_id: int,
-        **kwargs: Any
+        self, session: Session, api_def_id: int, **kwargs: Any
     ) -> ApiDefinition | None:
         """Update API definition.
 
@@ -691,9 +655,7 @@ class ApiDefinitionService:
         return result
 
     def get_full_api_definition(
-        self,
-        session: Session,
-        api_def_id: int
+        self, session: Session, api_def_id: int
     ) -> dict[str, Any] | None:
         """Get complete API definition with all components resolved.
 
@@ -712,57 +674,57 @@ class ApiDefinitionService:
             return None
 
         result = {
-            'id': api_def.id,
-            'uuid': api_def.uuid,
-            'name': api_def.name,
-            'description': api_def.description,
-            'method': api_def.method,
-            'path': api_def.path,
-            'base_url': api_def.base_url,
-            'timeout': api_def.timeout,
-            'query_parameters': api_def.query_parameters,
-            'path_parameters': api_def.path_parameters,
-            'header': None,
-            'request_body': None,
-            'response_body': None
+            "id": api_def.id,
+            "uuid": api_def.uuid,
+            "name": api_def.name,
+            "description": api_def.description,
+            "method": api_def.method,
+            "path": api_def.path,
+            "base_url": api_def.base_url,
+            "timeout": api_def.timeout,
+            "query_parameters": api_def.query_parameters,
+            "path_parameters": api_def.path_parameters,
+            "header": None,
+            "request_body": None,
+            "response_body": None,
         }
 
         # Add header if present
         if api_def.header:
-            result['header'] = {
-                'id': api_def.header.id,
-                'name': api_def.header.name,
-                'headers': api_def.header.headers
+            result["header"] = {
+                "id": api_def.header.id,
+                "name": api_def.header.name,
+                "headers": api_def.header.headers,
             }
 
         # Add request body (either referenced or inline)
         if api_def.request_body:
-            result['request_body'] = {
-                'id': api_def.request_body.id,
-                'name': api_def.request_body.name,
-                'content_type': api_def.request_body.content_type,
-                'body_schema': api_def.request_body.body_schema,
-                'example_data': api_def.request_body.example_data
+            result["request_body"] = {
+                "id": api_def.request_body.id,
+                "name": api_def.request_body.name,
+                "content_type": api_def.request_body.content_type,
+                "body_schema": api_def.request_body.body_schema,
+                "example_data": api_def.request_body.example_data,
             }
         elif api_def.inline_request_body:
-            result['request_body'] = {
-                'inline': True,
-                'data': api_def.inline_request_body
+            result["request_body"] = {
+                "inline": True,
+                "data": api_def.inline_request_body,
             }
 
         # Add response body (either referenced or inline)
         if api_def.response_body:
-            result['response_body'] = {
-                'id': api_def.response_body.id,
-                'name': api_def.response_body.name,
-                'content_type': api_def.response_body.content_type,
-                'body_schema': api_def.response_body.body_schema,
-                'example_data': api_def.response_body.example_data
+            result["response_body"] = {
+                "id": api_def.response_body.id,
+                "name": api_def.response_body.name,
+                "content_type": api_def.response_body.content_type,
+                "body_schema": api_def.response_body.body_schema,
+                "example_data": api_def.response_body.example_data,
             }
         elif api_def.inline_response_body:
-            result['response_body'] = {
-                'inline': True,
-                'data': api_def.inline_response_body
+            result["response_body"] = {
+                "inline": True,
+                "data": api_def.inline_response_body,
             }
 
         return result

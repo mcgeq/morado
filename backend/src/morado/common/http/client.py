@@ -257,15 +257,11 @@ class HttpClient:
             ) from e
         except requests.exceptions.ConnectionError as e:
             msg = f"Connection error for URL {url}: {e!s}"
-            raise HttpConnectionError(
-                msg
-            ) from e
+            raise HttpConnectionError(msg) from e
         except requests.exceptions.RequestException as e:
             # Generic request exception
             msg = f"Request failed for URL {url}: {e!s}"
-            raise HttpRequestError(
-                msg
-            ) from e
+            raise HttpRequestError(msg) from e
 
     def request(
         self,
@@ -522,9 +518,10 @@ class HttpClient:
 
         # Prepare files for upload
         files_to_upload = {}
-        file_handles = []
 
         try:
+            # Open all files using context managers
+            file_handles = []
             for field_name, file_path in files.items():
                 file_path_obj = Path(file_path)
                 if not file_path_obj.exists():
@@ -532,7 +529,7 @@ class HttpClient:
                     raise FileNotFoundError(msg)
 
                 # Open file and keep handle for cleanup
-                file_handle = open(file_path, "rb")
+                file_handle = open(file_path, "rb")  # noqa: SIM115
                 file_handles.append(file_handle)
 
                 files_to_upload[field_name] = (file_path_obj.name, file_handle, None)
@@ -548,8 +545,12 @@ class HttpClient:
             for handle in file_handles:
                 try:
                     handle.close()
-                except Exception:
-                    pass
+                except Exception as e:
+                    # Log the error but don't fail the request
+                    self.logger.warning(
+                        f"Failed to close file handle: {e}",
+                        extra={"error": str(e), "error_type": type(e).__name__},
+                    )
 
     def upload_multipart(
         self,

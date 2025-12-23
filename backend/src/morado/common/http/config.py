@@ -3,7 +3,6 @@
 This module defines Pydantic models for configuring the HTTP client.
 """
 
-
 from pydantic import BaseModel, Field, field_validator
 
 

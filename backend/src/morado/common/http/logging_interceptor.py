@@ -104,8 +104,7 @@ class LoggingInterceptor(RequestInterceptor, ResponseInterceptor):
                 masked_body = mask_sensitive_data(body)
                 # Truncate for logging
                 truncated_body = truncate_for_logging(
-                    masked_body,
-                    max_size=self._max_log_body_size
+                    masked_body, max_size=self._max_log_body_size
                 )
                 log_context["http_request_body"] = truncated_body
 
@@ -114,10 +113,7 @@ class LoggingInterceptor(RequestInterceptor, ResponseInterceptor):
             log_context["http_timeout"] = kwargs["timeout"]
 
         # Log the request
-        self._logger.info(
-            "HTTP request",
-            **log_context
-        )
+        self._logger.info("HTTP request", **log_context)
 
         # Return unmodified parameters
         return method, url, headers, kwargs
@@ -153,22 +149,15 @@ class LoggingInterceptor(RequestInterceptor, ResponseInterceptor):
                 masked_body = mask_sensitive_data(body)
                 # Truncate for logging
                 truncated_body = truncate_for_logging(
-                    masked_body,
-                    max_size=self._max_log_body_size
+                    masked_body, max_size=self._max_log_body_size
                 )
                 log_context["http_response_body"] = truncated_body
 
         # Determine log level based on status code
         if response.is_success():
-            self._logger.info(
-                "HTTP response",
-                **log_context
-            )
+            self._logger.info("HTTP response", **log_context)
         else:
-            self._logger.warning(
-                "HTTP response with error status",
-                **log_context
-            )
+            self._logger.warning("HTTP response with error status", **log_context)
 
         # Return unmodified response
         return response
@@ -200,11 +189,11 @@ class LoggingInterceptor(RequestInterceptor, ResponseInterceptor):
         }
 
         # Add stack trace
-        stack_trace = "".join(traceback.format_exception(
-            type(exception),
-            exception,
-            exception.__traceback__
-        ))
+        stack_trace = "".join(
+            traceback.format_exception(
+                type(exception), exception, exception.__traceback__
+            )
+        )
         log_context["error_stack_trace"] = stack_trace
 
         # Add request context if available
@@ -216,10 +205,7 @@ class LoggingInterceptor(RequestInterceptor, ResponseInterceptor):
             log_context["http_params"] = kwargs["params"]
 
         # Log the error
-        self._logger.error(
-            "HTTP request failed",
-            **log_context
-        )
+        self._logger.error("HTTP request failed", **log_context)
 
     def _extract_request_body(self, kwargs: dict[str, Any]) -> Any:
         """Extract request body from kwargs.
@@ -242,10 +228,7 @@ class LoggingInterceptor(RequestInterceptor, ResponseInterceptor):
         if "files" in kwargs and kwargs["files"] is not None:
             files = kwargs["files"]
             if isinstance(files, dict):
-                return {
-                    "files": list(files.keys()),
-                    "file_count": len(files)
-                }
+                return {"files": list(files.keys()), "file_count": len(files)}
             return {"files": "present"}
 
         return None
@@ -318,14 +301,8 @@ class ErrorLoggingInterceptor(ResponseInterceptor):
 
             # Log based on error type
             if 400 <= response.status_code < 500:
-                self._logger.warning(
-                    "HTTP client error (4xx)",
-                    **log_context
-                )
+                self._logger.warning("HTTP client error (4xx)", **log_context)
             else:  # 5xx
-                self._logger.error(
-                    "HTTP server error (5xx)",
-                    **log_context
-                )
+                self._logger.error("HTTP server error (5xx)", **log_context)
 
         return response

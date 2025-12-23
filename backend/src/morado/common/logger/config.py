@@ -3,6 +3,7 @@
 Configuration management for the logger system
 Handles loading, validation, and merging of logger configurations
 """
+
 import os
 import tomllib
 from pathlib import Path
@@ -15,6 +16,7 @@ from morado.common.utils.uuid import UUIDConfig
 
 class ProcessorConfig(BaseModel):
     """Configuration for a log processor"""
+
     name: str
     module: str | None = None
     params: dict[str, Any] = Field(default_factory=dict)
@@ -25,32 +27,35 @@ class ProcessorConfig(BaseModel):
         return self.model_dump()
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'ProcessorConfig':
+    def from_dict(cls, data: dict[str, Any]) -> "ProcessorConfig":
         """Create configuration from dictionary"""
         return cls(**data)
 
 
 class LoggerConfig(BaseModel):
     """Complete logger configuration schema"""
+
     level: str = "INFO"
     format: Literal["console", "json", "structured"] = "console"
     output: str = "stdout"  # stdout, stderr, or file path
     module_levels: dict[str, str] = Field(default_factory=dict)
     processors: list[ProcessorConfig] = Field(default_factory=list)
-    context_vars: list[str] = Field(default_factory=lambda: ["request_id", "user_id", "trace_id"])
+    context_vars: list[str] = Field(
+        default_factory=lambda: ["request_id", "user_id", "trace_id"]
+    )
     request_id_config: UUIDConfig | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Convert configuration to dictionary"""
         result = self.model_dump()
         # Convert nested Pydantic models to dicts
-        if result.get("request_id_config") is not None:
+        if self.request_id_config is not None:
             result["request_id_config"] = self.request_id_config.to_dict()
         result["processors"] = [p.to_dict() for p in self.processors]
         return result
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'LoggerConfig':
+    def from_dict(cls, data: dict[str, Any]) -> "LoggerConfig":
         """Create configuration from dictionary"""
         # Handle processors
         processors_data = data.get("processors", [])
@@ -75,13 +80,19 @@ class LoggerConfig(BaseModel):
             level=data.get("level", "INFO"),
             format=data.get("format", "console"),
             output=data.get("output", "stdout"),
-            module_levels=data.get("module_levels", {}).copy() if isinstance(data.get("module_levels"), dict) else {},
+            module_levels=data.get("module_levels", {}).copy()
+            if isinstance(data.get("module_levels"), dict)
+            else {},
             processors=processors,
-            context_vars=data.get("context_vars", ["request_id", "user_id", "trace_id"]).copy() if isinstance(data.get("context_vars"), list) else ["request_id", "user_id", "trace_id"],
-            request_id_config=request_id_config
+            context_vars=data.get(
+                "context_vars", ["request_id", "user_id", "trace_id"]
+            ).copy()
+            if isinstance(data.get("context_vars"), list)
+            else ["request_id", "user_id", "trace_id"],
+            request_id_config=request_id_config,
         )
 
-    def merge(self, other: 'LoggerConfig') -> 'LoggerConfig':
+    def merge(self, other: "LoggerConfig") -> "LoggerConfig":
         """
         Merge with another config (other takes precedence)
         Returns a new LoggerConfig with merged values
@@ -182,7 +193,9 @@ class ConfigurationManager:
                 "format": logging_data.get("format", "console"),
                 "output": logging_data.get("output", "stdout"),
                 "module_levels": logging_data.get("module_levels", {}),
-                "context_vars": logging_data.get("context_vars", ["request_id", "user_id", "trace_id"]),
+                "context_vars": logging_data.get(
+                    "context_vars", ["request_id", "user_id", "trace_id"]
+                ),
             }
 
             # Parse processors
@@ -191,12 +204,14 @@ class ConfigurationManager:
             if isinstance(processors_data, dict):
                 for name, proc_config in processors_data.items():
                     if isinstance(proc_config, dict):
-                        processors.append(ProcessorConfig(
-                            name=name,
-                            module=proc_config.get("module"),
-                            params=proc_config.get("params", {}),
-                            enabled=proc_config.get("enabled", True)
-                        ))
+                        processors.append(
+                            ProcessorConfig(
+                                name=name,
+                                module=proc_config.get("module"),
+                                params=proc_config.get("params", {}),
+                                enabled=proc_config.get("enabled", True),
+                            )
+                        )
             config_dict["processors"] = processors
 
             # Parse request_id configuration
@@ -219,7 +234,9 @@ class ConfigurationManager:
         try:
             import yaml
         except ImportError as e:
-            raise ImportError("PyYAML is required for YAML configuration files. Install with: pip install pyyaml") from e
+            raise ImportError(
+                "PyYAML is required for YAML configuration files. Install with: pip install pyyaml"
+            ) from e
 
         try:
             with open(file_path) as f:
@@ -234,7 +251,9 @@ class ConfigurationManager:
                 "format": logging_data.get("format", "console"),
                 "output": logging_data.get("output", "stdout"),
                 "module_levels": logging_data.get("module_levels", {}),
-                "context_vars": logging_data.get("context_vars", ["request_id", "user_id", "trace_id"]),
+                "context_vars": logging_data.get(
+                    "context_vars", ["request_id", "user_id", "trace_id"]
+                ),
             }
 
             # Parse processors
@@ -243,12 +262,14 @@ class ConfigurationManager:
             if isinstance(processors_data, dict):
                 for name, proc_config in processors_data.items():
                     if isinstance(proc_config, dict):
-                        processors.append(ProcessorConfig(
-                            name=name,
-                            module=proc_config.get("module"),
-                            params=proc_config.get("params", {}),
-                            enabled=proc_config.get("enabled", True)
-                        ))
+                        processors.append(
+                            ProcessorConfig(
+                                name=name,
+                                module=proc_config.get("module"),
+                                params=proc_config.get("params", {}),
+                                enabled=proc_config.get("enabled", True),
+                            )
+                        )
             config_dict["processors"] = processors
 
             # Parse request_id configuration
@@ -298,7 +319,9 @@ class ConfigurationManager:
 
         if "MORADO_REQUEST_ID_LENGTH" in os.environ:
             try:
-                request_id_config["length"] = int(os.environ["MORADO_REQUEST_ID_LENGTH"])
+                request_id_config["length"] = int(
+                    os.environ["MORADO_REQUEST_ID_LENGTH"]
+                )
             except ValueError:
                 pass  # Ignore invalid values
 
@@ -383,27 +406,37 @@ class ConfigurationManager:
 
         # Validate log level
         if validated.level.upper() not in ConfigurationManager.VALID_LOG_LEVELS:
-            print(f"Warning: Invalid log level '{validated.level}'. Using default 'INFO'.")
+            print(
+                f"Warning: Invalid log level '{validated.level}'. Using default 'INFO'."
+            )
             validated.level = "INFO"
         else:
             validated.level = validated.level.upper()
 
         # Validate format
         if validated.format not in ConfigurationManager.VALID_FORMATS:
-            print(f"Warning: Invalid log format '{validated.format}'. Using default 'console'.")
+            print(
+                f"Warning: Invalid log format '{validated.format}'. Using default 'console'."
+            )
             validated.format = "console"
 
         # Validate output
         if validated.output not in ConfigurationManager.VALID_OUTPUTS:
             # Check if it's a file path
-            if not validated.output.startswith("/") and not validated.output.startswith("./"):
-                print(f"Warning: Invalid log output '{validated.output}'. Using default 'stdout'.")
+            if not validated.output.startswith("/") and not validated.output.startswith(
+                "./"
+            ):
+                print(
+                    f"Warning: Invalid log output '{validated.output}'. Using default 'stdout'."
+                )
                 validated.output = "stdout"
 
         # Validate module levels
         for module, level in list(validated.module_levels.items()):
             if level.upper() not in ConfigurationManager.VALID_LOG_LEVELS:
-                print(f"Warning: Invalid log level '{level}' for module '{module}'. Removing module-specific level.")
+                print(
+                    f"Warning: Invalid log level '{level}' for module '{module}'. Removing module-specific level."
+                )
                 del validated.module_levels[module]
             else:
                 validated.module_levels[module] = level.upper()
@@ -415,7 +448,7 @@ class ConfigurationManager:
         config_file: str | None = None,
         auto_search: bool = True,
         load_env: bool = True,
-        validate: bool = True
+        validate: bool = True,
     ) -> LoggerConfig:
         """
         Load configuration with full precedence chain
@@ -438,9 +471,13 @@ class ConfigurationManager:
                 file_config = ConfigurationManager.load_from_file(config_file)
                 configs.append(file_config)
             except FileNotFoundError:
-                print(f"Info: Configuration file not found: {config_file}. Using defaults.")
+                print(
+                    f"Info: Configuration file not found: {config_file}. Using defaults."
+                )
             except ValueError as e:
-                print(f"Warning: Error loading configuration file: {e}. Using defaults.")
+                print(
+                    f"Warning: Error loading configuration file: {e}. Using defaults."
+                )
         elif auto_search:
             config_path = ConfigurationManager.find_config_file()
             if config_path:
@@ -448,7 +485,9 @@ class ConfigurationManager:
                     file_config = ConfigurationManager.load_from_file(str(config_path))
                     configs.append(file_config)
                 except ValueError as e:
-                    print(f"Warning: Error loading configuration file {config_path}: {e}. Using defaults.")
+                    print(
+                        f"Warning: Error loading configuration file {config_path}: {e}. Using defaults."
+                    )
 
         # Load from environment variables
         if load_env:

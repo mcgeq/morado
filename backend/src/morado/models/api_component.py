@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 class HeaderScope(str, PyEnum):
     """Header作用域"""
+
     GLOBAL = "global"  # 全局Header（所有接口可用）
     PROJECT = "project"  # 项目级Header（特定项目可用）
     PRIVATE = "private"  # 私有Header（仅创建者可用）
@@ -31,6 +32,7 @@ class HeaderScope(str, PyEnum):
 
 class BodyType(str, PyEnum):
     """Body类型"""
+
     REQUEST = "request"  # 请求Body
     RESPONSE = "response"  # 响应Body
     BOTH = "both"  # 请求和响应通用
@@ -38,6 +40,7 @@ class BodyType(str, PyEnum):
 
 class HttpMethod(str, PyEnum):
     """HTTP请求方法"""
+
     GET = "GET"
     POST = "POST"
     PUT = "PUT"
@@ -109,9 +112,7 @@ class Header(Base, TimestampMixin, UUIDMixin):
 
     # 作用域和权限
     scope: Mapped[HeaderScope] = mapped_column(
-        Enum(HeaderScope),
-        default=HeaderScope.PRIVATE,
-        comment="作用域"
+        Enum(HeaderScope), default=HeaderScope.PRIVATE, comment="作用域"
     )
     project_id: Mapped[int | None] = mapped_column(Integer, comment="项目ID")
 
@@ -121,17 +122,13 @@ class Header(Base, TimestampMixin, UUIDMixin):
     tags: Mapped[list | None] = mapped_column(JSON, comment="标签")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
     creator: Mapped[Optional["User"]] = relationship("User", back_populates="headers")
     api_definitions: Mapped[list["ApiDefinition"]] = relationship(
-        "ApiDefinition",
-        back_populates="header",
-        cascade="all, delete-orphan"
+        "ApiDefinition", back_populates="header", cascade="all, delete-orphan"
     )
 
 
@@ -199,23 +196,19 @@ class Body(Base, TimestampMixin, UUIDMixin):
 
     # Body内容
     body_type: Mapped[BodyType] = mapped_column(
-        Enum(BodyType),
-        default=BodyType.REQUEST,
-        comment="Body类型"
+        Enum(BodyType), default=BodyType.REQUEST, comment="Body类型"
     )
     content_type: Mapped[str] = mapped_column(
-        String(100),
-        default="application/json",
-        comment="内容类型"
+        String(100), default="application/json", comment="内容类型"
     )
-    body_schema: Mapped[dict | None] = mapped_column(JSON, comment="Body的JSON Schema定义")
+    body_schema: Mapped[dict | None] = mapped_column(
+        JSON, comment="Body的JSON Schema定义"
+    )
     example_data: Mapped[dict | None] = mapped_column(JSON, comment="示例数据")
 
     # 作用域和权限
     scope: Mapped[HeaderScope] = mapped_column(
-        Enum(HeaderScope),
-        default=HeaderScope.PRIVATE,
-        comment="作用域"
+        Enum(HeaderScope), default=HeaderScope.PRIVATE, comment="作用域"
     )
     project_id: Mapped[int | None] = mapped_column(Integer, comment="项目ID")
 
@@ -225,9 +218,7 @@ class Body(Base, TimestampMixin, UUIDMixin):
     tags: Mapped[list | None] = mapped_column(JSON, comment="标签")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
@@ -236,13 +227,13 @@ class Body(Base, TimestampMixin, UUIDMixin):
         "ApiDefinition",
         foreign_keys="[ApiDefinition.request_body_id]",
         back_populates="request_body",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
     api_definitions_response: Mapped[list["ApiDefinition"]] = relationship(
         "ApiDefinition",
         foreign_keys="[ApiDefinition.response_body_id]",
         back_populates="response_body",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
 
 
@@ -323,9 +314,7 @@ class ApiDefinition(Base, TimestampMixin, UUIDMixin):
 
     # API基本信息
     method: Mapped[HttpMethod] = mapped_column(
-        Enum(HttpMethod),
-        nullable=False,
-        comment="HTTP方法"
+        Enum(HttpMethod), nullable=False, comment="HTTP方法"
     )
     path: Mapped[str] = mapped_column(String(500), nullable=False, comment="API路径")
     base_url: Mapped[str | None] = mapped_column(String(500), comment="基础URL")
@@ -334,24 +323,26 @@ class ApiDefinition(Base, TimestampMixin, UUIDMixin):
     header_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("headers.id", ondelete="SET NULL"),
-        comment="引用的Header组件ID"
+        comment="引用的Header组件ID",
     )
 
     # Body引用（方式1）
     request_body_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("bodies.id", ondelete="SET NULL"),
-        comment="引用的请求Body组件ID"
+        comment="引用的请求Body组件ID",
     )
     response_body_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("bodies.id", ondelete="SET NULL"),
-        comment="引用的响应Body组件ID"
+        comment="引用的响应Body组件ID",
     )
 
     # 内联Body（方式2）
     inline_request_body: Mapped[dict | None] = mapped_column(JSON, comment="内联请求体")
-    inline_response_body: Mapped[dict | None] = mapped_column(JSON, comment="内联响应体")
+    inline_response_body: Mapped[dict | None] = mapped_column(
+        JSON, comment="内联响应体"
+    )
 
     # 查询参数和路径参数
     query_parameters: Mapped[dict | None] = mapped_column(JSON, comment="查询参数定义")
@@ -364,26 +355,24 @@ class ApiDefinition(Base, TimestampMixin, UUIDMixin):
     tags: Mapped[list | None] = mapped_column(JSON, comment="标签")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
-    creator: Mapped[Optional["User"]] = relationship("User", back_populates="api_definitions")
-    header: Mapped[Optional["Header"]] = relationship("Header", back_populates="api_definitions")
+    creator: Mapped[Optional["User"]] = relationship(
+        "User", back_populates="api_definitions"
+    )
+    header: Mapped[Optional["Header"]] = relationship(
+        "Header", back_populates="api_definitions"
+    )
     request_body: Mapped[Optional["Body"]] = relationship(
-        "Body",
-        foreign_keys=[request_body_id],
-        back_populates="api_definitions_request"
+        "Body", foreign_keys=[request_body_id], back_populates="api_definitions_request"
     )
     response_body: Mapped[Optional["Body"]] = relationship(
         "Body",
         foreign_keys=[response_body_id],
-        back_populates="api_definitions_response"
+        back_populates="api_definitions_response",
     )
     scripts: Mapped[list["TestScript"]] = relationship(
-        "TestScript",
-        back_populates="api_definition",
-        cascade="all, delete-orphan"
+        "TestScript", back_populates="api_definition", cascade="all, delete-orphan"
     )

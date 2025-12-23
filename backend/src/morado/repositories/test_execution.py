@@ -28,15 +28,13 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         super().__init__(TestExecution)
 
     def get_with_results(
-        self,
-        session: Session,
-        id: int
+        self, session: Session, execution_id: int
     ) -> TestExecution | None:
         """Get test execution with execution results.
 
         Args:
             session: Database session
-            id: Execution ID
+            execution_id: Execution ID
 
         Returns:
             TestExecution instance with results loaded, or None
@@ -48,17 +46,13 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         """
         stmt = (
             select(TestExecution)
-            .where(TestExecution.id == id)
+            .where(TestExecution.id == execution_id)
             .options(joinedload(TestExecution.execution_results))
         )
         return session.execute(stmt).unique().scalar_one_or_none()
 
     def get_by_test_case(
-        self,
-        session: Session,
-        test_case_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, test_case_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by test case.
 
@@ -84,11 +78,7 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_test_suite(
-        self,
-        session: Session,
-        test_suite_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, test_suite_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by test suite.
 
@@ -114,11 +104,7 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_status(
-        self,
-        session: Session,
-        status: ExecutionStatus,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, status: ExecutionStatus, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by status.
 
@@ -144,11 +130,7 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_environment(
-        self,
-        session: Session,
-        environment: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, environment: str, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by environment.
 
@@ -176,33 +158,27 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
     # Async methods
 
     async def get_with_results_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, execution_id: int
     ) -> TestExecution | None:
         """Get test execution with results (async).
 
         Args:
             session: Async database session
-            id: Execution ID
+            execution_id: Execution ID
 
         Returns:
             TestExecution instance with results loaded, or None
         """
         stmt = (
             select(TestExecution)
-            .where(TestExecution.id == id)
+            .where(TestExecution.id == execution_id)
             .options(joinedload(TestExecution.execution_results))
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_by_test_case_async(
-        self,
-        session: AsyncSession,
-        test_case_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, test_case_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by test case (async).
 
@@ -226,11 +202,7 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         return list(result.scalars().all())
 
     async def get_by_test_suite_async(
-        self,
-        session: AsyncSession,
-        test_suite_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, test_suite_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by test suite (async).
 
@@ -258,7 +230,7 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         session: AsyncSession,
         status: ExecutionStatus,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestExecution]:
         """Get executions by status (async).
 
@@ -282,11 +254,7 @@ class TestExecutionRepository(BaseRepository[TestExecution]):
         return list(result.scalars().all())
 
     async def get_by_environment_async(
-        self,
-        session: AsyncSession,
-        environment: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, environment: str, skip: int = 0, limit: int = 100
     ) -> list[TestExecution]:
         """Get executions by environment (async).
 
@@ -325,9 +293,7 @@ class ExecutionResultRepository(BaseRepository[ExecutionResult]):
         super().__init__(ExecutionResult)
 
     def get_by_execution(
-        self,
-        session: Session,
-        execution_id: int
+        self, session: Session, execution_id: int
     ) -> list[ExecutionResult]:
         """Get results for an execution.
 
@@ -351,11 +317,7 @@ class ExecutionResultRepository(BaseRepository[ExecutionResult]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_script(
-        self,
-        session: Session,
-        script_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, script_id: int, skip: int = 0, limit: int = 100
     ) -> list[ExecutionResult]:
         """Get results for a script.
 
@@ -381,11 +343,7 @@ class ExecutionResultRepository(BaseRepository[ExecutionResult]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_component(
-        self,
-        session: Session,
-        component_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, component_id: int, skip: int = 0, limit: int = 100
     ) -> list[ExecutionResult]:
         """Get results for a component.
 
@@ -413,9 +371,7 @@ class ExecutionResultRepository(BaseRepository[ExecutionResult]):
     # Async methods
 
     async def get_by_execution_async(
-        self,
-        session: AsyncSession,
-        execution_id: int
+        self, session: AsyncSession, execution_id: int
     ) -> list[ExecutionResult]:
         """Get results for an execution (async).
 
@@ -435,11 +391,7 @@ class ExecutionResultRepository(BaseRepository[ExecutionResult]):
         return list(result.scalars().all())
 
     async def get_by_script_async(
-        self,
-        session: AsyncSession,
-        script_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, script_id: int, skip: int = 0, limit: int = 100
     ) -> list[ExecutionResult]:
         """Get results for a script (async).
 
@@ -463,11 +415,7 @@ class ExecutionResultRepository(BaseRepository[ExecutionResult]):
         return list(result.scalars().all())
 
     async def get_by_component_async(
-        self,
-        session: AsyncSession,
-        component_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, component_id: int, skip: int = 0, limit: int = 100
     ) -> list[ExecutionResult]:
         """Get results for a component (async).
 

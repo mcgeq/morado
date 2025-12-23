@@ -245,9 +245,7 @@ async def permission_denied_exception_handler(
     )
 
 
-async def http_exception_handler(
-    request: "Request", exc: HTTPException
-) -> "Response":
+async def http_exception_handler(request: "Request", exc: HTTPException) -> "Response":
     """Handle generic HTTP exceptions.
 
     Args:
@@ -328,9 +326,7 @@ async def internal_server_exception_handler(
     )
 
 
-async def generic_exception_handler(
-    request: "Request", exc: Exception
-) -> "Response":
+async def generic_exception_handler(request: "Request", exc: Exception) -> "Response":
     """Handle generic exceptions.
 
     This is the catch-all handler for any exceptions not caught by

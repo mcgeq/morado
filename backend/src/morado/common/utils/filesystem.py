@@ -180,7 +180,9 @@ class FileSystemUtil:
         return base
 
     @staticmethod
-    def create_directory(path: PathLike, parents: bool = True, exist_ok: bool = True) -> Path:
+    def create_directory(
+        path: PathLike, parents: bool = True, exist_ok: bool = True
+    ) -> Path:
         """Create a directory, optionally creating parent directories.
 
         Args:
@@ -356,7 +358,9 @@ class FileSystemUtil:
             raise FileSystemError(msg) from e
 
     @staticmethod
-    def list_files(directory: PathLike, pattern: str | None = None, recursive: bool = False) -> list[Path]:
+    def list_files(
+        directory: PathLike, pattern: str | None = None, recursive: bool = False
+    ) -> list[Path]:
         """List files in a directory with optional filtering.
 
         Args:

@@ -27,16 +27,12 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         """Initialize TestSuite repository."""
         super().__init__(TestSuite)
 
-    def get_with_test_cases(
-        self,
-        session: Session,
-        id: int
-    ) -> TestSuite | None:
+    def get_with_test_cases(self, session: Session, suite_id: int) -> TestSuite | None:
         """Get test suite with associated test cases.
 
         Args:
             session: Database session
-            id: Test suite ID
+            suite_id: Test suite ID
 
         Returns:
             TestSuite instance with test cases loaded, or None
@@ -48,20 +44,17 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         """
         stmt = (
             select(TestSuite)
-            .where(TestSuite.id == id)
+            .where(TestSuite.id == suite_id)
             .options(
-                joinedload(TestSuite.test_suite_cases)
-                .joinedload(TestSuiteCase.test_case)
+                joinedload(TestSuite.test_suite_cases).joinedload(
+                    TestSuiteCase.test_case
+                )
             )
         )
         return session.execute(stmt).scalar_one_or_none()
 
     def get_by_environment(
-        self,
-        session: Session,
-        environment: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, environment: str, skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Get test suites by environment.
 
@@ -86,10 +79,7 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         return list(session.execute(stmt).scalars().all())
 
     def get_scheduled_suites(
-        self,
-        session: Session,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Get scheduled test suites.
 
@@ -104,20 +94,11 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         Example:
             >>> scheduled = repo.get_scheduled_suites(session)
         """
-        stmt = (
-            select(TestSuite)
-            .where(TestSuite.is_scheduled)
-            .offset(skip)
-            .limit(limit)
-        )
+        stmt = select(TestSuite).where(TestSuite.is_scheduled).offset(skip).limit(limit)
         return list(session.execute(stmt).scalars().all())
 
     def search_by_name(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Search test suites by name (case-insensitive).
 
@@ -142,11 +123,7 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_tags(
-        self,
-        session: Session,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Get test suites by tags.
 
@@ -173,36 +150,31 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
     # Async methods
 
     async def get_with_test_cases_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, suite_id: int
     ) -> TestSuite | None:
         """Get test suite with test cases (async).
 
         Args:
             session: Async database session
-            id: Test suite ID
+            suite_id: Test suite ID
 
         Returns:
             TestSuite instance with test cases loaded, or None
         """
         stmt = (
             select(TestSuite)
-            .where(TestSuite.id == id)
+            .where(TestSuite.id == suite_id)
             .options(
-                joinedload(TestSuite.test_suite_cases)
-                .joinedload(TestSuiteCase.test_case)
+                joinedload(TestSuite.test_suite_cases).joinedload(
+                    TestSuiteCase.test_case
+                )
             )
         )
         result = await session.execute(stmt)
         return result.scalar_one_or_none()
 
     async def get_by_environment_async(
-        self,
-        session: AsyncSession,
-        environment: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, environment: str, skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Get test suites by environment (async).
 
@@ -225,10 +197,7 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         return list(result.scalars().all())
 
     async def get_scheduled_suites_async(
-        self,
-        session: AsyncSession,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Get scheduled test suites (async).
 
@@ -240,21 +209,12 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         Returns:
             List of scheduled TestSuite instances
         """
-        stmt = (
-            select(TestSuite)
-            .where(TestSuite.is_scheduled)
-            .offset(skip)
-            .limit(limit)
-        )
+        stmt = select(TestSuite).where(TestSuite.is_scheduled).offset(skip).limit(limit)
         result = await session.execute(stmt)
         return list(result.scalars().all())
 
     async def search_by_name_async(
-        self,
-        session: AsyncSession,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Search test suites by name (async).
 
@@ -277,11 +237,7 @@ class TestSuiteRepository(BaseRepository[TestSuite]):
         return list(result.scalars().all())
 
     async def get_by_tags_async(
-        self,
-        session: AsyncSession,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestSuite]:
         """Get test suites by tags (async).
 
@@ -319,9 +275,7 @@ class TestSuiteCaseRepository(BaseRepository[TestSuiteCase]):
         super().__init__(TestSuiteCase)
 
     def get_by_test_suite(
-        self,
-        session: Session,
-        test_suite_id: int
+        self, session: Session, test_suite_id: int
     ) -> list[TestSuiteCase]:
         """Get test case associations for a test suite.
 
@@ -347,9 +301,7 @@ class TestSuiteCaseRepository(BaseRepository[TestSuiteCase]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_test_case(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> list[TestSuiteCase]:
         """Get test suite associations for a test case.
 
@@ -375,9 +327,7 @@ class TestSuiteCaseRepository(BaseRepository[TestSuiteCase]):
     # Async methods
 
     async def get_by_test_suite_async(
-        self,
-        session: AsyncSession,
-        test_suite_id: int
+        self, session: AsyncSession, test_suite_id: int
     ) -> list[TestSuiteCase]:
         """Get test case associations for a test suite (async).
 
@@ -399,9 +349,7 @@ class TestSuiteCaseRepository(BaseRepository[TestSuiteCase]):
         return list(result.scalars().all())
 
     async def get_by_test_case_async(
-        self,
-        session: AsyncSession,
-        test_case_id: int
+        self, session: AsyncSession, test_case_id: int
     ) -> list[TestSuiteCase]:
         """Get test suite associations for a test case (async).
 

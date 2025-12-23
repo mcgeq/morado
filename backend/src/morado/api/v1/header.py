@@ -57,10 +57,7 @@ class HeaderController(Controller):
             }
             ```
         """
-        header = header_service.create_header(
-            db_session,
-            **data.model_dump()
-        )
+        header = header_service.create_header(db_session, **data.model_dump())
         return HeaderResponse.model_validate(header)
 
     @get("/")
@@ -91,14 +88,19 @@ class HeaderController(Controller):
             scope=header_scope,
             project_id=project_id,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(headers) + limit - 1) // limit if limit > 0 else 1
 
         return HeaderListResponse(
             items=[HeaderResponse.model_validate(h) for h in headers],
             total=len(headers),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/search")
@@ -123,17 +125,19 @@ class HeaderController(Controller):
             List of matching headers
         """
         headers = header_service.search_headers(
-            db_session,
-            name=name,
-            skip=skip,
-            limit=limit
+            db_session, name=name, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(headers) + limit - 1) // limit if limit > 0 else 1
 
         return HeaderListResponse(
             items=[HeaderResponse.model_validate(h) for h in headers],
             total=len(headers),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/{header_id:int}")
@@ -159,6 +163,7 @@ class HeaderController(Controller):
         header = header_service.get_header(db_session, header_id)
         if not header:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Header with ID {header_id} not found")
 
         return HeaderResponse.model_validate(header)
@@ -186,6 +191,7 @@ class HeaderController(Controller):
         header = header_service.get_header_by_uuid(db_session, uuid)
         if not header:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Header with UUID {uuid} not found")
 
         return HeaderResponse.model_validate(header)
@@ -215,14 +221,11 @@ class HeaderController(Controller):
         # Only include fields that were actually provided
         update_data = data.model_dump(exclude_unset=True)
 
-        header = header_service.update_header(
-            db_session,
-            header_id,
-            **update_data
-        )
+        header = header_service.update_header(db_session, header_id, **update_data)
 
         if not header:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Header with ID {header_id} not found")
 
         return HeaderResponse.model_validate(header)
@@ -251,6 +254,7 @@ class HeaderController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Header with ID {header_id} not found")
 
         return {"message": "Header deleted successfully"}
@@ -279,6 +283,7 @@ class HeaderController(Controller):
 
         if not header:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Header with ID {header_id} not found")
 
         return HeaderResponse.model_validate(header)
@@ -307,6 +312,7 @@ class HeaderController(Controller):
 
         if not header:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Header with ID {header_id} not found")
 
         return HeaderResponse.model_validate(header)

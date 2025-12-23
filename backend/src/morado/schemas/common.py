@@ -5,12 +5,9 @@ pagination, responses, and error handling.
 """
 
 from datetime import datetime
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
-
-# Generic type for paginated responses
-T = TypeVar("T")
 
 
 class PaginationParams(BaseModel):
@@ -29,7 +26,9 @@ class PaginationParams(BaseModel):
     page: int = Field(default=1, ge=1, description="页码（从1开始）")
     page_size: int = Field(default=20, ge=1, le=100, description="每页数量")
     sort_by: str | None = Field(default=None, description="排序字段")
-    sort_order: str = Field(default="desc", pattern="^(asc|desc)$", description="排序方向")
+    sort_order: str = Field(
+        default="desc", pattern="^(asc|desc)$", description="排序方向"
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -37,13 +36,13 @@ class PaginationParams(BaseModel):
                 "page": 1,
                 "page_size": 20,
                 "sort_by": "created_at",
-                "sort_order": "desc"
+                "sort_order": "desc",
             }
         }
     )
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
+class PaginatedResponse[T](BaseModel):
     """分页响应
 
     Attributes:
@@ -88,12 +87,7 @@ class MessageResponse(BaseModel):
     data: dict[str, Any] | None = Field(default=None, description="附加数据")
 
     model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "message": "操作成功",
-                "data": {"id": 1}
-            }
-        }
+        json_schema_extra={"example": {"message": "操作成功", "data": {"id": 1}}}
     )
 
 
@@ -130,7 +124,7 @@ class ErrorResponse(BaseModel):
                 "message": "数据验证失败",
                 "details": {"field": "name", "error": "不能为空"},
                 "timestamp": "2024-01-01T00:00:00Z",
-                "request_id": "550e8400-e29b-41d4-a716-446655440000"
+                "request_id": "550e8400-e29b-41d4-a716-446655440000",
             }
         }
     )

@@ -42,7 +42,7 @@ def resolve_variables(template: str, context: dict[str, Any]) -> str:
     if not template:
         return template
 
-    pattern = r'\$\{([^}]+)\}'
+    pattern = r"\$\{([^}]+)\}"
     missing_vars = []
 
     def replace_var(match: re.Match) -> str:
@@ -56,18 +56,13 @@ def resolve_variables(template: str, context: dict[str, Any]) -> str:
 
     if missing_vars:
         msg = f"Variables not found in context: {', '.join(missing_vars)}"
-        raise VariableResolutionError(
-            msg,
-            missing_vars=missing_vars
-        )
+        raise VariableResolutionError(msg, missing_vars=missing_vars)
 
     return result
 
 
 def build_url(
-    base_url: str,
-    path: str,
-    path_params: dict[str, Any] | None = None
+    base_url: str, path: str, path_params: dict[str, Any] | None = None
 ) -> str:
     """Build a complete URL with path parameter substitution.
 
@@ -91,19 +86,19 @@ def build_url(
         'https://api.example.com/users/123/posts/456'
     """
     # Remove trailing slash from base_url
-    base_url = base_url.rstrip('/')
+    base_url = base_url.rstrip("/")
 
     # Ensure path starts with /
-    if not path.startswith('/'):
-        path = '/' + path
+    if not path.startswith("/"):
+        path = "/" + path
 
     # Replace path parameters if provided
     if path_params:
         # Replace {param} style
         for key, value in path_params.items():
-            path = path.replace(f'{{{key}}}', str(value))
+            path = path.replace(f"{{{key}}}", str(value))
             # Also replace :param style
-            path = path.replace(f':{key}', str(value))
+            path = path.replace(f":{key}", str(value))
 
     return base_url + path
 
@@ -144,10 +139,7 @@ def encode_query_params(params: dict[str, Any]) -> str:
     return urlencode(expanded_params)
 
 
-def serialize_body(
-    data: Any,
-    content_type: str | None = None
-) -> tuple[Any, str]:
+def serialize_body(data: Any, content_type: str | None = None) -> tuple[Any, str]:
     """Serialize request body based on content type.
 
     Automatically determines serialization format based on content type.
@@ -212,9 +204,7 @@ def serialize_body(
 
 
 def mask_sensitive_data(
-    data: Any,
-    sensitive_keys: list[str] | None = None,
-    mask_value: str = "***"
+    data: Any, sensitive_keys: list[str] | None = None, mask_value: str = "***"
 ) -> Any:
     """Mask sensitive information in data structures.
 
@@ -237,19 +227,34 @@ def mask_sensitive_data(
     """
     # Default sensitive keys (case-insensitive)
     default_sensitive_keys = {
-        "password", "passwd", "pwd",
-        "secret", "api_key", "apikey", "api-key",
-        "token", "access_token", "refresh_token",
-        "authorization", "auth",
-        "cookie", "session",
-        "private_key", "privatekey",
-        "credit_card", "creditcard", "card_number",
-        "ssn", "social_security"
+        "password",
+        "passwd",
+        "pwd",
+        "secret",
+        "api_key",
+        "apikey",
+        "api-key",
+        "token",
+        "access_token",
+        "refresh_token",
+        "authorization",
+        "auth",
+        "cookie",
+        "session",
+        "private_key",
+        "privatekey",
+        "credit_card",
+        "creditcard",
+        "card_number",
+        "ssn",
+        "social_security",
     }
 
     # Combine with user-provided keys
     if sensitive_keys:
-        all_sensitive_keys = default_sensitive_keys | {k.lower() for k in sensitive_keys}
+        all_sensitive_keys = default_sensitive_keys | {
+            k.lower() for k in sensitive_keys
+        }
     else:
         all_sensitive_keys = default_sensitive_keys
 
@@ -278,8 +283,7 @@ def mask_sensitive_data(
 
 
 def mask_sensitive_headers(
-    headers: dict[str, str],
-    mask_value: str = "***"
+    headers: dict[str, str], mask_value: str = "***"
 ) -> dict[str, str]:
     """Mask sensitive HTTP headers.
 
@@ -305,7 +309,7 @@ def mask_sensitive_headers(
         "x-api-key",
         "api-key",
         "x-auth-token",
-        "proxy-authorization"
+        "proxy-authorization",
     }
 
     masked = {}
@@ -318,10 +322,7 @@ def mask_sensitive_headers(
     return masked
 
 
-def truncate_for_logging(
-    data: Any,
-    max_size: int = 1024
-) -> str:
+def truncate_for_logging(data: Any, max_size: int = 1024) -> str:
     """Truncate data for logging purposes.
 
     Converts data to string and truncates if it exceeds max_size.
@@ -346,7 +347,7 @@ def truncate_for_logging(
     # Convert to string
     if isinstance(data, bytes):
         try:
-            data_str = data.decode('utf-8')
+            data_str = data.decode("utf-8")
         except UnicodeDecodeError:
             data_str = f"<binary data, {len(data)} bytes>"
     elif isinstance(data, str):

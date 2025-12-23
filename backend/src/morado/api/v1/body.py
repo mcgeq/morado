@@ -57,10 +57,7 @@ class BodyController(Controller):
             }
             ```
         """
-        body = body_service.create_body(
-            db_session,
-            **data.model_dump()
-        )
+        body = body_service.create_body(db_session, **data.model_dump())
         return BodyResponse.model_validate(body)
 
     @get("/")
@@ -87,18 +84,19 @@ class BodyController(Controller):
             List of bodies with pagination info
         """
         bodies = body_service.list_bodies(
-            db_session,
-            body_type=body_type,
-            scope=body_scope,
-            skip=skip,
-            limit=limit
+            db_session, body_type=body_type, scope=body_scope, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(bodies) + limit - 1) // limit if limit > 0 else 1
 
         return BodyListResponse(
             items=[BodyResponse.model_validate(b) for b in bodies],
             total=len(bodies),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/search")
@@ -123,17 +121,19 @@ class BodyController(Controller):
             List of matching bodies
         """
         bodies = body_service.search_bodies(
-            db_session,
-            name=name,
-            skip=skip,
-            limit=limit
+            db_session, name=name, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(bodies) + limit - 1) // limit if limit > 0 else 1
 
         return BodyListResponse(
             items=[BodyResponse.model_validate(b) for b in bodies],
             total=len(bodies),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/{body_id:int}")
@@ -159,6 +159,7 @@ class BodyController(Controller):
         body = body_service.get_body(db_session, body_id)
         if not body:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Body with ID {body_id} not found")
 
         return BodyResponse.model_validate(body)
@@ -186,6 +187,7 @@ class BodyController(Controller):
         body = body_service.get_body_by_uuid(db_session, uuid)
         if not body:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Body with UUID {uuid} not found")
 
         return BodyResponse.model_validate(body)
@@ -215,14 +217,11 @@ class BodyController(Controller):
         # Only include fields that were actually provided
         update_data = data.model_dump(exclude_unset=True)
 
-        body = body_service.update_body(
-            db_session,
-            body_id,
-            **update_data
-        )
+        body = body_service.update_body(db_session, body_id, **update_data)
 
         if not body:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Body with ID {body_id} not found")
 
         return BodyResponse.model_validate(body)
@@ -251,6 +250,7 @@ class BodyController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Body with ID {body_id} not found")
 
         return {"message": "Body deleted successfully"}

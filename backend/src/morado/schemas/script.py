@@ -14,6 +14,7 @@ from morado.schemas.common import PaginatedResponse, TimestampMixin, UUIDMixin
 
 class ScriptType(str, Enum):
     """脚本类型"""
+
     SETUP = "setup"
     MAIN = "main"
     TEARDOWN = "teardown"
@@ -22,6 +23,7 @@ class ScriptType(str, Enum):
 
 class AssertionType(str, Enum):
     """断言类型"""
+
     EQUALS = "equals"
     NOT_EQUALS = "not_equals"
     CONTAINS = "contains"
@@ -37,6 +39,7 @@ class AssertionType(str, Enum):
 
 class ParameterType(str, Enum):
     """参数类型"""
+
     STRING = "string"
     INTEGER = "integer"
     FLOAT = "float"
@@ -47,6 +50,7 @@ class ParameterType(str, Enum):
 
 
 # TestScript Schemas
+
 
 class TestScriptBase(BaseModel):
     """测试脚本基础schema"""
@@ -61,13 +65,17 @@ class TestScriptBase(BaseModel):
     validators: dict | None = Field(default=None, description="验证器配置")
     pre_script: str | None = Field(default=None, description="前置脚本代码")
     post_script: str | None = Field(default=None, description="后置脚本代码")
-    extract_variables: dict | None = Field(default=None, description="从响应中提取的变量配置")
+    extract_variables: dict | None = Field(
+        default=None, description="从响应中提取的变量配置"
+    )
     output_variables: list[str] | None = Field(default=None, description="输出变量列表")
     debug_mode: bool = Field(default=False, description="是否启用调试模式")
     debug_breakpoints: list | None = Field(default=None, description="调试断点配置")
     retry_count: int = Field(default=0, ge=0, description="重试次数")
     retry_interval: float = Field(default=1.0, ge=0, description="重试间隔（秒）")
-    timeout_override: int | None = Field(default=None, ge=1, description="超时时间覆盖（秒）")
+    timeout_override: int | None = Field(
+        default=None, ge=1, description="超时时间覆盖（秒）"
+    )
     is_active: bool = Field(default=True, description="是否激活")
     version: str = Field(default="1.0.0", max_length=20, description="版本号")
     tags: list[str] | None = Field(default=None, description="标签")
@@ -81,35 +89,32 @@ class TestScriptBase(BaseModel):
                 "api_definition_id": 1,
                 "script_type": "main",
                 "execution_order": 1,
-                "variables": {
-                    "username": "testuser",
-                    "password": "testpass123"
-                },
+                "variables": {"username": "testuser", "password": "testpass123"},
                 "assertions": [
                     {
                         "type": "status_code",
                         "expected": 200,
-                        "message": "登录应该返回200状态码"
+                        "message": "登录应该返回200状态码",
                     },
                     {
                         "type": "json_path",
                         "path": "$.data.token",
                         "assertion": "exists",
-                        "message": "响应应该包含token"
-                    }
+                        "message": "响应应该包含token",
+                    },
                 ],
                 "extract_variables": {
                     "auth_token": "$.data.token",
-                    "user_id": "$.data.user.id"
+                    "user_id": "$.data.user.id",
                 },
                 "output_variables": ["auth_token", "user_id"],
                 "retry_count": 0,
                 "retry_interval": 1.0,
                 "is_active": True,
                 "version": "1.0.0",
-                "tags": ["登录", "认证"]
+                "tags": ["登录", "认证"],
             }
-        }
+        },
     )
 
 
@@ -122,7 +127,9 @@ class TestScriptCreate(TestScriptBase):
 class TestScriptUpdate(BaseModel):
     """更新测试脚本schema"""
 
-    name: str | None = Field(default=None, min_length=1, max_length=200, description="脚本名称")
+    name: str | None = Field(
+        default=None, min_length=1, max_length=200, description="脚本名称"
+    )
     description: str | None = Field(default=None, description="脚本描述")
     api_definition_id: int | None = Field(default=None, description="引用的API定义ID")
     script_type: ScriptType | None = Field(default=None, description="脚本类型")
@@ -132,13 +139,19 @@ class TestScriptUpdate(BaseModel):
     validators: dict | None = Field(default=None, description="验证器配置")
     pre_script: str | None = Field(default=None, description="前置脚本代码")
     post_script: str | None = Field(default=None, description="后置脚本代码")
-    extract_variables: dict | None = Field(default=None, description="从响应中提取的变量配置")
+    extract_variables: dict | None = Field(
+        default=None, description="从响应中提取的变量配置"
+    )
     output_variables: list[str] | None = Field(default=None, description="输出变量列表")
     debug_mode: bool | None = Field(default=None, description="是否启用调试模式")
     debug_breakpoints: list | None = Field(default=None, description="调试断点配置")
     retry_count: int | None = Field(default=None, ge=0, description="重试次数")
-    retry_interval: float | None = Field(default=None, ge=0, description="重试间隔（秒）")
-    timeout_override: int | None = Field(default=None, ge=1, description="超时时间覆盖（秒）")
+    retry_interval: float | None = Field(
+        default=None, ge=0, description="重试间隔（秒）"
+    )
+    timeout_override: int | None = Field(
+        default=None, ge=1, description="超时时间覆盖（秒）"
+    )
     is_active: bool | None = Field(default=None, description="是否激活")
     version: str | None = Field(default=None, max_length=20, description="版本号")
     tags: list[str] | None = Field(default=None, description="标签")
@@ -163,20 +176,17 @@ class TestScriptResponse(TestScriptBase, TimestampMixin, UUIDMixin):
                 "api_definition_id": 1,
                 "script_type": "main",
                 "execution_order": 1,
-                "variables": {
-                    "username": "testuser",
-                    "password": "testpass123"
-                },
+                "variables": {"username": "testuser", "password": "testpass123"},
                 "assertions": [
                     {
                         "type": "status_code",
                         "expected": 200,
-                        "message": "登录应该返回200状态码"
+                        "message": "登录应该返回200状态码",
                     }
                 ],
                 "extract_variables": {
                     "auth_token": "$.data.token",
-                    "user_id": "$.data.user.id"
+                    "user_id": "$.data.user.id",
                 },
                 "output_variables": ["auth_token", "user_id"],
                 "retry_count": 0,
@@ -186,9 +196,9 @@ class TestScriptResponse(TestScriptBase, TimestampMixin, UUIDMixin):
                 "tags": ["登录", "认证"],
                 "created_by": 1,
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             }
-        }
+        },
     )
 
 
@@ -198,13 +208,16 @@ class TestScriptListResponse(PaginatedResponse[TestScriptResponse]):
 
 # ScriptParameter Schemas
 
+
 class ScriptParameterBase(BaseModel):
     """脚本参数基础schema"""
 
     script_id: int = Field(description="所属脚本ID")
     name: str = Field(min_length=1, max_length=100, description="参数名称")
     description: str | None = Field(default=None, description="参数描述")
-    parameter_type: ParameterType = Field(default=ParameterType.STRING, description="参数类型")
+    parameter_type: ParameterType = Field(
+        default=ParameterType.STRING, description="参数类型"
+    )
     default_value: str | None = Field(default=None, description="默认值（JSON字符串）")
     is_required: bool = Field(default=False, description="是否必需")
     validation_rules: dict | None = Field(default=None, description="验证规则")
@@ -225,12 +238,12 @@ class ScriptParameterBase(BaseModel):
                 "validation_rules": {
                     "min_length": 3,
                     "max_length": 50,
-                    "pattern": "^[a-zA-Z0-9_]+$"
+                    "pattern": "^[a-zA-Z0-9_]+$",
                 },
                 "order": 1,
-                "is_sensitive": False
+                "is_sensitive": False,
             }
-        }
+        },
     )
 
 
@@ -241,7 +254,9 @@ class ScriptParameterCreate(ScriptParameterBase):
 class ScriptParameterUpdate(BaseModel):
     """更新脚本参数schema"""
 
-    name: str | None = Field(default=None, min_length=1, max_length=100, description="参数名称")
+    name: str | None = Field(
+        default=None, min_length=1, max_length=100, description="参数名称"
+    )
     description: str | None = Field(default=None, description="参数描述")
     parameter_type: ParameterType | None = Field(default=None, description="参数类型")
     default_value: str | None = Field(default=None, description="默认值（JSON字符串）")
@@ -274,14 +289,14 @@ class ScriptParameterResponse(ScriptParameterBase, TimestampMixin, UUIDMixin):
                 "validation_rules": {
                     "min_length": 3,
                     "max_length": 50,
-                    "pattern": "^[a-zA-Z0-9_]+$"
+                    "pattern": "^[a-zA-Z0-9_]+$",
                 },
                 "order": 1,
                 "is_sensitive": False,
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             }
-        }
+        },
     )
 
 

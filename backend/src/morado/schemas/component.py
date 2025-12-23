@@ -14,6 +14,7 @@ from morado.schemas.common import PaginatedResponse, TimestampMixin, UUIDMixin
 
 class ComponentType(str, Enum):
     """组件类型"""
+
     SIMPLE = "simple"
     COMPOSITE = "composite"
     TEMPLATE = "template"
@@ -21,6 +22,7 @@ class ComponentType(str, Enum):
 
 class ExecutionMode(str, Enum):
     """执行模式"""
+
     SEQUENTIAL = "sequential"
     PARALLEL = "parallel"
     CONDITIONAL = "conditional"
@@ -28,19 +30,26 @@ class ExecutionMode(str, Enum):
 
 # TestComponent Schemas
 
+
 class TestComponentBase(BaseModel):
     """测试组件基础schema"""
 
     name: str = Field(min_length=1, max_length=200, description="组件名称")
     description: str | None = Field(default=None, description="组件描述")
-    component_type: ComponentType = Field(default=ComponentType.SIMPLE, description="组件类型")
-    execution_mode: ExecutionMode = Field(default=ExecutionMode.SEQUENTIAL, description="执行模式")
+    component_type: ComponentType = Field(
+        default=ComponentType.SIMPLE, description="组件类型"
+    )
+    execution_mode: ExecutionMode = Field(
+        default=ExecutionMode.SEQUENTIAL, description="执行模式"
+    )
     parent_component_id: int | None = Field(default=None, description="父组件ID")
     shared_variables: dict | None = Field(default=None, description="组件级共享变量")
     timeout: int = Field(default=300, ge=1, description="超时时间（秒）")
     retry_count: int = Field(default=0, ge=0, description="重试次数")
     continue_on_failure: bool = Field(default=False, description="失败时是否继续")
-    execution_condition: str | None = Field(default=None, description="执行条件（用于conditional模式）")
+    execution_condition: str | None = Field(
+        default=None, description="执行条件（用于conditional模式）"
+    )
     is_active: bool = Field(default=True, description="是否激活")
     version: str = Field(default="1.0.0", max_length=20, description="版本号")
     tags: list[str] | None = Field(default=None, description="标签")
@@ -55,16 +64,16 @@ class TestComponentBase(BaseModel):
                 "execution_mode": "sequential",
                 "shared_variables": {
                     "base_url": "https://api.example.com",
-                    "timeout": 30
+                    "timeout": 30,
                 },
                 "timeout": 300,
                 "retry_count": 0,
                 "continue_on_failure": False,
                 "is_active": True,
                 "version": "1.0.0",
-                "tags": ["登录", "用户"]
+                "tags": ["登录", "用户"],
             }
-        }
+        },
     )
 
 
@@ -77,7 +86,9 @@ class TestComponentCreate(TestComponentBase):
 class TestComponentUpdate(BaseModel):
     """更新测试组件schema"""
 
-    name: str | None = Field(default=None, min_length=1, max_length=200, description="组件名称")
+    name: str | None = Field(
+        default=None, min_length=1, max_length=200, description="组件名称"
+    )
     description: str | None = Field(default=None, description="组件描述")
     component_type: ComponentType | None = Field(default=None, description="组件类型")
     execution_mode: ExecutionMode | None = Field(default=None, description="执行模式")
@@ -86,7 +97,9 @@ class TestComponentUpdate(BaseModel):
     timeout: int | None = Field(default=None, ge=1, description="超时时间（秒）")
     retry_count: int | None = Field(default=None, ge=0, description="重试次数")
     continue_on_failure: bool | None = Field(default=None, description="失败时是否继续")
-    execution_condition: str | None = Field(default=None, description="执行条件（用于conditional模式）")
+    execution_condition: str | None = Field(
+        default=None, description="执行条件（用于conditional模式）"
+    )
     is_active: bool | None = Field(default=None, description="是否激活")
     version: str | None = Field(default=None, max_length=20, description="版本号")
     tags: list[str] | None = Field(default=None, description="标签")
@@ -112,7 +125,7 @@ class TestComponentResponse(TestComponentBase, TimestampMixin, UUIDMixin):
                 "execution_mode": "sequential",
                 "shared_variables": {
                     "base_url": "https://api.example.com",
-                    "timeout": 30
+                    "timeout": 30,
                 },
                 "timeout": 300,
                 "retry_count": 0,
@@ -122,9 +135,9 @@ class TestComponentResponse(TestComponentBase, TimestampMixin, UUIDMixin):
                 "tags": ["登录", "用户"],
                 "created_by": 1,
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             }
-        }
+        },
     )
 
 
@@ -133,6 +146,7 @@ class TestComponentListResponse(PaginatedResponse[TestComponentResponse]):
 
 
 # ComponentScript Schemas
+
 
 class ComponentScriptBase(BaseModel):
     """组件-脚本关联基础schema"""
@@ -154,13 +168,10 @@ class ComponentScriptBase(BaseModel):
                 "script_id": 1,
                 "execution_order": 1,
                 "is_enabled": True,
-                "script_parameters": {
-                    "username": "test_user",
-                    "timeout": 60
-                },
-                "description": "登录脚本"
+                "script_parameters": {"username": "test_user", "timeout": 60},
+                "description": "登录脚本",
             }
-        }
+        },
     )
 
 
@@ -175,7 +186,9 @@ class ComponentScriptUpdate(BaseModel):
     is_enabled: bool | None = Field(default=None, description="是否启用")
     script_parameters: dict | None = Field(default=None, description="脚本参数覆盖")
     execution_condition: str | None = Field(default=None, description="执行条件")
-    skip_on_condition: bool | None = Field(default=None, description="条件不满足时是否跳过")
+    skip_on_condition: bool | None = Field(
+        default=None, description="条件不满足时是否跳过"
+    )
     description: str | None = Field(default=None, description="说明")
 
     model_config = ConfigDict(from_attributes=True)
@@ -195,15 +208,12 @@ class ComponentScriptResponse(ComponentScriptBase, TimestampMixin):
                 "script_id": 1,
                 "execution_order": 1,
                 "is_enabled": True,
-                "script_parameters": {
-                    "username": "test_user",
-                    "timeout": 60
-                },
+                "script_parameters": {"username": "test_user", "timeout": 60},
                 "description": "登录脚本",
                 "created_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
+                "updated_at": "2024-01-01T00:00:00Z",
             }
-        }
+        },
     )
 
 

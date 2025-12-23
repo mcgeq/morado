@@ -61,7 +61,7 @@ class TestCaseService:
         environment: str = "test",
         is_automated: bool = True,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TestCase:
         """Create a new test case.
 
@@ -106,7 +106,7 @@ class TestCaseService:
             environment=environment,
             is_automated=is_automated,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
@@ -118,7 +118,7 @@ class TestCaseService:
         test_case_id: int,
         load_scripts: bool = False,
         load_components: bool = False,
-        load_all: bool = False
+        load_all: bool = False,
     ) -> TestCase | None:
         """Get test case by ID.
 
@@ -141,11 +141,7 @@ class TestCaseService:
         else:
             return self.repository.get_by_id(session, test_case_id)
 
-    def get_test_case_by_uuid(
-        self,
-        session: Session,
-        uuid: str
-    ) -> TestCase | None:
+    def get_test_case_by_uuid(self, session: Session, uuid: str) -> TestCase | None:
         """Get test case by UUID.
 
         Args:
@@ -167,7 +163,7 @@ class TestCaseService:
         automated_only: bool = False,
         tags: list[str] | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestCase]:
         """List test cases with optional filtering.
 
@@ -201,11 +197,7 @@ class TestCaseService:
             return self.repository.get_all(session, skip, limit)
 
     def search_test_cases(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestCase]:
         """Search test cases by name.
 
@@ -221,10 +213,7 @@ class TestCaseService:
         return self.repository.search_by_name(session, name, skip, limit)
 
     def update_test_case(
-        self,
-        session: Session,
-        test_case_id: int,
-        **kwargs: Any
+        self, session: Session, test_case_id: int, **kwargs: Any
     ) -> TestCase | None:
         """Update test case.
 
@@ -267,7 +256,7 @@ class TestCaseService:
         execution_order: int = 0,
         is_enabled: bool = True,
         script_parameters: dict | None = None,
-        description: str | None = None
+        description: str | None = None,
     ) -> TestCaseScript:
         """Add script to test case.
 
@@ -290,7 +279,7 @@ class TestCaseService:
             execution_order=execution_order,
             is_enabled=is_enabled,
             script_parameters=script_parameters,
-            description=description
+            description=description,
         )
 
         session.commit()
@@ -304,7 +293,7 @@ class TestCaseService:
         execution_order: int = 0,
         is_enabled: bool = True,
         component_parameters: dict | None = None,
-        description: str | None = None
+        description: str | None = None,
     ) -> TestCaseComponent:
         """Add component to test case.
 
@@ -327,16 +316,14 @@ class TestCaseService:
             execution_order=execution_order,
             is_enabled=is_enabled,
             component_parameters=component_parameters,
-            description=description
+            description=description,
         )
 
         session.commit()
         return test_case_component
 
     def get_test_case_scripts(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> list[TestCaseScript]:
         """Get scripts associated with test case.
 
@@ -350,9 +337,7 @@ class TestCaseService:
         return self.script_repository.get_by_test_case(session, test_case_id)
 
     def get_test_case_components(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> list[TestCaseComponent]:
         """Get components associated with test case.
 
@@ -366,10 +351,7 @@ class TestCaseService:
         return self.component_repository.get_by_test_case(session, test_case_id)
 
     def update_test_case_script(
-        self,
-        session: Session,
-        test_case_script_id: int,
-        **kwargs: Any
+        self, session: Session, test_case_script_id: int, **kwargs: Any
     ) -> TestCaseScript | None:
         """Update test case-script association.
 
@@ -392,10 +374,7 @@ class TestCaseService:
         return updated
 
     def update_test_case_component(
-        self,
-        session: Session,
-        test_case_component_id: int,
-        **kwargs: Any
+        self, session: Session, test_case_component_id: int, **kwargs: Any
     ) -> TestCaseComponent | None:
         """Update test case-component association.
 
@@ -420,9 +399,7 @@ class TestCaseService:
         return updated
 
     def remove_script_from_test_case(
-        self,
-        session: Session,
-        test_case_script_id: int
+        self, session: Session, test_case_script_id: int
     ) -> bool:
         """Remove script from test case.
 
@@ -439,9 +416,7 @@ class TestCaseService:
         return result
 
     def remove_component_from_test_case(
-        self,
-        session: Session,
-        test_case_component_id: int
+        self, session: Session, test_case_component_id: int
     ) -> bool:
         """Remove component from test case.
 
@@ -458,9 +433,7 @@ class TestCaseService:
         return result
 
     def activate_test_case(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> TestCase | None:
         """Activate test case.
 
@@ -471,13 +444,11 @@ class TestCaseService:
         Returns:
             Updated TestCase instance or None if not found
         """
-        return self.update_test_case(session, test_case_id, status=TestCaseStatus.ACTIVE)
+        return self.update_test_case(
+            session, test_case_id, status=TestCaseStatus.ACTIVE
+        )
 
-    def archive_test_case(
-        self,
-        session: Session,
-        test_case_id: int
-    ) -> TestCase | None:
+    def archive_test_case(self, session: Session, test_case_id: int) -> TestCase | None:
         """Archive test case.
 
         Args:
@@ -487,12 +458,12 @@ class TestCaseService:
         Returns:
             Updated TestCase instance or None if not found
         """
-        return self.update_test_case(session, test_case_id, status=TestCaseStatus.ARCHIVED)
+        return self.update_test_case(
+            session, test_case_id, status=TestCaseStatus.ARCHIVED
+        )
 
     def deprecate_test_case(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> TestCase | None:
         """Deprecate test case.
 
@@ -508,9 +479,7 @@ class TestCaseService:
         )
 
     def get_test_case_execution_plan(
-        self,
-        session: Session,
-        test_case_id: int
+        self, session: Session, test_case_id: int
     ) -> dict[str, Any] | None:
         """Get complete test case execution plan.
 
@@ -534,54 +503,55 @@ class TestCaseService:
         # Add scripts
         for tcs in test_case.test_case_scripts:
             if tcs.is_enabled:
-                execution_items.append({
-                    'type': 'script',
-                    'order': tcs.execution_order,
-                    'id': tcs.script_id,
-                    'name': tcs.script.name,
-                    'parameters': tcs.script_parameters,
-                    'description': tcs.description
-                })
+                execution_items.append(
+                    {
+                        "type": "script",
+                        "order": tcs.execution_order,
+                        "id": tcs.script_id,
+                        "name": tcs.script.name,
+                        "parameters": tcs.script_parameters,
+                        "description": tcs.description,
+                    }
+                )
 
         # Add components
         for tcc in test_case.test_case_components:
             if tcc.is_enabled:
-                execution_items.append({
-                    'type': 'component',
-                    'order': tcc.execution_order,
-                    'id': tcc.component_id,
-                    'name': tcc.component.name,
-                    'parameters': tcc.component_parameters,
-                    'description': tcc.description
-                })
+                execution_items.append(
+                    {
+                        "type": "component",
+                        "order": tcc.execution_order,
+                        "id": tcc.component_id,
+                        "name": tcc.component.name,
+                        "parameters": tcc.component_parameters,
+                        "description": tcc.description,
+                    }
+                )
 
         # Sort by execution order
-        execution_items.sort(key=lambda x: x['order'])
+        execution_items.sort(key=lambda x: x["order"])
 
         return {
-            'test_case': {
-                'id': test_case.id,
-                'uuid': test_case.uuid,
-                'name': test_case.name,
-                'description': test_case.description,
-                'priority': test_case.priority,
-                'status': test_case.status,
-                'category': test_case.category,
-                'execution_order': test_case.execution_order,
-                'timeout': test_case.timeout,
-                'retry_count': test_case.retry_count,
-                'continue_on_failure': test_case.continue_on_failure,
-                'test_data': test_case.test_data,
-                'environment': test_case.environment
+            "test_case": {
+                "id": test_case.id,
+                "uuid": test_case.uuid,
+                "name": test_case.name,
+                "description": test_case.description,
+                "priority": test_case.priority,
+                "status": test_case.status,
+                "category": test_case.category,
+                "execution_order": test_case.execution_order,
+                "timeout": test_case.timeout,
+                "retry_count": test_case.retry_count,
+                "continue_on_failure": test_case.continue_on_failure,
+                "test_data": test_case.test_data,
+                "environment": test_case.environment,
             },
-            'execution_items': execution_items
+            "execution_items": execution_items,
         }
 
     def clone_test_case(
-        self,
-        session: Session,
-        test_case_id: int,
-        new_name: str
+        self, session: Session, test_case_id: int, new_name: str
     ) -> TestCase | None:
         """Clone a test case.
 
@@ -615,7 +585,7 @@ class TestCaseService:
             test_data=source.test_data,
             environment=source.environment,
             is_automated=source.is_automated,
-            created_by=source.created_by
+            created_by=source.created_by,
         )
 
         # Clone scripts
@@ -627,7 +597,7 @@ class TestCaseService:
                 execution_order=tcs.execution_order,
                 is_enabled=tcs.is_enabled,
                 script_parameters=tcs.script_parameters,
-                description=tcs.description
+                description=tcs.description,
             )
 
         # Clone components
@@ -639,7 +609,7 @@ class TestCaseService:
                 execution_order=tcc.execution_order,
                 is_enabled=tcc.is_enabled,
                 component_parameters=tcc.component_parameters,
-                description=tcc.description
+                description=tcc.description,
             )
 
         session.commit()

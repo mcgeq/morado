@@ -4,10 +4,10 @@ This module provides database connection management, session handling,
 and initialization for the Morado application using SQLAlchemy.
 """
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 from contextlib import asynccontextmanager
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -53,10 +53,10 @@ class DatabaseManager:
 
     def __init__(self):
         """Initialize database manager."""
-        self.engine: create_engine | None = None
+        self.engine: Engine | None = None
         self.async_engine: AsyncEngine | None = None
-        self.session_factory: sessionmaker | None = None
-        self.async_session_factory: async_sessionmaker | None = None
+        self.session_factory: sessionmaker[Session] | None = None
+        self.async_session_factory: async_sessionmaker[AsyncSession] | None = None
         self._initialized = False
 
     def initialize(self, database_url: str | None = None) -> None:
@@ -80,7 +80,9 @@ class DatabaseManager:
         logger.info(
             "Initializing database manager",
             extra={
-                "database_url": db_url.split("@")[-1] if "@" in db_url else db_url,  # Hide credentials
+                "database_url": db_url.split("@")[-1]
+                if "@" in db_url
+                else db_url,  # Hide credentials
                 "pool_size": settings.database_pool_size,
                 "echo": settings.database_echo,
             },
@@ -147,12 +149,17 @@ class DatabaseManager:
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
 
+        if self.engine is None:
+            raise RuntimeError("Database engine not initialized")
+
         logger.info("Creating database tables")
         try:
             Base.metadata.create_all(bind=self.engine)
             logger.info("Database tables created successfully")
         except Exception as e:
-            logger.exception("Failed to create database tables", extra={"error": str(e)})
+            logger.exception(
+                "Failed to create database tables", extra={"error": str(e)}
+            )
             raise
 
     async def create_tables_async(self) -> None:
@@ -167,6 +174,9 @@ class DatabaseManager:
         """
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
+
+        if self.async_engine is None:
+            raise RuntimeError("Async database engine not initialized")
 
         async with self.async_engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -185,6 +195,9 @@ class DatabaseManager:
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
 
+        if self.engine is None:
+            raise RuntimeError("Database engine not initialized")
+
         Base.metadata.drop_all(bind=self.engine)
 
     async def drop_tables_async(self) -> None:
@@ -200,6 +213,9 @@ class DatabaseManager:
         """
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
+
+        if self.async_engine is None:
+            raise RuntimeError("Async database engine not initialized")
 
         async with self.async_engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
@@ -223,6 +239,9 @@ class DatabaseManager:
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
 
+        if self.session_factory is None:
+            raise RuntimeError("Session factory not initialized")
+
         return self.session_factory()
 
     def get_async_session(self) -> AsyncSession:
@@ -241,6 +260,9 @@ class DatabaseManager:
         """
         if not self._initialized:
             raise RuntimeError("Database manager not initialized")
+
+        if self.async_session_factory is None:
+            raise RuntimeError("Async session factory not initialized")
 
         return self.async_session_factory()
 
@@ -270,7 +292,9 @@ class DatabaseManager:
             logger.info("Database connections closed successfully")
 
         except Exception as e:
-            logger.exception("Error closing database connections", extra={"error": str(e)})
+            logger.exception(
+                "Error closing database connections", extra={"error": str(e)}
+            )
             raise
 
 
@@ -302,7 +326,7 @@ async def close_database() -> None:
     await _db_manager.close()
 
 
-def get_db() -> Session:
+def get_db() -> Generator[Session]:
     """Get a database session (synchronous).
 
     This function is designed to be used as a dependency in Litestar.

@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 
 class TestCasePriority(str, PyEnum):
     """测试用例优先级"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -34,6 +35,7 @@ class TestCasePriority(str, PyEnum):
 
 class TestCaseStatus(str, PyEnum):
     """测试用例状态"""
+
     DRAFT = "draft"  # 草稿
     ACTIVE = "active"  # 激活
     DEPRECATED = "deprecated"  # 已废弃
@@ -99,14 +101,10 @@ class TestCase(Base, TimestampMixin, UUIDMixin):
 
     # 分类和优先级
     priority: Mapped[TestCasePriority] = mapped_column(
-        Enum(TestCasePriority),
-        default=TestCasePriority.MEDIUM,
-        comment="优先级"
+        Enum(TestCasePriority), default=TestCasePriority.MEDIUM, comment="优先级"
     )
     status: Mapped[TestCaseStatus] = mapped_column(
-        Enum(TestCaseStatus),
-        default=TestCaseStatus.DRAFT,
-        comment="状态"
+        Enum(TestCaseStatus), default=TestCaseStatus.DRAFT, comment="状态"
     )
     category: Mapped[str | None] = mapped_column(String(100), comment="分类")
     tags: Mapped[list | None] = mapped_column(JSON, comment="标签")
@@ -117,51 +115,49 @@ class TestCase(Base, TimestampMixin, UUIDMixin):
 
     # 执行配置
     execution_order: Mapped[str] = mapped_column(
-        String(20),
-        default="sequential",
-        comment="执行顺序（sequential/parallel）"
+        String(20), default="sequential", comment="执行顺序（sequential/parallel）"
     )
     timeout: Mapped[int] = mapped_column(Integer, default=300, comment="超时时间（秒）")
     retry_count: Mapped[int] = mapped_column(Integer, default=0, comment="重试次数")
-    continue_on_failure: Mapped[bool] = mapped_column(default=False, comment="失败时是否继续")
+    continue_on_failure: Mapped[bool] = mapped_column(
+        default=False, comment="失败时是否继续"
+    )
 
     # 数据和环境
     test_data: Mapped[dict | None] = mapped_column(JSON, comment="测试数据")
-    environment: Mapped[str] = mapped_column(String(20), default="test", comment="执行环境")
+    environment: Mapped[str] = mapped_column(
+        String(20), default="test", comment="执行环境"
+    )
 
     # 版本和维护
     version: Mapped[str] = mapped_column(String(20), default="1.0.0", comment="版本号")
     is_automated: Mapped[bool] = mapped_column(default=True, comment="是否自动化")
 
     created_by: Mapped[int | None] = mapped_column(
-        Integer,
-        ForeignKey("users.id", ondelete="SET NULL"),
-        comment="创建者ID"
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), comment="创建者ID"
     )
 
     # Relationships
-    creator: Mapped[Optional["User"]] = relationship("User", back_populates="test_cases")
+    creator: Mapped[Optional["User"]] = relationship(
+        "User", back_populates="test_cases"
+    )
     test_case_scripts: Mapped[list["TestCaseScript"]] = relationship(
         "TestCaseScript",
         back_populates="test_case",
         cascade="all, delete-orphan",
-        order_by="TestCaseScript.execution_order"
+        order_by="TestCaseScript.execution_order",
     )
     test_case_components: Mapped[list["TestCaseComponent"]] = relationship(
         "TestCaseComponent",
         back_populates="test_case",
         cascade="all, delete-orphan",
-        order_by="TestCaseComponent.execution_order"
+        order_by="TestCaseComponent.execution_order",
     )
     test_suite_cases: Mapped[list["TestSuiteCase"]] = relationship(
-        "TestSuiteCase",
-        back_populates="test_case",
-        cascade="all, delete-orphan"
+        "TestSuiteCase", back_populates="test_case", cascade="all, delete-orphan"
     )
     executions: Mapped[list["TestExecution"]] = relationship(
-        "TestExecution",
-        back_populates="test_case",
-        cascade="all, delete-orphan"
+        "TestExecution", back_populates="test_case", cascade="all, delete-orphan"
     )
 
 
@@ -198,13 +194,13 @@ class TestCaseScript(Base, TimestampMixin):
         Integer,
         ForeignKey("test_cases.id", ondelete="CASCADE"),
         nullable=False,
-        comment="测试用例ID"
+        comment="测试用例ID",
     )
     script_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("test_scripts.id", ondelete="CASCADE"),
         nullable=False,
-        comment="脚本ID"
+        comment="脚本ID",
     )
     execution_order: Mapped[int] = mapped_column(Integer, default=0, comment="执行顺序")
     is_enabled: Mapped[bool] = mapped_column(default=True, comment="是否启用")
@@ -212,8 +208,12 @@ class TestCaseScript(Base, TimestampMixin):
     description: Mapped[str | None] = mapped_column(Text, comment="说明")
 
     # Relationships
-    test_case: Mapped["TestCase"] = relationship("TestCase", back_populates="test_case_scripts")
-    script: Mapped["TestScript"] = relationship("TestScript", back_populates="test_case_scripts")
+    test_case: Mapped["TestCase"] = relationship(
+        "TestCase", back_populates="test_case_scripts"
+    )
+    script: Mapped["TestScript"] = relationship(
+        "TestScript", back_populates="test_case_scripts"
+    )
 
 
 class TestCaseComponent(Base, TimestampMixin):
@@ -249,19 +249,25 @@ class TestCaseComponent(Base, TimestampMixin):
         Integer,
         ForeignKey("test_cases.id", ondelete="CASCADE"),
         nullable=False,
-        comment="测试用例ID"
+        comment="测试用例ID",
     )
     component_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("test_components.id", ondelete="CASCADE"),
         nullable=False,
-        comment="组件ID"
+        comment="组件ID",
     )
     execution_order: Mapped[int] = mapped_column(Integer, default=0, comment="执行顺序")
     is_enabled: Mapped[bool] = mapped_column(default=True, comment="是否启用")
-    component_parameters: Mapped[dict | None] = mapped_column(JSON, comment="组件参数覆盖")
+    component_parameters: Mapped[dict | None] = mapped_column(
+        JSON, comment="组件参数覆盖"
+    )
     description: Mapped[str | None] = mapped_column(Text, comment="说明")
 
     # Relationships
-    test_case: Mapped["TestCase"] = relationship("TestCase", back_populates="test_case_components")
-    component: Mapped["TestComponent"] = relationship("TestComponent", back_populates="test_case_components")
+    test_case: Mapped["TestCase"] = relationship(
+        "TestCase", back_populates="test_case_components"
+    )
+    component: Mapped["TestComponent"] = relationship(
+        "TestComponent", back_populates="test_case_components"
+    )

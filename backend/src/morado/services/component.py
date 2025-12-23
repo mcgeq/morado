@@ -49,7 +49,7 @@ class TestComponentService:
         execution_condition: str | None = None,
         tags: list[str] | None = None,
         created_by: int | None = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> TestComponent:
         """Create a new test component.
 
@@ -78,7 +78,9 @@ class TestComponentService:
         # Check for circular reference
         if parent_component_id:
             if self._would_create_cycle(session, parent_component_id, None):
-                raise ValueError("Cannot create component: would create circular reference")
+                raise ValueError(
+                    "Cannot create component: would create circular reference"
+                )
 
         component = self.repository.create(
             session,
@@ -94,7 +96,7 @@ class TestComponentService:
             execution_condition=execution_condition,
             tags=tags,
             created_by=created_by,
-            **kwargs
+            **kwargs,
         )
 
         session.commit()
@@ -106,7 +108,7 @@ class TestComponentService:
         component_id: int,
         load_scripts: bool = False,
         load_children: bool = False,
-        load_full_hierarchy: bool = False
+        load_full_hierarchy: bool = False,
     ) -> TestComponent | None:
         """Get component by ID.
 
@@ -130,9 +132,7 @@ class TestComponentService:
             return self.repository.get_by_id(session, component_id)
 
     def get_component_by_uuid(
-        self,
-        session: Session,
-        uuid: str
+        self, session: Session, uuid: str
     ) -> TestComponent | None:
         """Get component by UUID.
 
@@ -153,7 +153,7 @@ class TestComponentService:
         root_only: bool = False,
         tags: list[str] | None = None,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestComponent]:
         """List components with optional filtering.
 
@@ -181,11 +181,7 @@ class TestComponentService:
             return self.repository.get_all(session, skip, limit)
 
     def search_components(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestComponent]:
         """Search components by name.
 
@@ -201,10 +197,7 @@ class TestComponentService:
         return self.repository.search_by_name(session, name, skip, limit)
 
     def update_component(
-        self,
-        session: Session,
-        component_id: int,
-        **kwargs: Any
+        self, session: Session, component_id: int, **kwargs: Any
     ) -> TestComponent | None:
         """Update component.
 
@@ -224,12 +217,14 @@ class TestComponentService:
             return None
 
         # Check for circular reference if parent is being updated
-        if 'parent_component_id' in kwargs:
-            new_parent_id = kwargs['parent_component_id']
+        if "parent_component_id" in kwargs:
+            new_parent_id = kwargs["parent_component_id"]
             if new_parent_id and self._would_create_cycle(
                 session, new_parent_id, component_id
             ):
-                raise ValueError("Cannot update component: would create circular reference")
+                raise ValueError(
+                    "Cannot update component: would create circular reference"
+                )
 
         updated_component = self.repository.update(session, component, **kwargs)
         session.commit()
@@ -260,7 +255,7 @@ class TestComponentService:
         script_parameters: dict | None = None,
         execution_condition: str | None = None,
         skip_on_condition: bool = False,
-        description: str | None = None
+        description: str | None = None,
     ) -> ComponentScript:
         """Add script to component.
 
@@ -287,16 +282,14 @@ class TestComponentService:
             script_parameters=script_parameters,
             execution_condition=execution_condition,
             skip_on_condition=skip_on_condition,
-            description=description
+            description=description,
         )
 
         session.commit()
         return component_script
 
     def get_component_scripts(
-        self,
-        session: Session,
-        component_id: int
+        self, session: Session, component_id: int
     ) -> list[ComponentScript]:
         """Get scripts associated with component.
 
@@ -310,10 +303,7 @@ class TestComponentService:
         return self.component_script_repository.get_by_component(session, component_id)
 
     def update_component_script(
-        self,
-        session: Session,
-        component_script_id: int,
-        **kwargs: Any
+        self, session: Session, component_script_id: int, **kwargs: Any
     ) -> ComponentScript | None:
         """Update component-script association.
 
@@ -338,9 +328,7 @@ class TestComponentService:
         return updated
 
     def remove_script_from_component(
-        self,
-        session: Session,
-        component_script_id: int
+        self, session: Session, component_script_id: int
     ) -> bool:
         """Remove script from component.
 
@@ -359,9 +347,7 @@ class TestComponentService:
         return result
 
     def get_component_hierarchy(
-        self,
-        session: Session,
-        component_id: int
+        self, session: Session, component_id: int
     ) -> dict[str, Any] | None:
         """Get complete component hierarchy.
 
@@ -381,44 +367,41 @@ class TestComponentService:
 
         def build_hierarchy(comp: TestComponent) -> dict[str, Any]:
             result = {
-                'id': comp.id,
-                'uuid': comp.uuid,
-                'name': comp.name,
-                'description': comp.description,
-                'component_type': comp.component_type,
-                'execution_mode': comp.execution_mode,
-                'shared_variables': comp.shared_variables,
-                'timeout': comp.timeout,
-                'scripts': [
+                "id": comp.id,
+                "uuid": comp.uuid,
+                "name": comp.name,
+                "description": comp.description,
+                "component_type": comp.component_type,
+                "execution_mode": comp.execution_mode,
+                "shared_variables": comp.shared_variables,
+                "timeout": comp.timeout,
+                "scripts": [
                     {
-                        'id': cs.id,
-                        'script_id': cs.script_id,
-                        'script_name': cs.script.name,
-                        'execution_order': cs.execution_order,
-                        'is_enabled': cs.is_enabled,
-                        'script_parameters': cs.script_parameters,
-                        'execution_condition': cs.execution_condition
+                        "id": cs.id,
+                        "script_id": cs.script_id,
+                        "script_name": cs.script.name,
+                        "execution_order": cs.execution_order,
+                        "is_enabled": cs.is_enabled,
+                        "script_parameters": cs.script_parameters,
+                        "execution_condition": cs.execution_condition,
                     }
                     for cs in comp.component_scripts
                 ],
-                'children': []
+                "children": [],
             }
 
             # Recursively load children
             for child in comp.child_components:
                 child_full = self.repository.get_with_full_hierarchy(session, child.id)
                 if child_full:
-                    result['children'].append(build_hierarchy(child_full))
+                    result["children"].append(build_hierarchy(child_full))
 
             return result
 
         return build_hierarchy(component)
 
     def _would_create_cycle(
-        self,
-        session: Session,
-        parent_id: int,
-        component_id: int | None
+        self, session: Session, parent_id: int, component_id: int | None
     ) -> bool:
         """Check if setting parent would create a circular reference.
 
@@ -466,7 +449,7 @@ class TestComponentService:
         session: Session,
         component_id: int,
         new_name: str,
-        clone_children: bool = False
+        clone_children: bool = False,
     ) -> TestComponent | None:
         """Clone a component.
 
@@ -496,7 +479,7 @@ class TestComponentService:
             continue_on_failure=source.continue_on_failure,
             execution_condition=source.execution_condition,
             tags=source.tags,
-            created_by=source.created_by
+            created_by=source.created_by,
         )
 
         # Clone scripts
@@ -510,17 +493,14 @@ class TestComponentService:
                 script_parameters=cs.script_parameters,
                 execution_condition=cs.execution_condition,
                 skip_on_condition=cs.skip_on_condition,
-                description=cs.description
+                description=cs.description,
             )
 
         # Clone children if requested
         if clone_children:
             for child in source.child_components:
                 cloned_child = self.clone_component(
-                    session,
-                    child.id,
-                    f"{child.name} (cloned)",
-                    clone_children=True
+                    session, child.id, f"{child.name} (cloned)", clone_children=True
                 )
                 if cloned_child:
                     cloned_child.parent_component_id = cloned.id

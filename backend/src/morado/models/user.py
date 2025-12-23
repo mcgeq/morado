@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 class UserRole(str, PyEnum):
     """用户角色"""
+
     ADMIN = "admin"  # 管理员
     DEVELOPER = "developer"  # 开发者
     TESTER = "tester"  # 测试人员
@@ -58,36 +59,42 @@ class User(Base, TimestampMixin, UUIDMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(
-        String(50),
-        unique=True,
-        nullable=False,
-        index=True,
-        comment="用户名"
+        String(50), unique=True, nullable=False, index=True, comment="用户名"
     )
     email: Mapped[str] = mapped_column(
-        String(100),
-        unique=True,
-        nullable=False,
-        index=True,
-        comment="邮箱"
+        String(100), unique=True, nullable=False, index=True, comment="邮箱"
     )
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False, comment="密码哈希")
+    password_hash: Mapped[str] = mapped_column(
+        String(255), nullable=False, comment="密码哈希"
+    )
     full_name: Mapped[str | None] = mapped_column(String(100), comment="全名")
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole),
-        default=UserRole.TESTER,
-        comment="角色"
+        Enum(UserRole), default=UserRole.TESTER, comment="角色"
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, comment="是否激活")
-    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, comment="是否超级用户")
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, default=False, comment="是否超级用户"
+    )
     avatar_url: Mapped[str | None] = mapped_column(String(500), comment="头像URL")
 
     # Relationships
     headers: Mapped[list["Header"]] = relationship("Header", back_populates="creator")
     bodies: Mapped[list["Body"]] = relationship("Body", back_populates="creator")
-    api_definitions: Mapped[list["ApiDefinition"]] = relationship("ApiDefinition", back_populates="creator")
-    scripts: Mapped[list["TestScript"]] = relationship("TestScript", back_populates="creator")
-    components: Mapped[list["TestComponent"]] = relationship("TestComponent", back_populates="creator")
-    test_cases: Mapped[list["TestCase"]] = relationship("TestCase", back_populates="creator")
-    test_suites: Mapped[list["TestSuite"]] = relationship("TestSuite", back_populates="creator")
-    executions: Mapped[list["TestExecution"]] = relationship("TestExecution", back_populates="creator")
+    api_definitions: Mapped[list["ApiDefinition"]] = relationship(
+        "ApiDefinition", back_populates="creator"
+    )
+    scripts: Mapped[list["TestScript"]] = relationship(
+        "TestScript", back_populates="creator"
+    )
+    components: Mapped[list["TestComponent"]] = relationship(
+        "TestComponent", back_populates="creator"
+    )
+    test_cases: Mapped[list["TestCase"]] = relationship(
+        "TestCase", back_populates="creator"
+    )
+    test_suites: Mapped[list["TestSuite"]] = relationship(
+        "TestSuite", back_populates="creator"
+    )
+    executions: Mapped[list["TestExecution"]] = relationship(
+        "TestExecution", back_populates="creator"
+    )

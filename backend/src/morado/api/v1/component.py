@@ -67,12 +67,12 @@ class TestComponentController(Controller):
         """
         try:
             component = component_service.create_component(
-                db_session,
-                **data.model_dump()
+                db_session, **data.model_dump()
             )
             return TestComponentResponse.model_validate(component)
         except ValueError as e:
             from litestar.exceptions import ValidationException
+
             raise ValidationException(detail=str(e))
 
     @get("/")
@@ -80,7 +80,9 @@ class TestComponentController(Controller):
         self,
         component_service: TestComponentService,
         db_session: Session,
-        component_type: Annotated[ComponentType | None, Parameter(query="component_type")] = None,
+        component_type: Annotated[
+            ComponentType | None, Parameter(query="component_type")
+        ] = None,
         parent_id: Annotated[int | None, Parameter(query="parent_id")] = None,
         root_only: Annotated[bool, Parameter(query="root_only")] = False,
         skip: Annotated[int, Parameter(query="skip", ge=0)] = 0,
@@ -106,14 +108,19 @@ class TestComponentController(Controller):
             parent_id=parent_id,
             root_only=root_only,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(components) + limit - 1) // limit if limit > 0 else 1
 
         return TestComponentListResponse(
             items=[TestComponentResponse.model_validate(c) for c in components],
             total=len(components),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/search")
@@ -138,17 +145,19 @@ class TestComponentController(Controller):
             List of matching components
         """
         components = component_service.search_components(
-            db_session,
-            name=name,
-            skip=skip,
-            limit=limit
+            db_session, name=name, skip=skip, limit=limit
         )
+
+        # Calculate pagination values
+        page = (skip // limit) + 1 if limit > 0 else 1
+        total_pages = (len(components) + limit - 1) // limit if limit > 0 else 1
 
         return TestComponentListResponse(
             items=[TestComponentResponse.model_validate(c) for c in components],
             total=len(components),
-            skip=skip,
-            limit=limit
+            page=page,
+            page_size=limit,
+            total_pages=total_pages,
         )
 
     @get("/{component_id:int}")
@@ -159,7 +168,9 @@ class TestComponentController(Controller):
         db_session: Session,
         load_scripts: Annotated[bool, Parameter(query="load_scripts")] = False,
         load_children: Annotated[bool, Parameter(query="load_children")] = False,
-        load_full_hierarchy: Annotated[bool, Parameter(query="load_full_hierarchy")] = False,
+        load_full_hierarchy: Annotated[
+            bool, Parameter(query="load_full_hierarchy")
+        ] = False,
     ) -> TestComponentResponse:
         """Get component by ID.
 
@@ -182,11 +193,14 @@ class TestComponentController(Controller):
             component_id,
             load_scripts=load_scripts,
             load_children=load_children,
-            load_full_hierarchy=load_full_hierarchy
+            load_full_hierarchy=load_full_hierarchy,
         )
         if not component:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+            raise NotFoundException(
+                detail=f"Component with ID {component_id} not found"
+            )
 
         return TestComponentResponse.model_validate(component)
 
@@ -216,7 +230,10 @@ class TestComponentController(Controller):
         hierarchy = component_service.get_component_hierarchy(db_session, component_id)
         if not hierarchy:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+            raise NotFoundException(
+                detail=f"Component with ID {component_id} not found"
+            )
 
         return hierarchy
 
@@ -243,6 +260,7 @@ class TestComponentController(Controller):
         component = component_service.get_component_by_uuid(db_session, uuid)
         if not component:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(detail=f"Component with UUID {uuid} not found")
 
         return TestComponentResponse.model_validate(component)
@@ -275,18 +293,20 @@ class TestComponentController(Controller):
 
         try:
             component = component_service.update_component(
-                db_session,
-                component_id,
-                **update_data
+                db_session, component_id, **update_data
             )
 
             if not component:
                 from litestar.exceptions import NotFoundException
-                raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+                raise NotFoundException(
+                    detail=f"Component with ID {component_id} not found"
+                )
 
             return TestComponentResponse.model_validate(component)
         except ValueError as e:
             from litestar.exceptions import ValidationException
+
             raise ValidationException(detail=str(e))
 
     @delete("/{component_id:int}", status_code=200)
@@ -313,7 +333,10 @@ class TestComponentController(Controller):
 
         if not success:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+            raise NotFoundException(
+                detail=f"Component with ID {component_id} not found"
+            )
 
         return {"message": "Component deleted successfully"}
 
@@ -342,15 +365,15 @@ class TestComponentController(Controller):
             NotFoundException: If component not found
         """
         cloned = component_service.clone_component(
-            db_session,
-            component_id,
-            new_name,
-            clone_children=clone_children
+            db_session, component_id, new_name, clone_children=clone_children
         )
 
         if not cloned:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+            raise NotFoundException(
+                detail=f"Component with ID {component_id} not found"
+            )
 
         return TestComponentResponse.model_validate(cloned)
 
@@ -382,12 +405,15 @@ class TestComponentController(Controller):
         component = component_service.get_component(db_session, component_id)
         if not component:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+            raise NotFoundException(
+                detail=f"Component with ID {component_id} not found"
+            )
 
         component_script = component_service.add_script_to_component(
             db_session,
             component_id=component_id,
-            **data.model_dump(exclude={"component_id"})
+            **data.model_dump(exclude={"component_id"}),
         )
 
         return ComponentScriptResponse.model_validate(component_script)
@@ -416,18 +442,29 @@ class TestComponentController(Controller):
         component = component_service.get_component(db_session, component_id)
         if not component:
             from litestar.exceptions import NotFoundException
-            raise NotFoundException(detail=f"Component with ID {component_id} not found")
+
+            raise NotFoundException(
+                detail=f"Component with ID {component_id} not found"
+            )
 
         component_scripts = component_service.get_component_scripts(
-            db_session,
-            component_id
+            db_session, component_id
         )
 
+        # Calculate pagination values
+        total = len(component_scripts)
+        page = 1
+        page_size = total
+        total_pages = 1 if total > 0 else 0
+
         return ComponentScriptListResponse(
-            items=[ComponentScriptResponse.model_validate(cs) for cs in component_scripts],
-            total=len(component_scripts),
-            skip=0,
-            limit=len(component_scripts)
+            items=[
+                ComponentScriptResponse.model_validate(cs) for cs in component_scripts
+            ],
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
         )
 
     @patch("/scripts/{component_script_id:int}")
@@ -456,13 +493,12 @@ class TestComponentController(Controller):
         update_data = data.model_dump(exclude_unset=True)
 
         component_script = component_service.update_component_script(
-            db_session,
-            component_script_id,
-            **update_data
+            db_session, component_script_id, **update_data
         )
 
         if not component_script:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(
                 detail=f"Component-script association with ID {component_script_id} not found"
             )
@@ -490,12 +526,12 @@ class TestComponentController(Controller):
             NotFoundException: If association not found
         """
         success = component_service.remove_script_from_component(
-            db_session,
-            component_script_id
+            db_session, component_script_id
         )
 
         if not success:
             from litestar.exceptions import NotFoundException
+
             raise NotFoundException(
                 detail=f"Component-script association with ID {component_script_id} not found"
             )

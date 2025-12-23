@@ -27,16 +27,12 @@ class TestScriptRepository(BaseRepository[TestScript]):
         """Initialize TestScript repository."""
         super().__init__(TestScript)
 
-    def get_with_relations(
-        self,
-        session: Session,
-        id: int
-    ) -> TestScript | None:
+    def get_with_relations(self, session: Session, script_id: int) -> TestScript | None:
         """Get test script with related API definition and parameters.
 
         Args:
             session: Database session
-            id: Script ID
+            script_id: Script ID
 
         Returns:
             TestScript instance with relations loaded, or None
@@ -48,20 +44,15 @@ class TestScriptRepository(BaseRepository[TestScript]):
         """
         stmt = (
             select(TestScript)
-            .where(TestScript.id == id)
+            .where(TestScript.id == script_id)
             .options(
-                joinedload(TestScript.api_definition),
-                joinedload(TestScript.parameters)
+                joinedload(TestScript.api_definition), joinedload(TestScript.parameters)
             )
         )
         return session.execute(stmt).scalar_one_or_none()
 
     def get_by_api_definition(
-        self,
-        session: Session,
-        api_definition_id: int,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, api_definition_id: int, skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Get scripts by API definition.
 
@@ -87,11 +78,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_type(
-        self,
-        session: Session,
-        script_type: ScriptType,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, script_type: ScriptType, skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Get scripts by type.
 
@@ -118,11 +105,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         return list(session.execute(stmt).scalars().all())
 
     def search_by_name(
-        self,
-        session: Session,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Search scripts by name (case-insensitive).
 
@@ -148,11 +131,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_tags(
-        self,
-        session: Session,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: Session, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Get scripts by tags.
 
@@ -180,25 +159,22 @@ class TestScriptRepository(BaseRepository[TestScript]):
     # Async methods
 
     async def get_with_relations_async(
-        self,
-        session: AsyncSession,
-        id: int
+        self, session: AsyncSession, script_id: int
     ) -> TestScript | None:
         """Get test script with relations (async).
 
         Args:
             session: Async database session
-            id: Script ID
+            script_id: Script ID
 
         Returns:
             TestScript instance with relations loaded, or None
         """
         stmt = (
             select(TestScript)
-            .where(TestScript.id == id)
+            .where(TestScript.id == script_id)
             .options(
-                joinedload(TestScript.api_definition),
-                joinedload(TestScript.parameters)
+                joinedload(TestScript.api_definition), joinedload(TestScript.parameters)
             )
         )
         result = await session.execute(stmt)
@@ -209,7 +185,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         session: AsyncSession,
         api_definition_id: int,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestScript]:
         """Get scripts by API definition (async).
 
@@ -237,7 +213,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         session: AsyncSession,
         script_type: ScriptType,
         skip: int = 0,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[TestScript]:
         """Get scripts by type (async).
 
@@ -262,11 +238,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         return list(result.scalars().all())
 
     async def search_by_name_async(
-        self,
-        session: AsyncSession,
-        name: str,
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, name: str, skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Search scripts by name (async).
 
@@ -290,11 +262,7 @@ class TestScriptRepository(BaseRepository[TestScript]):
         return list(result.scalars().all())
 
     async def get_by_tags_async(
-        self,
-        session: AsyncSession,
-        tags: list[str],
-        skip: int = 0,
-        limit: int = 100
+        self, session: AsyncSession, tags: list[str], skip: int = 0, limit: int = 100
     ) -> list[TestScript]:
         """Get scripts by tags (async).
 
@@ -332,11 +300,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         """Initialize ScriptParameter repository."""
         super().__init__(ScriptParameter)
 
-    def get_by_script(
-        self,
-        session: Session,
-        script_id: int
-    ) -> list[ScriptParameter]:
+    def get_by_script(self, session: Session, script_id: int) -> list[ScriptParameter]:
         """Get parameters for a specific script.
 
         Args:
@@ -359,9 +323,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         return list(session.execute(stmt).scalars().all())
 
     def get_required_parameters(
-        self,
-        session: Session,
-        script_id: int
+        self, session: Session, script_id: int
     ) -> list[ScriptParameter]:
         """Get required parameters for a script.
 
@@ -384,10 +346,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         return list(session.execute(stmt).scalars().all())
 
     def get_by_group(
-        self,
-        session: Session,
-        script_id: int,
-        group: str
+        self, session: Session, script_id: int, group: str
     ) -> list[ScriptParameter]:
         """Get parameters by group.
 
@@ -413,9 +372,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
     # Async methods
 
     async def get_by_script_async(
-        self,
-        session: AsyncSession,
-        script_id: int
+        self, session: AsyncSession, script_id: int
     ) -> list[ScriptParameter]:
         """Get parameters for a script (async).
 
@@ -435,9 +392,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         return list(result.scalars().all())
 
     async def get_required_parameters_async(
-        self,
-        session: AsyncSession,
-        script_id: int
+        self, session: AsyncSession, script_id: int
     ) -> list[ScriptParameter]:
         """Get required parameters for a script (async).
 
@@ -458,10 +413,7 @@ class ScriptParameterRepository(BaseRepository[ScriptParameter]):
         return list(result.scalars().all())
 
     async def get_by_group_async(
-        self,
-        session: AsyncSession,
-        script_id: int,
-        group: str
+        self, session: AsyncSession, script_id: int, group: str
     ) -> list[ScriptParameter]:
         """Get parameters by group (async).
 

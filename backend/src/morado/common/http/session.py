@@ -26,10 +26,7 @@ class SessionManager:
     """
 
     def __init__(
-        self,
-        pool_connections: int = 10,
-        pool_maxsize: int = 10,
-        max_retries: int = 0
+        self, pool_connections: int = 10, pool_maxsize: int = 10, max_retries: int = 0
     ):
         """Initialize session manager.
 
@@ -62,13 +59,13 @@ class SessionManager:
                 total=self.max_retries,
                 read=self.max_retries,
                 connect=self.max_retries,
-                backoff_factor=0
-            )
+                backoff_factor=0,
+            ),
         )
 
         # Mount adapter for both HTTP and HTTPS
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
 
         # Track active session for cleanup
         self._active_sessions.append(session)

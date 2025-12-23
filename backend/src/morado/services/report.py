@@ -38,7 +38,7 @@ class ReportService:
         end_date: datetime | None = None,
         environment: str | None = None,
         test_case_id: int | None = None,
-        test_suite_id: int | None = None
+        test_suite_id: int | None = None,
     ) -> dict[str, Any]:
         """Get execution summary report.
 
@@ -77,13 +77,13 @@ class ReportService:
         # Calculate statistics
         total_executions = len(executions)
         status_counts = {
-            'passed': 0,
-            'failed': 0,
-            'error': 0,
-            'skipped': 0,
-            'cancelled': 0,
-            'running': 0,
-            'pending': 0
+            "passed": 0,
+            "failed": 0,
+            "error": 0,
+            "skipped": 0,
+            "cancelled": 0,
+            "running": 0,
+            "pending": 0,
         }
 
         total_duration = 0.0
@@ -95,7 +95,11 @@ class ReportService:
 
         for execution in executions:
             # Count by status
-            status_key = execution.status.value if hasattr(execution.status, 'value') else str(execution.status)
+            status_key = (
+                execution.status.value
+                if hasattr(execution.status, "value")
+                else str(execution.status)
+            )
             if status_key in status_counts:
                 status_counts[status_key] += 1
 
@@ -118,34 +122,31 @@ class ReportService:
         pass_rate = (total_passed / completed_tests * 100) if completed_tests > 0 else 0
 
         return {
-            'period': {
-                'start_date': start_date.isoformat() if start_date else None,
-                'end_date': end_date.isoformat() if end_date else None
+            "period": {
+                "start_date": start_date.isoformat() if start_date else None,
+                "end_date": end_date.isoformat() if end_date else None,
             },
-            'filters': {
-                'environment': environment,
-                'test_case_id': test_case_id,
-                'test_suite_id': test_suite_id
+            "filters": {
+                "environment": environment,
+                "test_case_id": test_case_id,
+                "test_suite_id": test_suite_id,
             },
-            'summary': {
-                'total_executions': total_executions,
-                'total_tests': total_tests,
-                'total_passed': total_passed,
-                'total_failed': total_failed,
-                'total_errors': total_errors,
-                'total_skipped': total_skipped,
-                'pass_rate': round(pass_rate, 2),
-                'total_duration': round(total_duration, 2),
-                'avg_duration': round(avg_duration, 2)
+            "summary": {
+                "total_executions": total_executions,
+                "total_tests": total_tests,
+                "total_passed": total_passed,
+                "total_failed": total_failed,
+                "total_errors": total_errors,
+                "total_skipped": total_skipped,
+                "pass_rate": round(pass_rate, 2),
+                "total_duration": round(total_duration, 2),
+                "avg_duration": round(avg_duration, 2),
             },
-            'status_breakdown': status_counts
+            "status_breakdown": status_counts,
         }
 
     def get_test_case_report(
-        self,
-        session: Session,
-        test_case_id: int,
-        limit: int = 10
+        self, session: Session, test_case_id: int, limit: int = 10
     ) -> dict[str, Any]:
         """Get test case execution report.
 
@@ -164,9 +165,9 @@ class ReportService:
 
         if not executions:
             return {
-                'test_case_id': test_case_id,
-                'total_executions': 0,
-                'recent_executions': []
+                "test_case_id": test_case_id,
+                "total_executions": 0,
+                "recent_executions": [],
             }
 
         # Calculate statistics
@@ -187,39 +188,40 @@ class ReportService:
         avg_duration = sum(durations) / len(durations) if durations else 0
 
         return {
-            'test_case_id': test_case_id,
-            'total_executions': total_executions,
-            'statistics': {
-                'passed': passed_count,
-                'failed': failed_count,
-                'error': error_count,
-                'success_rate': round(success_rate, 2),
-                'avg_duration': round(avg_duration, 2)
+            "test_case_id": test_case_id,
+            "total_executions": total_executions,
+            "statistics": {
+                "passed": passed_count,
+                "failed": failed_count,
+                "error": error_count,
+                "success_rate": round(success_rate, 2),
+                "avg_duration": round(avg_duration, 2),
             },
-            'last_execution': {
-                'id': last_execution.id,
-                'status': last_execution.status,
-                'start_time': last_execution.start_time.isoformat() if last_execution.start_time else None,
-                'duration': last_execution.duration
-            } if last_execution else None,
-            'recent_executions': [
+            "last_execution": {
+                "id": last_execution.id,
+                "status": last_execution.status,
+                "start_time": last_execution.start_time.isoformat()
+                if last_execution.start_time
+                else None,
+                "duration": last_execution.duration,
+            }
+            if last_execution
+            else None,
+            "recent_executions": [
                 {
-                    'id': e.id,
-                    'uuid': e.uuid,
-                    'status': e.status,
-                    'start_time': e.start_time.isoformat() if e.start_time else None,
-                    'duration': e.duration,
-                    'environment': e.environment
+                    "id": e.id,
+                    "uuid": e.uuid,
+                    "status": e.status,
+                    "start_time": e.start_time.isoformat() if e.start_time else None,
+                    "duration": e.duration,
+                    "environment": e.environment,
                 }
                 for e in executions
-            ]
+            ],
         }
 
     def get_test_suite_report(
-        self,
-        session: Session,
-        test_suite_id: int,
-        limit: int = 10
+        self, session: Session, test_suite_id: int, limit: int = 10
     ) -> dict[str, Any]:
         """Get test suite execution report.
 
@@ -238,9 +240,9 @@ class ReportService:
 
         if not executions:
             return {
-                'test_suite_id': test_suite_id,
-                'total_executions': 0,
-                'recent_executions': []
+                "test_suite_id": test_suite_id,
+                "total_executions": 0,
+                "recent_executions": [],
             }
 
         # Calculate statistics
@@ -265,46 +267,47 @@ class ReportService:
         avg_tests = total_tests / total_executions if total_executions > 0 else 0
 
         return {
-            'test_suite_id': test_suite_id,
-            'total_executions': total_executions,
-            'statistics': {
-                'passed': passed_count,
-                'failed': failed_count,
-                'error': error_count,
-                'success_rate': round(success_rate, 2),
-                'avg_duration': round(avg_duration, 2),
-                'avg_tests_per_execution': round(avg_tests, 2)
+            "test_suite_id": test_suite_id,
+            "total_executions": total_executions,
+            "statistics": {
+                "passed": passed_count,
+                "failed": failed_count,
+                "error": error_count,
+                "success_rate": round(success_rate, 2),
+                "avg_duration": round(avg_duration, 2),
+                "avg_tests_per_execution": round(avg_tests, 2),
             },
-            'last_execution': {
-                'id': last_execution.id,
-                'status': last_execution.status,
-                'start_time': last_execution.start_time.isoformat() if last_execution.start_time else None,
-                'duration': last_execution.duration,
-                'total_count': last_execution.total_count,
-                'passed_count': last_execution.passed_count,
-                'failed_count': last_execution.failed_count
-            } if last_execution else None,
-            'recent_executions': [
+            "last_execution": {
+                "id": last_execution.id,
+                "status": last_execution.status,
+                "start_time": last_execution.start_time.isoformat()
+                if last_execution.start_time
+                else None,
+                "duration": last_execution.duration,
+                "total_count": last_execution.total_count,
+                "passed_count": last_execution.passed_count,
+                "failed_count": last_execution.failed_count,
+            }
+            if last_execution
+            else None,
+            "recent_executions": [
                 {
-                    'id': e.id,
-                    'uuid': e.uuid,
-                    'status': e.status,
-                    'start_time': e.start_time.isoformat() if e.start_time else None,
-                    'duration': e.duration,
-                    'total_count': e.total_count,
-                    'passed_count': e.passed_count,
-                    'failed_count': e.failed_count,
-                    'environment': e.environment
+                    "id": e.id,
+                    "uuid": e.uuid,
+                    "status": e.status,
+                    "start_time": e.start_time.isoformat() if e.start_time else None,
+                    "duration": e.duration,
+                    "total_count": e.total_count,
+                    "passed_count": e.passed_count,
+                    "failed_count": e.failed_count,
+                    "environment": e.environment,
                 }
                 for e in executions
-            ]
+            ],
         }
 
     def get_trend_report(
-        self,
-        session: Session,
-        days: int = 30,
-        environment: str | None = None
+        self, session: Session, days: int = 30, environment: str | None = None
     ) -> dict[str, Any]:
         """Get execution trend report.
 
@@ -320,20 +323,18 @@ class ReportService:
 
         # Build query
         query = session.query(
-            func.date(TestExecution.start_time).label('date'),
-            func.count(TestExecution.id).label('total'),
+            func.date(TestExecution.start_time).label("date"),
+            func.count(TestExecution.id).label("total"),
             func.sum(
                 func.case((TestExecution.status == ExecutionStatus.PASSED, 1), else_=0)
-            ).label('passed'),
+            ).label("passed"),
             func.sum(
                 func.case((TestExecution.status == ExecutionStatus.FAILED, 1), else_=0)
-            ).label('failed'),
+            ).label("failed"),
             func.sum(
                 func.case((TestExecution.status == ExecutionStatus.ERROR, 1), else_=0)
-            ).label('error')
-        ).filter(
-            TestExecution.start_time >= start_date
-        )
+            ).label("error"),
+        ).filter(TestExecution.start_time >= start_date)
 
         if environment:
             query = query.filter(TestExecution.environment == environment)
@@ -354,30 +355,32 @@ class ReportService:
 
             pass_rate = (passed / total * 100) if total > 0 else 0
 
-            daily_data.append({
-                'date': date_str,
-                'total': total,
-                'passed': passed,
-                'failed': failed,
-                'error': error,
-                'pass_rate': round(pass_rate, 2)
-            })
+            daily_data.append(
+                {
+                    "date": date_str,
+                    "total": total,
+                    "passed": passed,
+                    "failed": failed,
+                    "error": error,
+                    "pass_rate": round(pass_rate, 2),
+                }
+            )
 
         return {
-            'period': {
-                'start_date': start_date.isoformat(),
-                'end_date': datetime.now().isoformat(),
-                'days': days
+            "period": {
+                "start_date": start_date.isoformat(),
+                "end_date": datetime.now().isoformat(),
+                "days": days,
             },
-            'environment': environment,
-            'daily_data': daily_data
+            "environment": environment,
+            "daily_data": daily_data,
         }
 
     def get_environment_comparison_report(
         self,
         session: Session,
         start_date: datetime | None = None,
-        end_date: datetime | None = None
+        end_date: datetime | None = None,
     ) -> dict[str, Any]:
         """Get environment comparison report.
 
@@ -392,17 +395,17 @@ class ReportService:
         # Build query
         query = session.query(
             TestExecution.environment,
-            func.count(TestExecution.id).label('total'),
+            func.count(TestExecution.id).label("total"),
             func.sum(
                 func.case((TestExecution.status == ExecutionStatus.PASSED, 1), else_=0)
-            ).label('passed'),
+            ).label("passed"),
             func.sum(
                 func.case((TestExecution.status == ExecutionStatus.FAILED, 1), else_=0)
-            ).label('failed'),
+            ).label("failed"),
             func.sum(
                 func.case((TestExecution.status == ExecutionStatus.ERROR, 1), else_=0)
-            ).label('error'),
-            func.avg(TestExecution.duration).label('avg_duration')
+            ).label("error"),
+            func.avg(TestExecution.duration).label("avg_duration"),
         )
 
         if start_date:
@@ -426,22 +429,24 @@ class ReportService:
 
             pass_rate = (passed / total * 100) if total > 0 else 0
 
-            environments.append({
-                'environment': row.environment,
-                'total_executions': total,
-                'passed': passed,
-                'failed': failed,
-                'error': error,
-                'pass_rate': round(pass_rate, 2),
-                'avg_duration': round(avg_duration, 2)
-            })
+            environments.append(
+                {
+                    "environment": row.environment,
+                    "total_executions": total,
+                    "passed": passed,
+                    "failed": failed,
+                    "error": error,
+                    "pass_rate": round(pass_rate, 2),
+                    "avg_duration": round(avg_duration, 2),
+                }
+            )
 
         return {
-            'period': {
-                'start_date': start_date.isoformat() if start_date else None,
-                'end_date': end_date.isoformat() if end_date else None
+            "period": {
+                "start_date": start_date.isoformat() if start_date else None,
+                "end_date": end_date.isoformat() if end_date else None,
             },
-            'environments': environments
+            "environments": environments,
         }
 
     def get_failure_analysis_report(
@@ -449,7 +454,7 @@ class ReportService:
         session: Session,
         start_date: datetime | None = None,
         end_date: datetime | None = None,
-        limit: int = 10
+        limit: int = 10,
     ) -> dict[str, Any]:
         """Get failure analysis report.
 
@@ -480,25 +485,29 @@ class ReportService:
         # Format results
         failures = []
         for execution in failed_executions:
-            failures.append({
-                'id': execution.id,
-                'uuid': execution.uuid,
-                'test_case_id': execution.test_case_id,
-                'test_suite_id': execution.test_suite_id,
-                'status': execution.status,
-                'start_time': execution.start_time.isoformat() if execution.start_time else None,
-                'duration': execution.duration,
-                'environment': execution.environment,
-                'error_message': execution.error_message,
-                'failed_count': execution.failed_count,
-                'error_count': execution.error_count
-            })
+            failures.append(
+                {
+                    "id": execution.id,
+                    "uuid": execution.uuid,
+                    "test_case_id": execution.test_case_id,
+                    "test_suite_id": execution.test_suite_id,
+                    "status": execution.status,
+                    "start_time": execution.start_time.isoformat()
+                    if execution.start_time
+                    else None,
+                    "duration": execution.duration,
+                    "environment": execution.environment,
+                    "error_message": execution.error_message,
+                    "failed_count": execution.failed_count,
+                    "error_count": execution.error_count,
+                }
+            )
 
         return {
-            'period': {
-                'start_date': start_date.isoformat() if start_date else None,
-                'end_date': end_date.isoformat() if end_date else None
+            "period": {
+                "start_date": start_date.isoformat() if start_date else None,
+                "end_date": end_date.isoformat() if end_date else None,
             },
-            'total_failures': len(failures),
-            'recent_failures': failures
+            "total_failures": len(failures),
+            "recent_failures": failures,
         }
