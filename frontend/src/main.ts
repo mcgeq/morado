@@ -17,6 +17,7 @@ import App from './App.vue';
 import router from './router';
 import pinia from './stores';
 import { logger } from './utils/logger';
+import { setupECharts } from './plugins/echarts';
 
 // Import global styles
 import './styles/main.css';
@@ -73,6 +74,9 @@ app.use(router);
 
 // Install Pinia state management
 app.use(pinia);
+
+// Install ECharts
+setupECharts(app);
 
 /**
  * Global directives (optional)
