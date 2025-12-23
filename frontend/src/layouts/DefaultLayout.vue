@@ -97,13 +97,15 @@
 
           <!-- User Menu -->
           <div class="flex items-center space-x-4">
-            <button
-              v-if="isAuthenticated"
-              @click="handleLogout"
-              class="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-            >
-              退出
-            </button>
+            <div v-if="isAuthenticated" class="flex items-center space-x-3">
+              <span class="text-gray-700 text-sm">{{ username }}</span>
+              <button
+                @click="handleLogout"
+                class="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              >
+                退出
+              </button>
+            </div>
             <button
               v-else
               @click="handleLogin"
@@ -217,7 +219,7 @@
     <footer class="bg-white border-t border-gray-200 mt-auto">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="text-center text-sm text-gray-600">
-          <p>&copy; 2024 Morado 测试平台. All rights reserved.</p>
+          <p>&copy; 2025 Morado 测试平台. All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -227,14 +229,29 @@
 <script setup lang="ts">
   import { computed, ref } from 'vue';
   import { useRouter } from 'vue-router';
+  import { createLogger } from '@/utils/logger';
 
+  const logger = createLogger('DefaultLayout');
   const router = useRouter();
   const isMobileMenuOpen = ref(false);
 
   // Check authentication status
-  // This is a placeholder - replace with actual authentication logic
   const isAuthenticated = computed(() => {
     return !!localStorage.getItem('auth_token');
+  });
+
+  // Get username from localStorage
+  const username = computed(() => {
+    const userInfo = localStorage.getItem('user_info');
+    if (userInfo) {
+      try {
+        const user = JSON.parse(userInfo);
+        return user.username || '用户';
+      } catch {
+        return '用户';
+      }
+    }
+    return '用户';
   });
 
   const toggleMobileMenu = () => {
@@ -246,16 +263,18 @@
   };
 
   const handleLogin = () => {
-    // TODO: Implement login logic
-    // For now, just set a dummy token
-    localStorage.setItem('auth_token', 'dummy_token');
-    router.push({ name: 'Home' });
+    router.push({ name: 'Login' });
   };
 
   const handleLogout = () => {
-    // Clear authentication token
+    logger.info('用户登出', { username: username.value });
+
+    // Clear authentication data
     localStorage.removeItem('auth_token');
-    router.push({ name: 'Home' });
+    localStorage.removeItem('user_info');
+
+    // Redirect to login page
+    router.push({ name: 'Login' });
   };
 </script>
 

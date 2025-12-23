@@ -14,13 +14,25 @@ const logger = createLogger('Router');
  * Routes are organized by feature area following the four-layer architecture
  */
 const routes: RouteRecordRaw[] = [
+  // Auth Routes
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Auth/Login.vue'),
+    meta: {
+      title: '登录',
+      requiresAuth: false,
+    },
+  },
+
+  // Dashboard (Home) - Requires Auth
   {
     path: '/',
-    name: 'Home',
+    name: 'Dashboard',
     component: () => import('@/views/Home.vue'),
     meta: {
       title: 'Morado测试平台',
-      requiresAuth: false,
+      requiresAuth: true,
     },
   },
 
@@ -301,22 +313,30 @@ router.beforeEach(
     const requiresAuth = to.meta.requiresAuth as boolean;
 
     if (requiresAuth) {
-      // TODO: Replace with actual authentication check
-      // For now, we'll check if there's a token in localStorage
       const isAuthenticated = checkAuthentication();
 
       if (!isAuthenticated) {
-        // Redirect to home page if not authenticated
+        // Redirect to login page if not authenticated
         // Store the intended destination for redirect after login
+        logger.warn('未认证用户尝试访问受保护页面', {
+          path: to.path,
+          name: to.name,
+        });
+
         next({
-          name: 'Home',
+          name: 'Login',
           query: { redirect: to.fullPath },
         });
       } else {
         next();
       }
     } else {
-      next();
+      // If user is authenticated and trying to access login page, redirect to dashboard
+      if (to.name === 'Login' && checkAuthentication()) {
+        next({ name: 'Dashboard' });
+      } else {
+        next();
+      }
     }
   },
 );
@@ -343,12 +363,7 @@ router.afterEach((to: RouteLocationNormalized, from: RouteLocationNormalized) =>
  * Replace with actual authentication logic
  */
 function checkAuthentication(): boolean {
-  // 开发模式下，暂时允许所有访问
-  if (import.meta.env.DEV) {
-    return true;
-  }
-
-  // 生产模式下，检查 localStorage 中的 token
+  // 检查 localStorage 中的 token
   const token = localStorage.getItem('auth_token');
   return !!token;
 }

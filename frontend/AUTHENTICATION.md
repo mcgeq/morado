@@ -2,118 +2,62 @@
 
 ## 当前状态
 
-项目目前使用简单的 localStorage token 认证机制，这是一个**占位实现**，用于开发阶段。
+项目使用基于 localStorage token 的认证机制，包含完整的登录/注册流程。
 
-## 开发模式行为
+## 用户流程
 
-在开发模式下（`import.meta.env.DEV === true`），认证检查已被**自动通过**，这样可以方便开发和测试所有页面，无需每次都登录。
-
-```typescript
-// frontend/src/router/index.ts
-function checkAuthentication(): boolean {
-  // 开发模式下，暂时允许所有访问
-  if (import.meta.env.DEV) {
-    return true;
-  }
-
-  // 生产模式下，检查 localStorage 中的 token
-  const token = localStorage.getItem('auth_token');
-  return !!token;
-}
-```
-
-## 生产模式行为
-
-在生产模式下，系统会检查 `localStorage` 中的 `auth_token`：
-- ✅ 如果存在 token，允许访问需要认证的页面
-- ❌ 如果不存在 token，重定向到首页，并保存原始目标路径
-
-## 路由认证配置
-
-每个路由可以通过 `meta.requiresAuth` 配置是否需要认证：
-
-```typescript
-{
-  path: '/test-cases',
-  name: 'TestCaseList',
-  component: () => import('@/views/TestCase/List.vue'),
-  meta: {
-    title: '测试用例',
-    requiresAuth: true,  // 需要认证
-  },
-}
-```
-
-## 当前认证流程
-
-### 1. 用户访问需要认证的页面
+### 1. 首次访问
 
 ```
-用户访问 /test-cases
+用户访问任何页面
     ↓
-路由守卫检查 requiresAuth
+检查是否已登录？
+    ├─ 否 → 重定向到登录页面 (/login)
+    └─ 是 → 显示请求的页面
+```
+
+### 2. 登录流程
+
+```
+访问登录页面 (/login)
     ↓
-调用 checkAuthentication()
+输入用户名和密码
     ↓
-开发模式？
-    ├─ 是 → 允许访问 ✅
-    └─ 否 → 检查 localStorage.auth_token
-        ├─ 存在 → 允许访问 ✅
-        └─ 不存在 → 重定向到首页 ❌
+点击"登录"按钮
+    ↓
+验证成功？
+    ├─ 是 → 保存 token → 跳转到目标页面
+    └─ 否 → 显示错误信息
 ```
 
-### 2. 模拟登录（开发用）
+### 3. 注册流程
 
-在 DefaultLayout 中点击"登录"按钮：
-
-```typescript
-const handleLogin = () => {
-  // 设置一个假的 token
-  localStorage.setItem('auth_token', 'dummy_token');
-  router.push({ name: 'Home' });
-};
+```
+访问登录页面 (/login)
+    ↓
+切换到"注册"标签
+    ↓
+填写注册信息
+    ↓
+点击"注册"按钮
+    ↓
+注册成功 → 自动登录 → 跳转到首页
 ```
 
-### 3. 登出
+## 演示账号
 
-```typescript
-const handleLogout = () => {
-  // 清除 token
-  localStorage.removeItem('auth_token');
-  router.push({ name: 'Home' });
-};
-```
+为了方便测试，系统提供了演示账号：
 
-## 如何测试认证
+- **用户名**: demo
+- **密码**: demo123
 
-### 方法 1：开发模式（推荐）
+## 路由保护
 
-直接启动开发服务器，所有页面都可以访问：
+### 需要认证的路由
 
-```bash
-bun run dev
-```
+所有业务页面都需要认证（`requiresAuth: true`）：
 
-### 方法 2：模拟登录
-
-1. 访问首页
-2. 点击右上角的"登录"按钮
-3. 系统会设置一个假的 token
-4. 现在可以访问所有需要认证的页面
-
-### 方法 3：手动设置 token
-
-在浏览器控制台执行：
-
-```javascript
-localStorage.setItem('auth_token', 'test_token');
-location.reload();
-```
-
-## 需要认证的路由
-
-以下路由需要认证（`requiresAuth: true`）：
-
+- `/` - 首页（Dashboard）
 - `/headers` - Header 管理
 - `/bodies` - Body 管理
 - `/api-definitions` - API 定义
@@ -123,13 +67,132 @@ location.reload();
 - `/test-suites` - 测试套件
 - `/reports` - 测试报告
 
-## 不需要认证的路由
+### 不需要认证的路由
 
-以下路由不需要认证（`requiresAuth: false`）：
-
-- `/` - 首页
+- `/login` - 登录/注册页面
 - `/tailwind-test` - Tailwind CSS 测试页面
 - `/404` - 404 页面
+
+## 认证逻辑
+
+### 路由守卫
+
+```typescript
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.meta.requiresAuth;
+
+  if (requiresAuth) {
+    const isAuthenticated = checkAuthentication();
+
+    if (!isAuthenticated) {
+      // 未登录，重定向到登录页
+      next({
+        name: 'Login',
+        query: { redirect: to.fullPath }, // 保存目标路径
+      });
+    } else {
+      next();
+    }
+  } else {
+    // 已登录用户访问登录页，重定向到首页
+    if (to.name === 'Login' && checkAuthentication()) {
+      next({ name: 'Dashboard' });
+    } else {
+      next();
+    }
+  }
+});
+```
+
+### 认证检查
+
+```typescript
+function checkAuthentication(): boolean {
+  const token = localStorage.getItem('auth_token');
+  return !!token;
+}
+```
+
+## 数据存储
+
+### localStorage 存储的数据
+
+1. **auth_token**: 认证令牌
+   ```javascript
+   localStorage.setItem('auth_token', 'token_1234567890');
+   ```
+
+2. **user_info**: 用户信息
+   ```javascript
+   localStorage.setItem('user_info', JSON.stringify({
+     username: 'demo',
+     email: 'demo@example.com',
+     role: 'developer'
+   }));
+   ```
+
+## 登录页面功能
+
+### 登录表单
+
+- 用户名输入
+- 密码输入
+- "记住我"选项
+- "忘记密码"链接（占位）
+- 演示账号提示
+
+### 注册表单
+
+- 用户名输入
+- 邮箱输入
+- 密码输入（至少6位）
+- 确认密码输入
+- 密码验证
+
+### UI 特性
+
+- ✅ 响应式设计
+- ✅ 加载状态显示
+- ✅ 错误信息提示
+- ✅ 表单验证
+- ✅ 平滑动画过渡
+
+## 使用方法
+
+### 1. 启动应用
+
+```bash
+cd frontend
+bun run dev
+```
+
+### 2. 访问应用
+
+打开浏览器访问 http://localhost:3000
+
+### 3. 登录
+
+- 使用演示账号登录：
+  - 用户名: `demo`
+  - 密码: `demo123`
+
+- 或者注册新账号
+
+### 4. 使用系统
+
+登录成功后，可以访问所有功能页面。
+
+## 登出流程
+
+```
+点击右上角"退出"按钮
+    ↓
+清除 localStorage 数据
+    ├─ 删除 auth_token
+    └─ 删除 user_info
+    ↓
+重定向到登录页面
+```
 
 ## 实现真实认证系统
 
