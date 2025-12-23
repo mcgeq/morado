@@ -16,7 +16,7 @@ import structlog
 from structlog.types import FilteringBoundLogger
 
 from morado.common.logger.config import ConfigurationManager, LoggerConfig
-from morado.common.logger.context import ContextManager
+from morado.common.logger.context import get_request_id, get_context_data
 
 
 class LoggerSystem:
@@ -184,17 +184,17 @@ class LoggerSystem:
 
         # Bind context variables if available
         context = {}
-        request_id = ContextManager.get_request_id()
+        request_id = get_request_id()
         if request_id:
             context["request_id"] = request_id
 
-        user_id = ContextManager.get_user_id()
-        if user_id:
-            context["user_id"] = user_id
-
-        trace_id = ContextManager.get_trace_id()
-        if trace_id:
-            context["trace_id"] = trace_id
+        # Get user_id and trace_id from context data
+        context_data = get_context_data()
+        if context_data:
+            if "user_id" in context_data:
+                context["user_id"] = context_data["user_id"]
+            if "trace_id" in context_data:
+                context["trace_id"] = context_data["trace_id"]
 
         if context:
             logger = logger.bind(**context)

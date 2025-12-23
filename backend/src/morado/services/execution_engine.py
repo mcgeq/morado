@@ -140,33 +140,91 @@ class ExecutionEngine:
             # Resolve all parameters
             resolved_params = context.resolve_params(context.params)
 
-            # NOTE: Actual script execution logic to be implemented
-            # This is a placeholder for the actual HTTP request execution
-            # In real implementation, this would:
-            # 1. Get API definition from script
-            # 2. Build HTTP request with resolved parameters
-            # 3. Execute HTTP request
-            # 4. Validate response against assertions
-            # 5. Extract output variables
+            # Get API definition from script
+            api_definition = script.api_definition
+            if not api_definition:
+                raise ValueError(f"Script '{script.name}' has no API definition")
 
-            # Simulate script execution
+            # Build HTTP request from API definition
+            request_data = self._build_request_from_api_definition(
+                api_definition,
+                resolved_params,
+                context
+            )
+
+            # Create HTTP client
+            from morado.common.http import create_default_client
+            
+            # Configure timeout from script or API definition
+            timeout = None
+            if script.timeout_override:
+                timeout = (10, script.timeout_override)
+            elif api_definition.timeout:
+                timeout = (10, api_definition.timeout)
+
+            # Execute HTTP request
+            with create_default_client(base_url=api_definition.base_url) as client:
+                response = client.request(
+                    method=request_data['method'],
+                    url=request_data['url'],
+                    headers=request_data.get('headers'),
+                    params=request_data.get('params'),
+                    json=request_data.get('json'),
+                    data=request_data.get('data'),
+                    files=request_data.get('files'),
+                    timeout=timeout
+                )
+
+            # Validate response against assertions
+            assertion_results = self._validate_response(
+                response,
+                script.assertions or [],
+                context
+            )
+
+            # Extract output variables from response
+            extracted_vars = self._extract_variables(
+                response,
+                script.extract_variables or {},
+                context
+            )
+
+            # Update context with extracted variables
+            context.update_params(extracted_vars)
+
+            # Prepare output
             output = {
                 'script_name': script.name,
-                'parameters': resolved_params,
+                'api_definition': api_definition.name,
+                'request': {
+                    'method': request_data['method'],
+                    'url': request_data['url'],
+                    'headers': request_data.get('headers'),
+                    'params': request_data.get('params'),
+                },
                 'response': {
-                    'status_code': 200,
-                    'body': {'message': 'Success'}
-                }
+                    'status_code': response.status_code,
+                    'headers': dict(response.headers),
+                    'body': response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text,
+                    'request_time': response.request_time
+                },
+                'assertions': assertion_results,
+                'extracted_variables': extracted_vars
             }
 
-            # Extract output variables
+            # Check if all assertions passed
+            all_assertions_passed = all(
+                result['passed'] for result in assertion_results
+            )
+
+            # Get output variables
             output_variables = context.get_script_output()
 
             duration = time.time() - start_time
 
             return ExecutionResult(
-                status=ExecutionStatus.SUCCESS,
-                success=True,
+                status=ExecutionStatus.SUCCESS if all_assertions_passed else ExecutionStatus.FAILED,
+                success=all_assertions_passed,
                 output=output,
                 duration=duration,
                 output_variables=output_variables
@@ -534,6 +592,317 @@ class ExecutionEngine:
         except Exception:
             # If evaluation fails, return False
             return False
+
+    def _build_request_from_api_definition(
+        self,
+        api_definition: Any,
+        resolved_params: dict[str, Any],
+        context: ScriptExecutionContext
+    ) -> dict[str, Any]:
+        """Build HTTP request from API definition and parameters.
+
+        This method implements the request building logic according to Requirements 1.1 and 1.3:
+        - Constructs complete HTTP request from API Definition
+        - Merges headers from Header component and script parameters
+        - Merges body from Body component and script parameters
+        - Applies parameter overrides (script params > API definition)
+
+        Args:
+            api_definition: ApiDefinition model instance
+            resolved_params: Resolved parameters from execution context
+            context: Script execution context
+
+        Returns:
+            Dictionary containing request data (method, url, headers, params, json, data, files)
+        """
+        request_data = {
+            'method': api_definition.method.value,
+            'url': api_definition.path,
+        }
+
+        # Build headers (merge Header component + script parameters)
+        headers = {}
+        
+        # Add headers from Header component
+        if api_definition.header and api_definition.header.headers:
+            headers.update(api_definition.header.headers)
+        
+        # Override with headers from script parameters
+        if 'headers' in resolved_params:
+            headers.update(resolved_params['headers'])
+        
+        # Resolve variables in headers
+        headers = context.resolve_value(headers)
+        request_data['headers'] = headers
+
+        # Build query parameters
+        query_params = {}
+        
+        # Add query parameters from API definition
+        if api_definition.query_parameters:
+            query_params.update(api_definition.query_parameters)
+        
+        # Override with query parameters from script parameters
+        if 'params' in resolved_params:
+            query_params.update(resolved_params['params'])
+        elif 'query_params' in resolved_params:
+            query_params.update(resolved_params['query_params'])
+        
+        # Resolve variables in query parameters
+        if query_params:
+            query_params = context.resolve_value(query_params)
+            request_data['params'] = query_params
+
+        # Build path parameters and update URL
+        path_params = {}
+        
+        # Add path parameters from API definition
+        if api_definition.path_parameters:
+            path_params.update(api_definition.path_parameters)
+        
+        # Override with path parameters from script parameters
+        if 'path_params' in resolved_params:
+            path_params.update(resolved_params['path_params'])
+        
+        # Resolve variables in path parameters
+        if path_params:
+            path_params = context.resolve_value(path_params)
+            # Replace path parameters in URL
+            for key, value in path_params.items():
+                request_data['url'] = request_data['url'].replace(f'{{{key}}}', str(value))
+                request_data['url'] = request_data['url'].replace(f':{key}', str(value))
+
+        # Build request body (merge Body component + script parameters)
+        body = None
+        
+        # Get body from Body component (referenced)
+        if api_definition.request_body and api_definition.request_body.example_data:
+            body = api_definition.request_body.example_data.copy()
+        
+        # Get body from inline definition
+        elif api_definition.inline_request_body:
+            body = api_definition.inline_request_body.copy()
+        
+        # Override with body from script parameters
+        if 'body' in resolved_params:
+            if body:
+                # Merge with existing body
+                if isinstance(body, dict) and isinstance(resolved_params['body'], dict):
+                    body.update(resolved_params['body'])
+                else:
+                    body = resolved_params['body']
+            else:
+                body = resolved_params['body']
+        elif 'json' in resolved_params:
+            if body:
+                # Merge with existing body
+                if isinstance(body, dict) and isinstance(resolved_params['json'], dict):
+                    body.update(resolved_params['json'])
+                else:
+                    body = resolved_params['json']
+            else:
+                body = resolved_params['json']
+        
+        # Resolve variables in body
+        if body:
+            body = context.resolve_value(body)
+            
+            # Determine content type and set appropriate field
+            # Get content type, handling case where headers might be resolved to dict
+            content_type = 'application/json'  # default
+            if isinstance(headers, dict):
+                content_type = headers.get('Content-Type') or headers.get('content-type') or 'application/json'
+            
+            if isinstance(content_type, str) and 'application/json' in content_type:
+                request_data['json'] = body
+            elif isinstance(content_type, str) and ('application/x-www-form-urlencoded' in content_type or 'multipart/form-data' in content_type):
+                request_data['data'] = body
+            else:
+                # Default to JSON
+                request_data['json'] = body
+
+        # Handle file uploads
+        if 'files' in resolved_params:
+            request_data['files'] = resolved_params['files']
+
+        return request_data
+
+    def _validate_response(
+        self,
+        response: Any,  # HttpResponse
+        assertions: list[dict[str, Any]],
+        context: ScriptExecutionContext
+    ) -> list[dict[str, Any]]:
+        """Validate response against assertions.
+
+        This method implements response validation according to Requirement 7.5:
+        - Validates response against assertion rules
+        - Returns detailed error information on validation failure
+
+        Args:
+            response: HttpResponse object
+            assertions: List of assertion definitions
+            context: Script execution context
+
+        Returns:
+            List of assertion results with pass/fail status and details
+        """
+        results = []
+
+        for assertion in assertions:
+            assertion_type = assertion.get('type')
+            expected = assertion.get('expected')
+            message = assertion.get('message', f"Assertion {assertion_type} failed")
+
+            result = {
+                'type': assertion_type,
+                'expected': expected,
+                'message': message,
+                'passed': False,
+                'actual': None,
+                'error': None
+            }
+
+            try:
+                if assertion_type == 'status_code':
+                    # Validate status code
+                    actual = response.status_code
+                    result['actual'] = actual
+                    result['passed'] = actual == expected
+
+                elif assertion_type == 'equals':
+                    # Extract value using path and compare
+                    path = assertion.get('path', '$')
+                    actual = response.jsonpath(path) if path != '$' else response.json()
+                    result['actual'] = actual
+                    result['passed'] = actual == expected
+
+                elif assertion_type == 'not_equals':
+                    # Extract value and ensure it's not equal
+                    path = assertion.get('path', '$')
+                    actual = response.jsonpath(path) if path != '$' else response.json()
+                    result['actual'] = actual
+                    result['passed'] = actual != expected
+
+                elif assertion_type == 'contains':
+                    # Check if value contains expected
+                    path = assertion.get('path', '$')
+                    actual = response.jsonpath(path) if path != '$' else response.json()
+                    result['actual'] = actual
+                    
+                    if isinstance(actual, (list, dict, str)):
+                        result['passed'] = expected in actual
+                    else:
+                        result['passed'] = False
+
+                elif assertion_type == 'not_contains':
+                    # Check if value does not contain expected
+                    path = assertion.get('path', '$')
+                    actual = response.jsonpath(path) if path != '$' else response.json()
+                    result['actual'] = actual
+                    
+                    if isinstance(actual, (list, dict, str)):
+                        result['passed'] = expected not in actual
+                    else:
+                        result['passed'] = True
+
+                elif assertion_type == 'greater_than':
+                    # Compare numeric values
+                    path = assertion.get('path', '$')
+                    actual = response.jsonpath(path) if path != '$' else response.json()
+                    result['actual'] = actual
+                    result['passed'] = float(actual) > float(expected)
+
+                elif assertion_type == 'less_than':
+                    # Compare numeric values
+                    path = assertion.get('path', '$')
+                    actual = response.jsonpath(path) if path != '$' else response.json()
+                    result['actual'] = actual
+                    result['passed'] = float(actual) < float(expected)
+
+                elif assertion_type == 'regex_match':
+                    # Match against regex pattern
+                    import re
+                    path = assertion.get('path', '$')
+                    actual = str(response.jsonpath(path) if path != '$' else response.text)
+                    result['actual'] = actual
+                    pattern = assertion.get('pattern', expected)
+                    result['passed'] = bool(re.search(pattern, actual))
+
+                elif assertion_type == 'json_path':
+                    # Check if JSONPath exists or matches value
+                    path = assertion.get('path')
+                    assertion_check = assertion.get('assertion', 'exists')
+                    
+                    try:
+                        actual = response.jsonpath(path)
+                        result['actual'] = actual
+                        
+                        if assertion_check == 'exists':
+                            result['passed'] = actual is not None
+                        elif assertion_check == 'not_exists':
+                            result['passed'] = actual is None
+                        elif assertion_check == 'equals':
+                            result['passed'] = actual == expected
+                        else:
+                            result['passed'] = False
+                    except Exception:
+                        result['actual'] = None
+                        result['passed'] = assertion_check == 'not_exists'
+
+                elif assertion_type == 'response_time':
+                    # Validate response time
+                    actual = response.request_time
+                    result['actual'] = actual
+                    result['passed'] = actual <= float(expected)
+
+                else:
+                    # Unknown assertion type
+                    result['error'] = f"Unknown assertion type: {assertion_type}"
+                    result['passed'] = False
+
+            except Exception as e:
+                result['error'] = str(e)
+                result['passed'] = False
+
+            results.append(result)
+
+        return results
+
+    def _extract_variables(
+        self,
+        response: Any,  # HttpResponse
+        extract_config: dict[str, str],
+        context: ScriptExecutionContext
+    ) -> dict[str, Any]:
+        """Extract variables from response.
+
+        This method implements variable extraction according to Requirement 6.2:
+        - Extracts values from response using JSONPath
+        - Stores extracted values in execution context
+
+        Args:
+            response: HttpResponse object
+            extract_config: Dictionary mapping variable names to JSONPath expressions
+            context: Script execution context
+
+        Returns:
+            Dictionary of extracted variables
+        """
+        extracted = {}
+
+        for var_name, jsonpath_expr in extract_config.items():
+            try:
+                # Extract value using JSONPath
+                value = response.jsonpath(jsonpath_expr)
+                extracted[var_name] = value
+            except Exception as e:
+                # Log extraction failure but continue
+                # In production, this should use proper logging
+                print(f"Failed to extract variable '{var_name}' using path '{jsonpath_expr}': {e}")
+                extracted[var_name] = None
+
+        return extracted
 
 
 # Convenience functions for direct execution

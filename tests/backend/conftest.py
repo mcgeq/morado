@@ -1,6 +1,14 @@
 """Pytest configuration and fixtures for backend tests."""
 
+import sys
+from pathlib import Path
+
 import pytest
+
+# Add backend/src to Python path
+backend_src = Path(__file__).parent.parent.parent / "backend" / "src"
+sys.path.insert(0, str(backend_src))
+
 from morado.models.base import Base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
