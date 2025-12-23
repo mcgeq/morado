@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
+    "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.24",
@@ -26,9 +27,10 @@
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
-    "tailwindcss": "^4.0.0",
+    "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "vite": "^8.0.0-beta.3",
+    "vitest": "^4.0.16",
     "vue-tsc": "^3.1.4"
   }
 }
