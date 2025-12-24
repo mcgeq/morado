@@ -56,11 +56,7 @@
       <div>
         <label class="block text-sm font-medium mb-2">Headers *</label>
         <div class="space-y-3">
-          <div
-            v-for="(value, key, index) in formData.headers"
-            :key="index"
-            class="flex gap-2"
-          >
+          <div v-for="(value, key, index) in formData.headers" :key="index" class="flex gap-2">
             <input
               v-model="headerKeys[index]"
               type="text"
@@ -143,96 +139,96 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useHeaderStore } from '@/stores/header';
-import type { HeaderCreate, HeaderScope } from '@/api/header';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import type { HeaderCreate, HeaderScope } from '@/api/header';
+  import { useHeaderStore } from '@/stores/header';
 
-const route = useRoute();
-const router = useRouter();
-const headerStore = useHeaderStore();
+  const route = useRoute();
+  const router = useRouter();
+  const headerStore = useHeaderStore();
 
-const isEditMode = computed(() => route.params.id !== 'new');
-const headerId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
+  const isEditMode = computed(() => route.params.id !== 'new');
+  const headerId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
 
-const formData = ref<HeaderCreate>({
-  name: '',
-  description: '',
-  headers: {},
-  scope: 'project' as HeaderScope,
-  isActive: true,
-  version: '1.0.0',
-  tags: [],
-});
+  const formData = ref<HeaderCreate>({
+    name: '',
+    description: '',
+    headers: {},
+    scope: 'project' as HeaderScope,
+    isActive: true,
+    version: '1.0.0',
+    tags: [],
+  });
 
-const headerKeys = ref<string[]>([]);
-const tagsInput = ref('');
+  const headerKeys = ref<string[]>([]);
+  const tagsInput = ref('');
 
-onMounted(async () => {
-  if (isEditMode.value && headerId.value) {
-    try {
-      const header = await headerStore.fetchHeaderById(headerId.value);
-      formData.value = {
-        name: header.name,
-        description: header.description,
-        headers: { ...header.headers },
-        scope: header.scope,
-        isActive: header.isActive,
-        version: header.version,
-        tags: header.tags || [],
-      };
-      headerKeys.value = Object.keys(header.headers);
-      tagsInput.value = (header.tags || []).join(', ');
-    } catch (error) {
-      console.error('Failed to load header:', error);
-    }
-  }
-});
-
-function addHeader() {
-  const newKey = `Header-${Object.keys(formData.value.headers).length + 1}`;
-  formData.value.headers[newKey] = '';
-  headerKeys.value.push(newKey);
-}
-
-function removeHeader(key: string) {
-  delete formData.value.headers[key];
-  headerKeys.value = headerKeys.value.filter(k => k !== key);
-}
-
-function updateHeaderKey(index: number, oldKey: string) {
-  const newKey = headerKeys.value[index];
-  if (newKey !== oldKey && newKey) {
-    const headerValue = formData.value.headers[oldKey];
-    delete formData.value.headers[oldKey];
-    formData.value.headers[newKey] = headerValue || '';
-  }
-}
-
-function updateTags() {
-  formData.value.tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-async function handleSubmit() {
-  try {
-    updateTags();
-    
+  onMounted(async () => {
     if (isEditMode.value && headerId.value) {
-      await headerStore.updateExistingHeader(headerId.value, formData.value);
-    } else {
-      await headerStore.createNewHeader(formData.value);
+      try {
+        const header = await headerStore.fetchHeaderById(headerId.value);
+        formData.value = {
+          name: header.name,
+          description: header.description,
+          headers: { ...header.headers },
+          scope: header.scope,
+          isActive: header.isActive,
+          version: header.version,
+          tags: header.tags || [],
+        };
+        headerKeys.value = Object.keys(header.headers);
+        tagsInput.value = (header.tags || []).join(', ');
+      } catch (error) {
+        console.error('Failed to load header:', error);
+      }
     }
-    
-    router.push('/headers');
-  } catch (error) {
-    console.error('Failed to save header:', error);
-  }
-}
+  });
 
-function goBack() {
-  router.push('/headers');
-}
+  function addHeader() {
+    const newKey = `Header-${Object.keys(formData.value.headers).length + 1}`;
+    formData.value.headers[newKey] = '';
+    headerKeys.value.push(newKey);
+  }
+
+  function removeHeader(key: string) {
+    delete formData.value.headers[key];
+    headerKeys.value = headerKeys.value.filter(k => k !== key);
+  }
+
+  function updateHeaderKey(index: number, oldKey: string) {
+    const newKey = headerKeys.value[index];
+    if (newKey !== oldKey && newKey) {
+      const headerValue = formData.value.headers[oldKey];
+      delete formData.value.headers[oldKey];
+      formData.value.headers[newKey] = headerValue || '';
+    }
+  }
+
+  function updateTags() {
+    formData.value.tags = tagsInput.value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+
+  async function handleSubmit() {
+    try {
+      updateTags();
+
+      if (isEditMode.value && headerId.value) {
+        await headerStore.updateExistingHeader(headerId.value, formData.value);
+      } else {
+        await headerStore.createNewHeader(formData.value);
+      }
+
+      router.push('/headers');
+    } catch (error) {
+      console.error('Failed to save header:', error);
+    }
+  }
+
+  function goBack() {
+    router.push('/headers');
+  }
 </script>

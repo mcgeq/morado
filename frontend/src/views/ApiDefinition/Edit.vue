@@ -86,12 +86,7 @@
         <label class="block text-sm font-medium mb-2">Request Body</label>
         <div class="space-y-3">
           <div class="flex items-center gap-2">
-            <input
-              v-model="requestBodyMode"
-              type="radio"
-              value="component"
-              id="requestComponent"
-            />
+            <input v-model="requestBodyMode" type="radio" value="component" id="requestComponent" />
             <label for="requestComponent">Use Body Component</label>
           </div>
           <select
@@ -199,148 +194,148 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useApiDefinitionStore } from '@/stores/apiDefinition';
-import { useHeaderStore } from '@/stores/header';
-import { useBodyStore } from '@/stores/body';
-import type { ApiDefinitionCreate, HttpMethod } from '@/api/api-definition';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import type { ApiDefinitionCreate, HttpMethod } from '@/api/api-definition';
+  import { useApiDefinitionStore } from '@/stores/apiDefinition';
+  import { useBodyStore } from '@/stores/body';
+  import { useHeaderStore } from '@/stores/header';
 
-const route = useRoute();
-const router = useRouter();
-const apiDefinitionStore = useApiDefinitionStore();
-const headerStore = useHeaderStore();
-const bodyStore = useBodyStore();
+  const route = useRoute();
+  const router = useRouter();
+  const apiDefinitionStore = useApiDefinitionStore();
+  const headerStore = useHeaderStore();
+  const bodyStore = useBodyStore();
 
-const isEditMode = computed(() => route.params.id !== 'new');
-const apiDefinitionId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
+  const isEditMode = computed(() => route.params.id !== 'new');
+  const apiDefinitionId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
 
-const formData = ref<ApiDefinitionCreate>({
-  name: '',
-  description: '',
-  method: 'GET' as HttpMethod,
-  url: '',
-  isActive: true,
-  tags: [],
-});
+  const formData = ref<ApiDefinitionCreate>({
+    name: '',
+    description: '',
+    method: 'GET' as HttpMethod,
+    url: '',
+    isActive: true,
+    tags: [],
+  });
 
-const requestBodyMode = ref<'component' | 'inline'>('component');
-const responseBodyMode = ref<'component' | 'inline'>('component');
-const inlineRequestInput = ref('');
-const inlineResponseInput = ref('');
-const tagsInput = ref('');
+  const requestBodyMode = ref<'component' | 'inline'>('component');
+  const responseBodyMode = ref<'component' | 'inline'>('component');
+  const inlineRequestInput = ref('');
+  const inlineResponseInput = ref('');
+  const tagsInput = ref('');
 
-const headers = computed(() => headerStore.activeHeaders);
-const requestBodies = computed(() => bodyStore.requestBodies);
-const responseBodies = computed(() => bodyStore.responseBodies);
+  const headers = computed(() => headerStore.activeHeaders);
+  const requestBodies = computed(() => bodyStore.requestBodies);
+  const responseBodies = computed(() => bodyStore.responseBodies);
 
-onMounted(async () => {
-  // Load headers and bodies for selection
-  await Promise.all([headerStore.fetchHeaders(), bodyStore.fetchBodies()]);
-
-  if (isEditMode.value && apiDefinitionId.value) {
-    try {
-      const api = await apiDefinitionStore.fetchApiDefinitionById(apiDefinitionId.value);
-      formData.value = {
-        name: api.name,
-        description: api.description,
-        method: api.method,
-        url: api.url,
-        headerId: api.headerId,
-        requestBodyId: api.requestBodyId,
-        responseBodyId: api.responseBodyId,
-        inlineRequestBody: api.inlineRequestBody,
-        inlineResponseBody: api.inlineResponseBody,
-        isActive: api.isActive,
-        tags: api.tags || [],
-      };
-
-      if (api.requestBodyId) {
-        requestBodyMode.value = 'component';
-      } else if (api.inlineRequestBody) {
-        requestBodyMode.value = 'inline';
-        inlineRequestInput.value = JSON.stringify(api.inlineRequestBody, null, 2);
-      }
-
-      if (api.responseBodyId) {
-        responseBodyMode.value = 'component';
-      } else if (api.inlineResponseBody) {
-        responseBodyMode.value = 'inline';
-        inlineResponseInput.value = JSON.stringify(api.inlineResponseBody, null, 2);
-      }
-
-      tagsInput.value = (api.tags || []).join(', ');
-    } catch (error) {
-      console.error('Failed to load API definition:', error);
-    }
-  }
-});
-
-function updateInlineRequest() {
-  try {
-    if (inlineRequestInput.value.trim()) {
-      formData.value.inlineRequestBody = JSON.parse(inlineRequestInput.value);
-      formData.value.requestBodyId = undefined;
-    } else {
-      formData.value.inlineRequestBody = undefined;
-    }
-  } catch (error) {
-    console.error('Invalid JSON for inline request:', error);
-  }
-}
-
-function updateInlineResponse() {
-  try {
-    if (inlineResponseInput.value.trim()) {
-      formData.value.inlineResponseBody = JSON.parse(inlineResponseInput.value);
-      formData.value.responseBodyId = undefined;
-    } else {
-      formData.value.inlineResponseBody = undefined;
-    }
-  } catch (error) {
-    console.error('Invalid JSON for inline response:', error);
-  }
-}
-
-function updateTags() {
-  formData.value.tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-async function handleSubmit() {
-  try {
-    // Clear unused fields based on mode
-    if (requestBodyMode.value === 'component') {
-      formData.value.inlineRequestBody = undefined;
-    } else {
-      formData.value.requestBodyId = undefined;
-      updateInlineRequest();
-    }
-
-    if (responseBodyMode.value === 'component') {
-      formData.value.inlineResponseBody = undefined;
-    } else {
-      formData.value.responseBodyId = undefined;
-      updateInlineResponse();
-    }
-
-    updateTags();
+  onMounted(async () => {
+    // Load headers and bodies for selection
+    await Promise.all([headerStore.fetchHeaders(), bodyStore.fetchBodies()]);
 
     if (isEditMode.value && apiDefinitionId.value) {
-      await apiDefinitionStore.updateExistingApiDefinition(apiDefinitionId.value, formData.value);
-    } else {
-      await apiDefinitionStore.createNewApiDefinition(formData.value);
+      try {
+        const api = await apiDefinitionStore.fetchApiDefinitionById(apiDefinitionId.value);
+        formData.value = {
+          name: api.name,
+          description: api.description,
+          method: api.method,
+          url: api.url,
+          headerId: api.headerId,
+          requestBodyId: api.requestBodyId,
+          responseBodyId: api.responseBodyId,
+          inlineRequestBody: api.inlineRequestBody,
+          inlineResponseBody: api.inlineResponseBody,
+          isActive: api.isActive,
+          tags: api.tags || [],
+        };
+
+        if (api.requestBodyId) {
+          requestBodyMode.value = 'component';
+        } else if (api.inlineRequestBody) {
+          requestBodyMode.value = 'inline';
+          inlineRequestInput.value = JSON.stringify(api.inlineRequestBody, null, 2);
+        }
+
+        if (api.responseBodyId) {
+          responseBodyMode.value = 'component';
+        } else if (api.inlineResponseBody) {
+          responseBodyMode.value = 'inline';
+          inlineResponseInput.value = JSON.stringify(api.inlineResponseBody, null, 2);
+        }
+
+        tagsInput.value = (api.tags || []).join(', ');
+      } catch (error) {
+        console.error('Failed to load API definition:', error);
+      }
     }
+  });
 
-    router.push('/api-definitions');
-  } catch (error) {
-    console.error('Failed to save API definition:', error);
+  function updateInlineRequest() {
+    try {
+      if (inlineRequestInput.value.trim()) {
+        formData.value.inlineRequestBody = JSON.parse(inlineRequestInput.value);
+        formData.value.requestBodyId = undefined;
+      } else {
+        formData.value.inlineRequestBody = undefined;
+      }
+    } catch (error) {
+      console.error('Invalid JSON for inline request:', error);
+    }
   }
-}
 
-function goBack() {
-  router.push('/api-definitions');
-}
+  function updateInlineResponse() {
+    try {
+      if (inlineResponseInput.value.trim()) {
+        formData.value.inlineResponseBody = JSON.parse(inlineResponseInput.value);
+        formData.value.responseBodyId = undefined;
+      } else {
+        formData.value.inlineResponseBody = undefined;
+      }
+    } catch (error) {
+      console.error('Invalid JSON for inline response:', error);
+    }
+  }
+
+  function updateTags() {
+    formData.value.tags = tagsInput.value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+
+  async function handleSubmit() {
+    try {
+      // Clear unused fields based on mode
+      if (requestBodyMode.value === 'component') {
+        formData.value.inlineRequestBody = undefined;
+      } else {
+        formData.value.requestBodyId = undefined;
+        updateInlineRequest();
+      }
+
+      if (responseBodyMode.value === 'component') {
+        formData.value.inlineResponseBody = undefined;
+      } else {
+        formData.value.responseBodyId = undefined;
+        updateInlineResponse();
+      }
+
+      updateTags();
+
+      if (isEditMode.value && apiDefinitionId.value) {
+        await apiDefinitionStore.updateExistingApiDefinition(apiDefinitionId.value, formData.value);
+      } else {
+        await apiDefinitionStore.createNewApiDefinition(formData.value);
+      }
+
+      router.push('/api-definitions');
+    } catch (error) {
+      console.error('Failed to save API definition:', error);
+    }
+  }
+
+  function goBack() {
+    router.push('/api-definitions');
+  }
 </script>

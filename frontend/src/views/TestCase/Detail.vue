@@ -94,36 +94,36 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useTestCaseStore } from '@/stores/testCase';
+  import { computed, onMounted } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { useTestCaseStore } from '@/stores/testCase';
 
-const route = useRoute();
-const router = useRouter();
-const testCaseStore = useTestCaseStore();
+  const route = useRoute();
+  const router = useRouter();
+  const testCaseStore = useTestCaseStore();
 
-const testCaseId = computed(() => Number(route.params.id));
-const testCase = computed(() => testCaseStore.currentTestCase);
+  const testCaseId = computed(() => Number(route.params.id));
+  const testCase = computed(() => testCaseStore.currentTestCase);
 
-onMounted(async () => {
-  if (testCaseId.value) {
-    await testCaseStore.fetchTestCaseById(testCaseId.value);
+  onMounted(async () => {
+    if (testCaseId.value) {
+      await testCaseStore.fetchTestCaseById(testCaseId.value);
+    }
+  });
+
+  function navigateToEdit() {
+    router.push(`/test-cases/${testCaseId.value}/edit`);
   }
-});
 
-function navigateToEdit() {
-  router.push(`/test-cases/${testCaseId.value}/edit`);
-}
-
-async function handleExecute() {
-  try {
-    await testCaseStore.executeTestCaseById(testCaseId.value);
-  } catch (error) {
-    console.error('Failed to execute test case:', error);
+  async function handleExecute() {
+    try {
+      await testCaseStore.executeTestCaseById(testCaseId.value);
+    } catch (error) {
+      console.error('Failed to execute test case:', error);
+    }
   }
-}
 
-function goBack() {
-  router.push('/test-cases');
-}
+  function goBack() {
+    router.push('/test-cases');
+  }
 </script>

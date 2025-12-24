@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./widgets.css";
 
 @theme {
   /* Custom color palette */

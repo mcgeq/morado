@@ -4,9 +4,7 @@
       <button @click="goBack" class="mb-4 text-blue-600 hover:text-blue-700">
         ← Back to Components
       </button>
-      <h1 class="text-3xl font-bold">
-        {{ isEditMode ? 'Edit Component' : 'Create Component' }}
-      </h1>
+      <h1 class="text-3xl font-bold">{{ isEditMode ? 'Edit Component' : 'Create Component' }}</h1>
     </div>
 
     <form @submit.prevent="handleSubmit" class="max-w-3xl space-y-6">
@@ -32,7 +30,11 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium mb-2">Component Type *</label>
-          <select v-model="formData.componentType" required class="w-full rounded-lg border px-4 py-2">
+          <select
+            v-model="formData.componentType"
+            required
+            class="w-full rounded-lg border px-4 py-2"
+          >
             <option value="simple">Simple</option>
             <option value="composite">Composite</option>
             <option value="template">Template</option>
@@ -40,7 +42,11 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-2">Execution Mode *</label>
-          <select v-model="formData.executionMode" required class="w-full rounded-lg border px-4 py-2">
+          <select
+            v-model="formData.executionMode"
+            required
+            class="w-full rounded-lg border px-4 py-2"
+          >
             <option value="sequential">Sequential</option>
             <option value="parallel">Parallel</option>
             <option value="conditional">Conditional</option>
@@ -84,64 +90,64 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useComponentStore } from '@/stores/component';
-import type { TestComponentCreate, ComponentType, ExecutionMode } from '@/api/component';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import type { ComponentType, ExecutionMode, TestComponentCreate } from '@/api/component';
+  import { useComponentStore } from '@/stores/component';
 
-const route = useRoute();
-const router = useRouter();
-const componentStore = useComponentStore();
+  const route = useRoute();
+  const router = useRouter();
+  const componentStore = useComponentStore();
 
-const isEditMode = computed(() => route.params.id !== 'new');
-const componentId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
+  const isEditMode = computed(() => route.params.id !== 'new');
+  const componentId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
 
-const formData = ref<TestComponentCreate>({
-  name: '',
-  description: '',
-  componentType: 'simple' as ComponentType,
-  executionMode: 'sequential' as ExecutionMode,
-  isActive: true,
-  version: '1.0.0',
-});
+  const formData = ref<TestComponentCreate>({
+    name: '',
+    description: '',
+    componentType: 'simple' as ComponentType,
+    executionMode: 'sequential' as ExecutionMode,
+    isActive: true,
+    version: '1.0.0',
+  });
 
-const components = computed(() => componentStore.rootComponents);
+  const components = computed(() => componentStore.rootComponents);
 
-onMounted(async () => {
-  await componentStore.fetchComponents();
+  onMounted(async () => {
+    await componentStore.fetchComponents();
 
-  if (isEditMode.value && componentId.value) {
-    try {
-      const component = await componentStore.fetchComponentById(componentId.value);
-      formData.value = {
-        name: component.name,
-        description: component.description,
-        componentType: component.componentType,
-        executionMode: component.executionMode,
-        parentComponentId: component.parentComponentId,
-        isActive: component.isActive,
-        version: component.version,
-      };
-    } catch (error) {
-      console.error('Failed to load component:', error);
-    }
-  }
-});
-
-async function handleSubmit() {
-  try {
     if (isEditMode.value && componentId.value) {
-      await componentStore.updateExistingComponent(componentId.value, formData.value);
-    } else {
-      await componentStore.createNewComponent(formData.value);
+      try {
+        const component = await componentStore.fetchComponentById(componentId.value);
+        formData.value = {
+          name: component.name,
+          description: component.description,
+          componentType: component.componentType,
+          executionMode: component.executionMode,
+          parentComponentId: component.parentComponentId,
+          isActive: component.isActive,
+          version: component.version,
+        };
+      } catch (error) {
+        console.error('Failed to load component:', error);
+      }
     }
-    router.push('/components');
-  } catch (error) {
-    console.error('Failed to save component:', error);
-  }
-}
+  });
 
-function goBack() {
-  router.push('/components');
-}
+  async function handleSubmit() {
+    try {
+      if (isEditMode.value && componentId.value) {
+        await componentStore.updateExistingComponent(componentId.value, formData.value);
+      } else {
+        await componentStore.createNewComponent(formData.value);
+      }
+      router.push('/components');
+    } catch (error) {
+      console.error('Failed to save component:', error);
+    }
+  }
+
+  function goBack() {
+    router.push('/components');
+  }
 </script>

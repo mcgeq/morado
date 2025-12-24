@@ -143,9 +143,106 @@ Import components individually:
 import Button from '@/components/common/Button.vue'
 import Table from '@/components/common/Table.vue'
 import Modal from '@/components/common/Modal.vue'
+import UserProfileCard from '@/components/common/UserProfileCard.vue'
 ```
 
 Or import from the index:
 ```typescript
-import { Button, Table, Modal } from '@/components/common'
+import { Button, Table, Modal, UserProfileCard } from '@/components/common'
+```
+
+## Dashboard Components
+
+### UserProfileCard
+
+A user profile card component that displays user information and testing metrics.
+
+**Props:**
+- `user`: Object containing user information
+  - `id`: string - User ID
+  - `username`: string - Username
+  - `avatar`: string (optional) - Avatar URL
+  - `registrationDate`: string - Registration date (ISO format)
+- `metrics`: Object containing user metrics
+  - `totalExecutions`: number - Total test executions
+  - `passedTests`: number - Number of passed tests
+  - `failedTests`: number - Number of failed tests
+
+**Features:**
+- Avatar display with fallback to user initial
+- Formatted registration date
+- Three metric badges with icons (executions, passed, failed)
+- Number formatting with thousand separators
+- Click to navigate to profile page
+- Keyboard navigation support (Enter/Space)
+- Hover effects for interactivity
+
+**Example:**
+```vue
+<UserProfileCard
+  :user="{
+    id: '123',
+    username: 'JohnDoe',
+    avatar: 'https://example.com/avatar.jpg',
+    registrationDate: '2024-01-15T10:30:00Z'
+  }"
+  :metrics="{
+    totalExecutions: 1234,
+    passedTests: 890,
+    failedTests: 344
+  }"
+/>
+```
+
+### DonutChart
+
+A reusable donut chart component for displaying statistics.
+
+**Props:**
+- `datasets`: Array of chart datasets
+  - `label`: string - Dataset label
+  - `value`: number - Dataset value
+  - `color`: string - Color hex code
+- `centerText`: string (optional) - Text to display in center
+- `showLegend`: boolean (default: true) - Show/hide legend
+- `size`: 'sm' | 'md' | 'lg' (default: 'md') - Chart size
+
+**Example:**
+```vue
+<DonutChart
+  :datasets="[
+    { label: 'Completed', value: 50, color: '#3B82F6' },
+    { label: 'Failed', value: 30, color: '#F59E0B' },
+    { label: 'Pending', value: 20, color: '#8B5CF6' }
+  ]"
+  centerText="Total: 100"
+  size="lg"
+/>
+```
+
+### AreaChart
+
+A reusable area chart component for displaying trends over time.
+
+**Props:**
+- `series`: Array of chart series
+  - `name`: string - Series name
+  - `data`: number[] - Series data points
+  - `color`: string - Color hex code
+- `labels`: string[] - X-axis labels
+- `yAxisLabel`: string (optional) - Y-axis label
+- `xAxisLabel`: string (optional) - X-axis label
+- `showGrid`: boolean (default: true) - Show/hide grid
+
+**Example:**
+```vue
+<AreaChart
+  :series="[
+    { name: 'Series 1', data: [10, 20, 30], color: '#3B82F6' },
+    { name: 'Series 2', data: [15, 25, 35], color: '#10B981' }
+  ]"
+  :labels="['Jan', 'Feb', 'Mar']"
+  yAxisLabel="Count"
+  xAxisLabel="Month"
+/>
 ```

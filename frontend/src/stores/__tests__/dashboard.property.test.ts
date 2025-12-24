@@ -4,10 +4,10 @@
  * Property-based tests using fast-check to verify dashboard store behavior.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
 import * as fc from 'fast-check';
-import { setCacheData, getCacheData, isCacheValid, clearCache } from '../dashboard';
+import { createPinia, setActivePinia } from 'pinia';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { clearCache, getCacheData, isCacheValid, setCacheData } from '../dashboard';
 
 describe('Dashboard Store Property Tests', () => {
   beforeEach(() => {
@@ -62,7 +62,7 @@ describe('Dashboard Store Property Tests', () => {
                 testCaseComponents: fc.nat(),
                 actualComponents: fc.nat(),
                 detectionComponents: fc.nat(),
-              })
+              }),
             ),
           }),
         }),
@@ -77,7 +77,7 @@ describe('Dashboard Store Property Tests', () => {
             JSON.stringify({
               ...cachedData,
               timestamp: cacheTimestamp,
-            })
+            }),
           );
 
           const shouldUseFreshData = minutesElapsed > 5;
@@ -91,9 +91,9 @@ describe('Dashboard Store Property Tests', () => {
             return true;
           }
           return shouldUseFreshData ? !cacheIsValid : cacheIsValid;
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -139,7 +139,7 @@ describe('Dashboard Store Property Tests', () => {
                 testCaseComponents: fc.nat(),
                 actualComponents: fc.nat(),
                 detectionComponents: fc.nat(),
-              })
+              }),
             ),
           }),
         }),
@@ -160,9 +160,9 @@ describe('Dashboard Store Property Tests', () => {
             cached.userData.username === data.userData.username &&
             cached.statistics.steps.completed === data.statistics.steps.completed
           );
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });

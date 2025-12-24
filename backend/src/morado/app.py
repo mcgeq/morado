@@ -103,6 +103,7 @@ def create_app() -> Litestar:
     from morado.api.v1.api_definition import ApiDefinitionController
     from morado.api.v1.body import BodyController
     from morado.api.v1.component import TestComponentController
+    from morado.api.v1.dashboard import DashboardController
     from morado.api.v1.header import HeaderController
     from morado.api.v1.report import ReportController
     from morado.api.v1.script import TestScriptController
@@ -142,6 +143,7 @@ def create_app() -> Litestar:
             {"name": "Test Suites", "description": "Test suite management"},
             {"name": "Test Execution", "description": "Test execution and results"},
             {"name": "Reports", "description": "Test reports and analytics"},
+            {"name": "Dashboard", "description": "Dashboard statistics and metrics"},
         ],  # type: ignore[arg-type]
     )
 
@@ -157,6 +159,7 @@ def create_app() -> Litestar:
             TestSuiteController,
             TestExecutionController,
             ReportController,
+            DashboardController,
         ],
         cors_config=create_cors_config(settings),
         exception_handlers=create_exception_handlers(),

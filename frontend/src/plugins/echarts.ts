@@ -4,19 +4,19 @@
  * Global ECharts setup and component registration for the dashboard.
  */
 
-import type { App } from 'vue';
-import ECharts from 'vue-echarts';
+import { LineChart, PieChart } from 'echarts/charts';
+import {
+  GridComponent,
+  LegendComponent,
+  TitleComponent,
+  TooltipComponent,
+} from 'echarts/components';
 import { use } from 'echarts/core';
 
 // Import ECharts components
 import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart, LineChart } from 'echarts/charts';
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-} from 'echarts/components';
+import type { App } from 'vue';
+import ECharts from 'vue-echarts';
 
 // Register ECharts components
 use([

@@ -147,8 +147,19 @@
 
       <!-- Empty State -->
       <div v-if="results.length === 0" class="text-center py-12">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-16 w-16 mx-auto text-base-content/20 mb-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
         </svg>
         <p class="text-base-content/60">No test results available</p>
       </div>
@@ -157,89 +168,89 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+  import { computed, ref } from 'vue';
 
-interface TestResult {
-  id: number;
-  name: string;
-  status: 'passed' | 'failed' | 'skipped';
-  duration: number;
-  executed_at: string;
-  total: number;
-  passed: number;
-  failed: number;
-  skipped: number;
-}
-
-interface Props {
-  results: TestResult[];
-  title?: string;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  title: 'Test Results',
-});
-
-defineEmits<{
-  selectResult: [result: TestResult];
-}>();
-
-const chartViews = ['Bar', 'Pie', 'List'] as const;
-const currentView = ref<typeof chartViews[number]>('Bar');
-
-const totalTests = computed(() => {
-  return props.results.reduce((sum, r) => sum + r.total, 0);
-});
-
-const passedTests = computed(() => {
-  return props.results.reduce((sum, r) => sum + r.passed, 0);
-});
-
-const failedTests = computed(() => {
-  return props.results.reduce((sum, r) => sum + r.failed, 0);
-});
-
-const skippedTests = computed(() => {
-  return props.results.reduce((sum, r) => sum + r.skipped, 0);
-});
-
-const passRate = computed(() => {
-  if (totalTests.value === 0) return 0;
-  return Math.round((passedTests.value / totalTests.value) * 100);
-});
-
-const failRate = computed(() => {
-  if (totalTests.value === 0) return 0;
-  return Math.round((failedTests.value / totalTests.value) * 100);
-});
-
-const skipRate = computed(() => {
-  if (totalTests.value === 0) return 0;
-  return Math.round((skippedTests.value / totalTests.value) * 100);
-});
-
-function getStatusBadge(status: string): string {
-  switch (status) {
-    case 'passed':
-      return 'badge-success';
-    case 'failed':
-      return 'badge-error';
-    case 'skipped':
-      return 'badge-warning';
-    default:
-      return 'badge-ghost';
+  interface TestResult {
+    id: number;
+    name: string;
+    status: 'passed' | 'failed' | 'skipped';
+    duration: number;
+    executed_at: string;
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
   }
-}
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  interface Props {
+    results: TestResult[];
+    title?: string;
+  }
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  return date.toLocaleDateString();
-}
+  const props = withDefaults(defineProps<Props>(), {
+    title: 'Test Results',
+  });
+
+  defineEmits<{
+    selectResult: [result: TestResult];
+  }>();
+
+  const chartViews = ['Bar', 'Pie', 'List'] as const;
+  const currentView = ref<(typeof chartViews)[number]>('Bar');
+
+  const totalTests = computed(() => {
+    return props.results.reduce((sum, r) => sum + r.total, 0);
+  });
+
+  const passedTests = computed(() => {
+    return props.results.reduce((sum, r) => sum + r.passed, 0);
+  });
+
+  const failedTests = computed(() => {
+    return props.results.reduce((sum, r) => sum + r.failed, 0);
+  });
+
+  const skippedTests = computed(() => {
+    return props.results.reduce((sum, r) => sum + r.skipped, 0);
+  });
+
+  const passRate = computed(() => {
+    if (totalTests.value === 0) return 0;
+    return Math.round((passedTests.value / totalTests.value) * 100);
+  });
+
+  const failRate = computed(() => {
+    if (totalTests.value === 0) return 0;
+    return Math.round((failedTests.value / totalTests.value) * 100);
+  });
+
+  const skipRate = computed(() => {
+    if (totalTests.value === 0) return 0;
+    return Math.round((skippedTests.value / totalTests.value) * 100);
+  });
+
+  function getStatusBadge(status: string): string {
+    switch (status) {
+      case 'passed':
+        return 'badge-success';
+      case 'failed':
+        return 'badge-error';
+      case 'skipped':
+        return 'badge-warning';
+      default:
+        return 'badge-ghost';
+    }
+  }
+
+  function formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  }
 </script>

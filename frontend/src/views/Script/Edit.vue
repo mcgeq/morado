@@ -52,7 +52,7 @@
         >
           <option :value="undefined">Select an API definition</option>
           <option v-for="api in apiDefinitions" :key="api.id" :value="api.id">
-            {{ api.method }} - {{ api.name }}
+            {{ api.method }}- {{ api.name }}
           </option>
         </select>
       </div>
@@ -179,104 +179,104 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useScriptStore } from '@/stores/script';
-import { useApiDefinitionStore } from '@/stores/apiDefinition';
-import type { TestScriptCreate, ScriptType } from '@/api/script';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import type { ScriptType, TestScriptCreate } from '@/api/script';
+  import { useApiDefinitionStore } from '@/stores/apiDefinition';
+  import { useScriptStore } from '@/stores/script';
 
-const route = useRoute();
-const router = useRouter();
-const scriptStore = useScriptStore();
-const apiDefinitionStore = useApiDefinitionStore();
+  const route = useRoute();
+  const router = useRouter();
+  const scriptStore = useScriptStore();
+  const apiDefinitionStore = useApiDefinitionStore();
 
-const isEditMode = computed(() => route.params.id !== 'new');
-const scriptId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
+  const isEditMode = computed(() => route.params.id !== 'new');
+  const scriptId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
 
-const formData = ref<TestScriptCreate>({
-  name: '',
-  description: '',
-  apiDefinitionId: 0,
-  scriptType: 'main' as ScriptType,
-  executionOrder: 1,
-  retryCount: 0,
-  retryInterval: 1000,
-  isActive: true,
-  debugMode: false,
-  tags: [],
-});
+  const formData = ref<TestScriptCreate>({
+    name: '',
+    description: '',
+    apiDefinitionId: 0,
+    scriptType: 'main' as ScriptType,
+    executionOrder: 1,
+    retryCount: 0,
+    retryInterval: 1000,
+    isActive: true,
+    debugMode: false,
+    tags: [],
+  });
 
-const variablesInput = ref('');
-const tagsInput = ref('');
+  const variablesInput = ref('');
+  const tagsInput = ref('');
 
-const apiDefinitions = computed(() => apiDefinitionStore.activeApiDefinitions);
+  const apiDefinitions = computed(() => apiDefinitionStore.activeApiDefinitions);
 
-onMounted(async () => {
-  await apiDefinitionStore.fetchApiDefinitions();
-
-  if (isEditMode.value && scriptId.value) {
-    try {
-      const script = await scriptStore.fetchScriptById(scriptId.value);
-      formData.value = {
-        name: script.name,
-        description: script.description,
-        apiDefinitionId: script.apiDefinitionId,
-        scriptType: script.scriptType,
-        executionOrder: script.executionOrder,
-        variables: script.variables,
-        preScript: script.preScript,
-        postScript: script.postScript,
-        retryCount: script.retryCount,
-        retryInterval: script.retryInterval,
-        isActive: script.isActive,
-        debugMode: script.debugMode,
-        tags: script.tags || [],
-      };
-      variablesInput.value = script.variables ? JSON.stringify(script.variables, null, 2) : '';
-      tagsInput.value = (script.tags || []).join(', ');
-    } catch (error) {
-      console.error('Failed to load script:', error);
-    }
-  }
-});
-
-function updateVariables() {
-  try {
-    if (variablesInput.value.trim()) {
-      formData.value.variables = JSON.parse(variablesInput.value);
-    } else {
-      formData.value.variables = undefined;
-    }
-  } catch (error) {
-    console.error('Invalid JSON for variables:', error);
-  }
-}
-
-function updateTags() {
-  formData.value.tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-async function handleSubmit() {
-  try {
-    updateVariables();
-    updateTags();
+  onMounted(async () => {
+    await apiDefinitionStore.fetchApiDefinitions();
 
     if (isEditMode.value && scriptId.value) {
-      await scriptStore.updateExistingScript(scriptId.value, formData.value);
-    } else {
-      await scriptStore.createNewScript(formData.value);
+      try {
+        const script = await scriptStore.fetchScriptById(scriptId.value);
+        formData.value = {
+          name: script.name,
+          description: script.description,
+          apiDefinitionId: script.apiDefinitionId,
+          scriptType: script.scriptType,
+          executionOrder: script.executionOrder,
+          variables: script.variables,
+          preScript: script.preScript,
+          postScript: script.postScript,
+          retryCount: script.retryCount,
+          retryInterval: script.retryInterval,
+          isActive: script.isActive,
+          debugMode: script.debugMode,
+          tags: script.tags || [],
+        };
+        variablesInput.value = script.variables ? JSON.stringify(script.variables, null, 2) : '';
+        tagsInput.value = (script.tags || []).join(', ');
+      } catch (error) {
+        console.error('Failed to load script:', error);
+      }
     }
+  });
 
-    router.push('/scripts');
-  } catch (error) {
-    console.error('Failed to save script:', error);
+  function updateVariables() {
+    try {
+      if (variablesInput.value.trim()) {
+        formData.value.variables = JSON.parse(variablesInput.value);
+      } else {
+        formData.value.variables = undefined;
+      }
+    } catch (error) {
+      console.error('Invalid JSON for variables:', error);
+    }
   }
-}
 
-function goBack() {
-  router.push('/scripts');
-}
+  function updateTags() {
+    formData.value.tags = tagsInput.value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+
+  async function handleSubmit() {
+    try {
+      updateVariables();
+      updateTags();
+
+      if (isEditMode.value && scriptId.value) {
+        await scriptStore.updateExistingScript(scriptId.value, formData.value);
+      } else {
+        await scriptStore.createNewScript(formData.value);
+      }
+
+      router.push('/scripts');
+    } catch (error) {
+      console.error('Failed to save script:', error);
+    }
+  }
+
+  function goBack() {
+    router.push('/scripts');
+  }
 </script>

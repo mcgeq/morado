@@ -73,35 +73,35 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
 
-const router = useRouter();
+  const router = useRouter();
 
-const searchQuery = ref('');
-const isLoading = ref(false);
-const testSuites = ref<any[]>([]);
+  const searchQuery = ref('');
+  const isLoading = ref(false);
+  const testSuites = ref<any[]>([]);
 
-onMounted(async () => {
-  // Placeholder - would fetch from API
-  isLoading.value = false;
-});
+  onMounted(async () => {
+    // Placeholder - would fetch from API
+    isLoading.value = false;
+  });
 
-function navigateToCreate() {
-  router.push('/test-suites/new');
-}
-
-function handleSearch() {
-  // Placeholder for search functionality
-}
-
-function handleExecute(id: number) {
-  console.log('Execute test suite:', id);
-}
-
-function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this test suite?')) {
-    console.log('Delete test suite:', id);
+  function navigateToCreate() {
+    router.push('/test-suites/new');
   }
-}
+
+  function handleSearch() {
+    // Placeholder for search functionality
+  }
+
+  function handleExecute(id: number) {
+    console.log('Execute test suite:', id);
+  }
+
+  function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this test suite?')) {
+      console.log('Delete test suite:', id);
+    }
+  }
 </script>

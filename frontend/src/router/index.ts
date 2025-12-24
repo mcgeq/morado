@@ -280,6 +280,17 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: false,
     },
   },
+
+  // I18n Test Route (Development only)
+  {
+    path: '/i18n-test',
+    name: 'I18nTest',
+    component: () => import('@/views/I18nTest.vue'),
+    meta: {
+      title: 'I18n 测试',
+      requiresAuth: false,
+    },
+  },
 ];
 
 /**

@@ -25,11 +25,21 @@
         <div class="rounded-lg border bg-white p-6">
           <h2 class="text-xl font-semibold mb-4">Script Information</h2>
           <div class="space-y-2 text-sm">
-            <div><span class="font-medium">Type:</span> {{ script.scriptType }}</div>
-            <div><span class="font-medium">API:</span> {{ script.apiDefinitionId }}</div>
-            <div><span class="font-medium">Order:</span> {{ script.executionOrder }}</div>
+            <div>
+              <span class="font-medium">Type:</span>
+              {{ script.scriptType }}
+            </div>
+            <div>
+              <span class="font-medium">API:</span>
+              {{ script.apiDefinitionId }}
+            </div>
+            <div>
+              <span class="font-medium">Order:</span>
+              {{ script.executionOrder }}
+            </div>
             <div v-if="script.retryCount > 0">
-              <span class="font-medium">Retry:</span> {{ script.retryCount }} times
+              <span class="font-medium">Retry:</span>
+              {{ script.retryCount }}times
             </div>
           </div>
         </div>
@@ -72,7 +82,7 @@
         <!-- Execution Result -->
         <div v-if="scriptStore.executionResult" class="rounded-lg border bg-white p-6">
           <h2 class="text-xl font-semibold mb-4">Execution Result</h2>
-          
+
           <!-- Status -->
           <div class="mb-4">
             <span
@@ -149,48 +159,48 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useScriptStore } from '@/stores/script';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { useScriptStore } from '@/stores/script';
 
-const route = useRoute();
-const router = useRouter();
-const scriptStore = useScriptStore();
+  const route = useRoute();
+  const router = useRouter();
+  const scriptStore = useScriptStore();
 
-const scriptId = computed(() => Number(route.params.id));
-const script = computed(() => scriptStore.currentScript);
+  const scriptId = computed(() => Number(route.params.id));
+  const script = computed(() => scriptStore.currentScript);
 
-const runtimeParamsInput = ref('{}');
+  const runtimeParamsInput = ref('{}');
 
-onMounted(async () => {
-  if (scriptId.value) {
+  onMounted(async () => {
+    if (scriptId.value) {
+      try {
+        await scriptStore.fetchScriptById(scriptId.value);
+      } catch (error) {
+        console.error('Failed to load script:', error);
+      }
+    }
+  });
+
+  async function handleExecute() {
     try {
-      await scriptStore.fetchScriptById(scriptId.value);
+      const runtimeParams = JSON.parse(runtimeParamsInput.value);
+      await scriptStore.executeScriptById(scriptId.value, runtimeParams);
     } catch (error) {
-      console.error('Failed to load script:', error);
+      console.error('Failed to execute script:', error);
     }
   }
-});
 
-async function handleExecute() {
-  try {
-    const runtimeParams = JSON.parse(runtimeParamsInput.value);
-    await scriptStore.executeScriptById(scriptId.value, runtimeParams);
-  } catch (error) {
-    console.error('Failed to execute script:', error);
+  async function handleDebug() {
+    try {
+      const runtimeParams = JSON.parse(runtimeParamsInput.value);
+      await scriptStore.debugScriptById(scriptId.value, [], runtimeParams);
+    } catch (error) {
+      console.error('Failed to debug script:', error);
+    }
   }
-}
 
-async function handleDebug() {
-  try {
-    const runtimeParams = JSON.parse(runtimeParamsInput.value);
-    await scriptStore.debugScriptById(scriptId.value, [], runtimeParams);
-  } catch (error) {
-    console.error('Failed to debug script:', error);
+  function goBack() {
+    router.push('/scripts');
   }
-}
-
-function goBack() {
-  router.push('/scripts');
-}
 </script>

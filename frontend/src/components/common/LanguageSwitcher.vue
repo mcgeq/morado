@@ -1,0 +1,43 @@
+<template>
+  <div class="language-switcher">
+    <button
+      type="button"
+      @click="toggleLanguage"
+      class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+      :aria-label="`${t('common.switchLanguage')}: ${currentLocaleLabel}`"
+    >
+      <svg
+        class="w-5 h-5 mr-2"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+        />
+      </svg>
+      <span>{{ currentLocaleLabel }}</span>
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+  import { useLocale } from '@/composables/useLocale';
+
+  const { currentLocale, currentLocaleLabel, switchLocale, t } = useLocale();
+
+  function toggleLanguage(): void {
+    const newLocale = currentLocale.value === 'zh-CN' ? 'en-US' : 'zh-CN';
+    switchLocale(newLocale);
+  }
+</script>
+
+<style scoped>
+  .language-switcher {
+    display: inline-block;
+  }
+</style>

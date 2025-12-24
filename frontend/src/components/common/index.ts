@@ -1,3 +1,13 @@
+export { default as AreaChart } from './AreaChart.vue';
 export { default as Button } from './Button.vue';
+export { default as DashboardHeader } from './DashboardHeader.vue';
+export { default as DonutChart } from './DonutChart.vue';
+export { default as ErrorState } from './ErrorState.vue';
+export { default as LanguageSwitcher } from './LanguageSwitcher.vue';
+export { default as LoadingState } from './LoadingState.vue';
 export { default as Modal } from './Modal.vue';
+export { default as NotificationContainer } from './NotificationContainer.vue';
+export { default as RefreshButton } from './RefreshButton.vue';
 export { default as Table } from './Table.vue';
+export { default as UserProfileCard } from './UserProfileCard.vue';
+export { default as WidgetSkeleton } from './WidgetSkeleton.vue';

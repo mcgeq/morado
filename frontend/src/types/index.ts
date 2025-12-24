@@ -4,20 +4,19 @@
  * Central export point for all TypeScript type definitions.
  */
 
-// Re-export all dashboard types
-export * from './dashboard';
-
 // Re-export store types
 export type {
+  ApiUsageData,
+  ApiUsageResponse,
+  DashboardState,
+  DashboardStatistics,
+  StepStatistics,
+  StepStatisticsResponse,
+  TrendDataPoint,
+  TrendsResponse,
   UserData,
   UserMetrics,
-  StepStatistics,
-  ApiUsageData,
-  TrendDataPoint,
-  DashboardStatistics,
-  DashboardState,
   UserMetricsResponse,
-  StepStatisticsResponse,
-  ApiUsageResponse,
-  TrendsResponse,
 } from '../stores/dashboard';
+// Re-export all dashboard types
+export * from './dashboard';

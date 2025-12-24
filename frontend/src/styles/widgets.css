@@ -1,0 +1,420 @@
+/**
+ * Widget Utility Classes
+ *
+ * Consistent styling classes for dashboard widgets.
+ * Import this file in main.ts or App.vue to use these classes globally.
+ *
+ * Requirements: 10.1, 10.2, 10.3, 10.4, 10.5
+ */
+
+/* ============================================================================
+   Base Widget Styles
+   ============================================================================ */
+
+.widget {
+  background-color: #ffffff;
+  border-radius: 0.75rem; /* 12px */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem; /* 24px */
+  transition: box-shadow 300ms ease;
+}
+
+.widget-hoverable:hover {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.widget-mobile {
+  padding: 1rem; /* 16px */
+}
+
+/* ============================================================================
+   Widget Header Styles
+   ============================================================================ */
+
+.widget-header {
+  margin-bottom: 1rem; /* 16px */
+}
+
+.widget-header h3,
+.widget-title {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 600;
+  color: #1f2937; /* gray-800 */
+  margin: 0;
+}
+
+.widget-subtitle {
+  font-size: 0.875rem; /* 14px */
+  color: #6b7280; /* gray-500 */
+  margin-top: 0.25rem;
+}
+
+/* ============================================================================
+   Card Styles
+   ============================================================================ */
+
+.card {
+  background-color: #ffffff;
+  border-radius: 0.75rem; /* 12px */
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem; /* 24px */
+  transition: all 300ms ease;
+}
+
+.card-hoverable:hover {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   Spacing Utilities
+   ============================================================================ */
+
+.widget-padding {
+  padding: 1.5rem; /* 24px */
+}
+
+.widget-padding-mobile {
+  padding: 1rem; /* 16px */
+}
+
+.widget-gap {
+  gap: 1.5rem; /* 24px */
+}
+
+.widget-gap-mobile {
+  gap: 1rem; /* 16px */
+}
+
+.widget-margin-bottom {
+  margin-bottom: 1.5rem; /* 24px */
+}
+
+/* ============================================================================
+   Empty State Styles
+   ============================================================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem; /* 48px 24px */
+  min-height: 250px;
+}
+
+.empty-state-icon {
+  width: 4rem; /* 64px */
+  height: 4rem; /* 64px */
+  color: #d1d5db; /* gray-300 */
+  margin-bottom: 1rem;
+}
+
+.empty-state-text {
+  color: #6b7280; /* gray-500 */
+  font-size: 0.875rem; /* 14px */
+  text-align: center;
+}
+
+/* ============================================================================
+   Metric Badge Styles
+   ============================================================================ */
+
+.metric-badge {
+  border-radius: 0.5rem; /* 8px */
+  padding: 0.75rem; /* 12px */
+  text-align: center;
+  transition: transform 200ms ease;
+}
+
+.metric-badge-value {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.metric-badge-label {
+  font-size: 0.75rem; /* 12px */
+  color: #6b7280; /* gray-500 */
+  margin-top: 0.25rem;
+}
+
+/* ============================================================================
+   Legend Styles
+   ============================================================================ */
+
+.legend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* 16px */
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.legend-color {
+  width: 0.75rem; /* 12px */
+  height: 0.75rem; /* 12px */
+  border-radius: 9999px;
+  flex-shrink: 0;
+  margin-right: 0.75rem;
+}
+
+.legend-label {
+  font-size: 0.875rem; /* 14px */
+  color: #374151; /* gray-700 */
+}
+
+.legend-value {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 600;
+  color: #111827; /* gray-900 */
+}
+
+/* ============================================================================
+   Chart Container Styles
+   ============================================================================ */
+
+.chart-container {
+  width: 100%;
+  min-height: 300px;
+  position: relative;
+}
+
+.chart-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+  .widget {
+    padding: 1rem; /* 16px */
+  }
+
+  .widget-gap {
+    gap: 1rem; /* 16px */
+  }
+
+  .chart-container {
+    min-height: 250px;
+  }
+
+  .metric-badge {
+    padding: 0.5rem; /* 8px */
+  }
+
+  .metric-badge-value {
+    font-size: 1.25rem; /* 20px */
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .widget {
+    padding: 1.25rem; /* 20px */
+  }
+
+  .chart-container {
+    min-height: 280px;
+  }
+}
+
+/* Desktop (>= 1024px) */
+@media (min-width: 1024px) {
+  .widget {
+    padding: 1.5rem; /* 24px */
+  }
+
+  .chart-container {
+    min-height: 300px;
+  }
+}
+
+/* ============================================================================
+   Animation Utilities
+   ============================================================================ */
+
+.fade-in {
+  animation: fadeIn 300ms ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 200ms ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+   Focus Styles for Accessibility
+   ============================================================================ */
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Show screen reader text on focus */
+.sr-only:focus,
+.sr-only:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Not screen reader only - for skip links */
+.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Enhanced focus indicators for widgets and cards */
+.widget:focus-visible,
+.card:focus-visible {
+  outline: 3px solid #3b82f6; /* blue-500 */
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.3),
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Focus indicators for interactive elements */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Focus indicators for form elements */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 0;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Remove default focus outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .widget:focus-visible,
+  .card:focus-visible {
+    outline-width: 4px;
+    outline-offset: 4px;
+  }
+
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .widget,
+  .card,
+  .widget-hoverable,
+  .card-hoverable,
+  .metric-badge {
+    transition: none;
+  }
+
+  .animate-spin,
+  .animate-pulse {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   Loading State Styles
+   ============================================================================ */
+
+.widget-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.widget-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2rem;
+  height: 2rem;
+  margin: -1rem 0 0 -1rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

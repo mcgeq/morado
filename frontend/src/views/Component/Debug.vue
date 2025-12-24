@@ -13,9 +13,18 @@
         <div class="rounded-lg border bg-white p-6">
           <h2 class="text-xl font-semibold mb-4">Component Information</h2>
           <div class="space-y-2 text-sm">
-            <div><span class="font-medium">Type:</span> {{ component.componentType }}</div>
-            <div><span class="font-medium">Execution Mode:</span> {{ component.executionMode }}</div>
-            <div><span class="font-medium">Version:</span> {{ component.version }}</div>
+            <div>
+              <span class="font-medium">Type:</span>
+              {{ component.componentType }}
+            </div>
+            <div>
+              <span class="font-medium">Execution Mode:</span>
+              {{ component.executionMode }}
+            </div>
+            <div>
+              <span class="font-medium">Version:</span>
+              {{ component.version }}
+            </div>
           </div>
         </div>
 
@@ -69,35 +78,35 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useComponentStore } from '@/stores/component';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { useComponentStore } from '@/stores/component';
 
-const route = useRoute();
-const router = useRouter();
-const componentStore = useComponentStore();
+  const route = useRoute();
+  const router = useRouter();
+  const componentStore = useComponentStore();
 
-const componentId = computed(() => Number(route.params.id));
-const component = computed(() => componentStore.currentComponent);
+  const componentId = computed(() => Number(route.params.id));
+  const component = computed(() => componentStore.currentComponent);
 
-const runtimeParamsInput = ref('{}');
+  const runtimeParamsInput = ref('{}');
 
-onMounted(async () => {
-  if (componentId.value) {
-    await componentStore.fetchComponentById(componentId.value);
+  onMounted(async () => {
+    if (componentId.value) {
+      await componentStore.fetchComponentById(componentId.value);
+    }
+  });
+
+  async function handleExecute() {
+    try {
+      const runtimeParams = JSON.parse(runtimeParamsInput.value);
+      await componentStore.executeComponentById(componentId.value, runtimeParams);
+    } catch (error) {
+      console.error('Failed to execute component:', error);
+    }
   }
-});
 
-async function handleExecute() {
-  try {
-    const runtimeParams = JSON.parse(runtimeParamsInput.value);
-    await componentStore.executeComponentById(componentId.value, runtimeParams);
-  } catch (error) {
-    console.error('Failed to execute component:', error);
+  function goBack() {
+    router.push('/components');
   }
-}
-
-function goBack() {
-  router.push('/components');
-}
 </script>

@@ -147,67 +147,67 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useBodyStore } from '@/stores/body';
-import type { BodyScope, BodyType } from '@/api/body';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import type { BodyScope, BodyType } from '@/api/body';
+  import { useBodyStore } from '@/stores/body';
 
-const router = useRouter();
-const bodyStore = useBodyStore();
+  const router = useRouter();
+  const bodyStore = useBodyStore();
 
-const searchQuery = ref('');
-const selectedType = ref<BodyType | ''>('');
-const selectedScope = ref<BodyScope | ''>('');
+  const searchQuery = ref('');
+  const selectedType = ref<BodyType | ''>('');
+  const selectedScope = ref<BodyScope | ''>('');
 
-onMounted(async () => {
-  await bodyStore.fetchBodies();
-});
+  onMounted(async () => {
+    await bodyStore.fetchBodies();
+  });
 
-function navigateToCreate() {
-  router.push('/bodies/new');
-}
+  function navigateToCreate() {
+    router.push('/bodies/new');
+  }
 
-function navigateToEdit(id: number) {
-  router.push(`/bodies/${id}/edit`);
-}
+  function navigateToEdit(id: number) {
+    router.push(`/bodies/${id}/edit`);
+  }
 
-async function handleSearch() {
-  if (searchQuery.value) {
-    await bodyStore.searchBodiesByQuery(searchQuery.value);
-  } else {
+  async function handleSearch() {
+    if (searchQuery.value) {
+      await bodyStore.searchBodiesByQuery(searchQuery.value);
+    } else {
+      await bodyStore.fetchBodies();
+    }
+  }
+
+  async function handleFilterChange() {
+    await bodyStore.fetchBodies({
+      bodyType: selectedType.value || undefined,
+      scope: selectedScope.value || undefined,
+    });
+  }
+
+  async function handlePageChange(page: number) {
+    bodyStore.setPage(page);
     await bodyStore.fetchBodies();
   }
-}
 
-async function handleFilterChange() {
-  await bodyStore.fetchBodies({
-    bodyType: selectedType.value || undefined,
-    scope: selectedScope.value || undefined,
-  });
-}
-
-async function handlePageChange(page: number) {
-  bodyStore.setPage(page);
-  await bodyStore.fetchBodies();
-}
-
-async function handleDuplicate(id: number) {
-  if (confirm('Duplicate this body?')) {
-    try {
-      await bodyStore.duplicateExistingBody(id);
-    } catch (error) {
-      console.error('Failed to duplicate body:', error);
+  async function handleDuplicate(id: number) {
+    if (confirm('Duplicate this body?')) {
+      try {
+        await bodyStore.duplicateExistingBody(id);
+      } catch (error) {
+        console.error('Failed to duplicate body:', error);
+      }
     }
   }
-}
 
-async function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this body?')) {
-    try {
-      await bodyStore.deleteBodyById(id);
-    } catch (error) {
-      console.error('Failed to delete body:', error);
+  async function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this body?')) {
+      try {
+        await bodyStore.deleteBodyById(id);
+      } catch (error) {
+        console.error('Failed to delete body:', error);
+      }
     }
   }
-}
 </script>

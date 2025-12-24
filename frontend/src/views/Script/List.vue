@@ -90,7 +90,7 @@
             </div>
             <div class="text-sm text-gray-500">
               Order: {{ script.executionOrder }}
-              <span v-if="script.assertions"> • {{ script.assertions.length }} assertion(s)</span>
+              <span v-if="script.assertions"> • {{ script.assertions.length }}assertion(s)</span>
               <span v-if="script.retryCount > 0"> • Retry: {{ script.retryCount }}</span>
             </div>
           </div>
@@ -144,69 +144,69 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useScriptStore } from '@/stores/script';
-import type { ScriptType } from '@/api/script';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import type { ScriptType } from '@/api/script';
+  import { useScriptStore } from '@/stores/script';
 
-const router = useRouter();
-const scriptStore = useScriptStore();
+  const router = useRouter();
+  const scriptStore = useScriptStore();
 
-const searchQuery = ref('');
-const selectedType = ref<ScriptType | ''>('');
+  const searchQuery = ref('');
+  const selectedType = ref<ScriptType | ''>('');
 
-onMounted(async () => {
-  await scriptStore.fetchScripts();
-});
+  onMounted(async () => {
+    await scriptStore.fetchScripts();
+  });
 
-function navigateToCreate() {
-  router.push('/scripts/new');
-}
+  function navigateToCreate() {
+    router.push('/scripts/new');
+  }
 
-function navigateToEdit(id: number) {
-  router.push(`/scripts/${id}/edit`);
-}
+  function navigateToEdit(id: number) {
+    router.push(`/scripts/${id}/edit`);
+  }
 
-function navigateToDebug(id: number) {
-  router.push(`/scripts/${id}/debug`);
-}
+  function navigateToDebug(id: number) {
+    router.push(`/scripts/${id}/debug`);
+  }
 
-async function handleSearch() {
-  if (searchQuery.value) {
-    await scriptStore.searchScriptsByQuery(searchQuery.value);
-  } else {
+  async function handleSearch() {
+    if (searchQuery.value) {
+      await scriptStore.searchScriptsByQuery(searchQuery.value);
+    } else {
+      await scriptStore.fetchScripts();
+    }
+  }
+
+  async function handleFilterChange() {
+    await scriptStore.fetchScripts({
+      scriptType: selectedType.value || undefined,
+    });
+  }
+
+  async function handlePageChange(page: number) {
+    scriptStore.setPage(page);
     await scriptStore.fetchScripts();
   }
-}
 
-async function handleFilterChange() {
-  await scriptStore.fetchScripts({
-    scriptType: selectedType.value || undefined,
-  });
-}
-
-async function handlePageChange(page: number) {
-  scriptStore.setPage(page);
-  await scriptStore.fetchScripts();
-}
-
-async function handleDuplicate(id: number) {
-  if (confirm('Duplicate this script?')) {
-    try {
-      await scriptStore.duplicateExistingScript(id);
-    } catch (error) {
-      console.error('Failed to duplicate script:', error);
+  async function handleDuplicate(id: number) {
+    if (confirm('Duplicate this script?')) {
+      try {
+        await scriptStore.duplicateExistingScript(id);
+      } catch (error) {
+        console.error('Failed to duplicate script:', error);
+      }
     }
   }
-}
 
-async function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this script?')) {
-    try {
-      await scriptStore.deleteScriptById(id);
-    } catch (error) {
-      console.error('Failed to delete script:', error);
+  async function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this script?')) {
+      try {
+        await scriptStore.deleteScriptById(id);
+      } catch (error) {
+        console.error('Failed to delete script:', error);
+      }
     }
   }
-}
 </script>

@@ -8,16 +8,38 @@
           <span v-if="isDebugging" class="loading loading-spinner loading-sm"></span>
         </h3>
         <button type="button" class="btn btn-sm btn-ghost btn-circle" @click="$emit('close')">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
 
       <!-- Script Info -->
       <div class="alert alert-info mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
         <div>
           <div class="font-bold">{{ script?.name }}</div>
@@ -95,21 +117,48 @@
           :disabled="isDebugging"
           @click="startDebug"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           Start Debug
         </button>
-        <button
-          type="button"
-          class="btn btn-outline"
-          :disabled="!isDebugging"
-          @click="stopDebug"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+        <button type="button" class="btn btn-outline" :disabled="!isDebugging" @click="stopDebug">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"
+            />
           </svg>
         </button>
       </div>
@@ -120,11 +169,35 @@
 
         <!-- Status -->
         <div class="alert" :class="debugResult.success ? 'alert-success' : 'alert-error'">
-          <svg v-if="debugResult.success" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            v-if="debugResult.success"
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <div>
             <div class="font-bold">{{ debugResult.success ? 'Success' : 'Failed' }}</div>
@@ -144,7 +217,9 @@
         </div>
 
         <!-- Extracted Variables -->
-        <div v-if="debugResult.extractedVariables && Object.keys(debugResult.extractedVariables).length > 0">
+        <div
+          v-if="debugResult.extractedVariables && Object.keys(debugResult.extractedVariables).length > 0"
+        >
           <label class="label">
             <span class="label-text font-semibold">Extracted Variables</span>
           </label>
@@ -165,11 +240,35 @@
               class="alert alert-sm"
               :class="result.passed ? 'alert-success' : 'alert-error'"
             >
-              <svg v-if="result.passed" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <svg
+                v-if="result.passed"
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                v-else
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
               <div class="text-xs">
                 <div class="font-semibold">{{ result.assertion.type }}</div>
@@ -181,8 +280,19 @@
 
         <!-- Error -->
         <div v-if="debugResult.error" class="alert alert-error">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <div>
             <div class="font-bold">Error</div>
@@ -195,76 +305,76 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import type { TestScript, ScriptExecutionResult } from '@/api/script';
+  import { computed, ref } from 'vue';
+  import type { ScriptExecutionResult, TestScript } from '@/api/script';
 
-interface Props {
-  script: TestScript | null;
-}
-
-defineProps<Props>();
-
-const emit = defineEmits<{
-  close: [];
-  debug: [params: Record<string, unknown>, breakpoints: unknown[]];
-}>();
-
-const isDebugging = ref(false);
-const runtimeParamsJson = ref('{}');
-const paramsError = ref('');
-const debugResult = ref<ScriptExecutionResult | null>(null);
-
-const breakpoints = ref({
-  beforeRequest: false,
-  afterRequest: false,
-  beforeAssertions: false,
-  afterAssertions: false,
-});
-
-const runtimeParams = computed(() => {
-  try {
-    paramsError.value = '';
-    return JSON.parse(runtimeParamsJson.value);
-  } catch (error) {
-    paramsError.value = 'Invalid JSON format';
-    return {};
+  interface Props {
+    script: TestScript | null;
   }
-});
 
-function startDebug() {
-  if (paramsError.value) return;
+  defineProps<Props>();
 
-  isDebugging.value = true;
-  debugResult.value = null;
+  const emit = defineEmits<{
+    close: [];
+    debug: [params: Record<string, unknown>, breakpoints: unknown[]];
+  }>();
 
-  const activeBreakpoints = [];
-  if (breakpoints.value.beforeRequest) activeBreakpoints.push('before_request');
-  if (breakpoints.value.afterRequest) activeBreakpoints.push('after_request');
-  if (breakpoints.value.beforeAssertions) activeBreakpoints.push('before_assertions');
-  if (breakpoints.value.afterAssertions) activeBreakpoints.push('after_assertions');
+  const isDebugging = ref(false);
+  const runtimeParamsJson = ref('{}');
+  const paramsError = ref('');
+  const debugResult = ref<ScriptExecutionResult | null>(null);
 
-  emit('debug', runtimeParams.value, activeBreakpoints);
-}
+  const breakpoints = ref({
+    beforeRequest: false,
+    afterRequest: false,
+    beforeAssertions: false,
+    afterAssertions: false,
+  });
 
-function stopDebug() {
-  isDebugging.value = false;
-}
+  const runtimeParams = computed(() => {
+    try {
+      paramsError.value = '';
+      return JSON.parse(runtimeParamsJson.value);
+    } catch (error) {
+      paramsError.value = 'Invalid JSON format';
+      return {};
+    }
+  });
 
-function setDebugResult(result: ScriptExecutionResult) {
-  debugResult.value = result;
-  isDebugging.value = false;
-}
+  function startDebug() {
+    if (paramsError.value) return;
 
-function formatJson(data: unknown): string {
-  try {
-    return JSON.stringify(data, null, 2);
-  } catch {
-    return String(data);
+    isDebugging.value = true;
+    debugResult.value = null;
+
+    const activeBreakpoints = [];
+    if (breakpoints.value.beforeRequest) activeBreakpoints.push('before_request');
+    if (breakpoints.value.afterRequest) activeBreakpoints.push('after_request');
+    if (breakpoints.value.beforeAssertions) activeBreakpoints.push('before_assertions');
+    if (breakpoints.value.afterAssertions) activeBreakpoints.push('after_assertions');
+
+    emit('debug', runtimeParams.value, activeBreakpoints);
   }
-}
 
-defineExpose({
-  setDebugResult,
-  stopDebug,
-});
+  function stopDebug() {
+    isDebugging.value = false;
+  }
+
+  function setDebugResult(result: ScriptExecutionResult) {
+    debugResult.value = result;
+    isDebugging.value = false;
+  }
+
+  function formatJson(data: unknown): string {
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch {
+      return String(data);
+    }
+  }
+
+  defineExpose({
+    setDebugResult,
+    stopDebug,
+  });
 </script>

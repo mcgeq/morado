@@ -143,76 +143,76 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useApiDefinitionStore } from '@/stores/apiDefinition';
-import type { HttpMethod } from '@/api/api-definition';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import type { HttpMethod } from '@/api/api-definition';
+  import { useApiDefinitionStore } from '@/stores/apiDefinition';
 
-const router = useRouter();
-const apiDefinitionStore = useApiDefinitionStore();
+  const router = useRouter();
+  const apiDefinitionStore = useApiDefinitionStore();
 
-const searchQuery = ref('');
-const selectedMethod = ref<HttpMethod | ''>('');
+  const searchQuery = ref('');
+  const selectedMethod = ref<HttpMethod | ''>('');
 
-onMounted(async () => {
-  await apiDefinitionStore.fetchApiDefinitions();
-});
+  onMounted(async () => {
+    await apiDefinitionStore.fetchApiDefinitions();
+  });
 
-function getMethodColor(method: string): string {
-  const colors: Record<string, string> = {
-    GET: 'bg-green-100 text-green-700',
-    POST: 'bg-blue-100 text-blue-700',
-    PUT: 'bg-yellow-100 text-yellow-700',
-    PATCH: 'bg-orange-100 text-orange-700',
-    DELETE: 'bg-red-100 text-red-700',
-  };
-  return colors[method] || 'bg-gray-100 text-gray-700';
-}
+  function getMethodColor(method: string): string {
+    const colors: Record<string, string> = {
+      GET: 'bg-green-100 text-green-700',
+      POST: 'bg-blue-100 text-blue-700',
+      PUT: 'bg-yellow-100 text-yellow-700',
+      PATCH: 'bg-orange-100 text-orange-700',
+      DELETE: 'bg-red-100 text-red-700',
+    };
+    return colors[method] || 'bg-gray-100 text-gray-700';
+  }
 
-function navigateToCreate() {
-  router.push('/api-definitions/new');
-}
+  function navigateToCreate() {
+    router.push('/api-definitions/new');
+  }
 
-function navigateToEdit(id: number) {
-  router.push(`/api-definitions/${id}/edit`);
-}
+  function navigateToEdit(id: number) {
+    router.push(`/api-definitions/${id}/edit`);
+  }
 
-async function handleSearch() {
-  if (searchQuery.value) {
-    await apiDefinitionStore.searchApiDefinitionsByQuery(searchQuery.value);
-  } else {
+  async function handleSearch() {
+    if (searchQuery.value) {
+      await apiDefinitionStore.searchApiDefinitionsByQuery(searchQuery.value);
+    } else {
+      await apiDefinitionStore.fetchApiDefinitions();
+    }
+  }
+
+  async function handleFilterChange() {
+    await apiDefinitionStore.fetchApiDefinitions({
+      method: selectedMethod.value || undefined,
+    });
+  }
+
+  async function handlePageChange(page: number) {
+    apiDefinitionStore.setPage(page);
     await apiDefinitionStore.fetchApiDefinitions();
   }
-}
 
-async function handleFilterChange() {
-  await apiDefinitionStore.fetchApiDefinitions({
-    method: selectedMethod.value || undefined,
-  });
-}
-
-async function handlePageChange(page: number) {
-  apiDefinitionStore.setPage(page);
-  await apiDefinitionStore.fetchApiDefinitions();
-}
-
-async function handleDuplicate(id: number) {
-  if (confirm('Duplicate this API definition?')) {
-    try {
-      await apiDefinitionStore.duplicateExistingApiDefinition(id);
-    } catch (error) {
-      console.error('Failed to duplicate API definition:', error);
+  async function handleDuplicate(id: number) {
+    if (confirm('Duplicate this API definition?')) {
+      try {
+        await apiDefinitionStore.duplicateExistingApiDefinition(id);
+      } catch (error) {
+        console.error('Failed to duplicate API definition:', error);
+      }
     }
   }
-}
 
-async function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this API definition?')) {
-    try {
-      await apiDefinitionStore.deleteApiDefinitionById(id);
-    } catch (error) {
-      console.error('Failed to delete API definition:', error);
+  async function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this API definition?')) {
+      try {
+        await apiDefinitionStore.deleteApiDefinitionById(id);
+      } catch (error) {
+        console.error('Failed to delete API definition:', error);
+      }
     }
   }
-}
 </script>

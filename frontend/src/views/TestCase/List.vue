@@ -52,9 +52,7 @@
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <h3 class="text-xl font-semibold mb-2">{{ testCase.name }}</h3>
-            <p v-if="testCase.description" class="text-gray-600 mb-3">
-              {{ testCase.description }}
-            </p>
+            <p v-if="testCase.description" class="text-gray-600 mb-3">{{ testCase.description }}</p>
             <div class="flex gap-2 mb-3">
               <span
                 :class="[
@@ -135,51 +133,51 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useTestCaseStore } from '@/stores/testCase';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useTestCaseStore } from '@/stores/testCase';
 
-const router = useRouter();
-const testCaseStore = useTestCaseStore();
+  const router = useRouter();
+  const testCaseStore = useTestCaseStore();
 
-const searchQuery = ref('');
+  const searchQuery = ref('');
 
-onMounted(async () => {
-  await testCaseStore.fetchTestCases();
-});
-
-function navigateToCreate() {
-  router.push('/test-cases/new');
-}
-
-function navigateToEdit(id: number) {
-  router.push(`/test-cases/${id}/edit`);
-}
-
-function navigateToDetail(id: number) {
-  router.push(`/test-cases/${id}`);
-}
-
-async function handleSearch() {
-  if (searchQuery.value) {
-    await testCaseStore.searchTestCasesByQuery(searchQuery.value);
-  } else {
+  onMounted(async () => {
     await testCaseStore.fetchTestCases();
+  });
+
+  function navigateToCreate() {
+    router.push('/test-cases/new');
   }
-}
 
-async function handlePageChange(page: number) {
-  testCaseStore.setPage(page);
-  await testCaseStore.fetchTestCases();
-}
+  function navigateToEdit(id: number) {
+    router.push(`/test-cases/${id}/edit`);
+  }
 
-async function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this test case?')) {
-    try {
-      await testCaseStore.deleteTestCaseById(id);
-    } catch (error) {
-      console.error('Failed to delete test case:', error);
+  function navigateToDetail(id: number) {
+    router.push(`/test-cases/${id}`);
+  }
+
+  async function handleSearch() {
+    if (searchQuery.value) {
+      await testCaseStore.searchTestCasesByQuery(searchQuery.value);
+    } else {
+      await testCaseStore.fetchTestCases();
     }
   }
-}
+
+  async function handlePageChange(page: number) {
+    testCaseStore.setPage(page);
+    await testCaseStore.fetchTestCases();
+  }
+
+  async function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this test case?')) {
+      try {
+        await testCaseStore.deleteTestCaseById(id);
+      } catch (error) {
+        console.error('Failed to delete test case:', error);
+      }
+    }
+  }
 </script>

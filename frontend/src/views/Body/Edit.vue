@@ -160,119 +160,119 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useBodyStore } from '@/stores/body';
-import type { BodyCreate, BodyScope, BodyType } from '@/api/body';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import type { BodyCreate, BodyScope, BodyType } from '@/api/body';
+  import { useBodyStore } from '@/stores/body';
 
-const route = useRoute();
-const router = useRouter();
-const bodyStore = useBodyStore();
+  const route = useRoute();
+  const router = useRouter();
+  const bodyStore = useBodyStore();
 
-const isEditMode = computed(() => route.params.id !== 'new');
-const bodyId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
+  const isEditMode = computed(() => route.params.id !== 'new');
+  const bodyId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
 
-const formData = ref<BodyCreate>({
-  name: '',
-  description: '',
-  bodyType: 'request' as BodyType,
-  contentType: 'application/json',
-  scope: 'project' as BodyScope,
-  isActive: true,
-  version: '1.0.0',
-  tags: [],
-});
+  const formData = ref<BodyCreate>({
+    name: '',
+    description: '',
+    bodyType: 'request' as BodyType,
+    contentType: 'application/json',
+    scope: 'project' as BodyScope,
+    isActive: true,
+    version: '1.0.0',
+    tags: [],
+  });
 
-const schemaInput = ref('');
-const exampleInput = ref('');
-const tagsInput = ref('');
+  const schemaInput = ref('');
+  const exampleInput = ref('');
+  const tagsInput = ref('');
 
-onMounted(async () => {
-  if (isEditMode.value && bodyId.value) {
-    try {
-      const body = await bodyStore.fetchBodyById(bodyId.value);
-      formData.value = {
-        name: body.name,
-        description: body.description,
-        bodyType: body.bodyType,
-        contentType: body.contentType,
-        bodySchema: body.bodySchema,
-        exampleData: body.exampleData,
-        scope: body.scope,
-        isActive: body.isActive,
-        version: body.version,
-        tags: body.tags || [],
-      };
-      schemaInput.value = body.bodySchema ? JSON.stringify(body.bodySchema, null, 2) : '';
-      exampleInput.value = body.exampleData ? JSON.stringify(body.exampleData, null, 2) : '';
-      tagsInput.value = (body.tags || []).join(', ');
-    } catch (error) {
-      console.error('Failed to load body:', error);
-    }
-  }
-});
-
-function updateSchema() {
-  try {
-    if (schemaInput.value.trim()) {
-      formData.value.bodySchema = JSON.parse(schemaInput.value);
-    } else {
-      formData.value.bodySchema = undefined;
-    }
-  } catch (error) {
-    console.error('Invalid JSON schema:', error);
-  }
-}
-
-function updateExample() {
-  try {
-    if (exampleInput.value.trim()) {
-      formData.value.exampleData = JSON.parse(exampleInput.value);
-    } else {
-      formData.value.exampleData = undefined;
-    }
-  } catch (error) {
-    console.error('Invalid JSON example:', error);
-  }
-}
-
-function updateTags() {
-  formData.value.tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-async function validateSchemaInput() {
-  try {
-    updateSchema();
-    if (formData.value.bodySchema) {
-      await bodyStore.validateSchema(formData.value.bodySchema);
-    }
-  } catch (error) {
-    console.error('Schema validation failed:', error);
-  }
-}
-
-async function handleSubmit() {
-  try {
-    updateSchema();
-    updateExample();
-    updateTags();
-    
+  onMounted(async () => {
     if (isEditMode.value && bodyId.value) {
-      await bodyStore.updateExistingBody(bodyId.value, formData.value);
-    } else {
-      await bodyStore.createNewBody(formData.value);
+      try {
+        const body = await bodyStore.fetchBodyById(bodyId.value);
+        formData.value = {
+          name: body.name,
+          description: body.description,
+          bodyType: body.bodyType,
+          contentType: body.contentType,
+          bodySchema: body.bodySchema,
+          exampleData: body.exampleData,
+          scope: body.scope,
+          isActive: body.isActive,
+          version: body.version,
+          tags: body.tags || [],
+        };
+        schemaInput.value = body.bodySchema ? JSON.stringify(body.bodySchema, null, 2) : '';
+        exampleInput.value = body.exampleData ? JSON.stringify(body.exampleData, null, 2) : '';
+        tagsInput.value = (body.tags || []).join(', ');
+      } catch (error) {
+        console.error('Failed to load body:', error);
+      }
     }
-    
-    router.push('/bodies');
-  } catch (error) {
-    console.error('Failed to save body:', error);
-  }
-}
+  });
 
-function goBack() {
-  router.push('/bodies');
-}
+  function updateSchema() {
+    try {
+      if (schemaInput.value.trim()) {
+        formData.value.bodySchema = JSON.parse(schemaInput.value);
+      } else {
+        formData.value.bodySchema = undefined;
+      }
+    } catch (error) {
+      console.error('Invalid JSON schema:', error);
+    }
+  }
+
+  function updateExample() {
+    try {
+      if (exampleInput.value.trim()) {
+        formData.value.exampleData = JSON.parse(exampleInput.value);
+      } else {
+        formData.value.exampleData = undefined;
+      }
+    } catch (error) {
+      console.error('Invalid JSON example:', error);
+    }
+  }
+
+  function updateTags() {
+    formData.value.tags = tagsInput.value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+
+  async function validateSchemaInput() {
+    try {
+      updateSchema();
+      if (formData.value.bodySchema) {
+        await bodyStore.validateSchema(formData.value.bodySchema);
+      }
+    } catch (error) {
+      console.error('Schema validation failed:', error);
+    }
+  }
+
+  async function handleSubmit() {
+    try {
+      updateSchema();
+      updateExample();
+      updateTags();
+
+      if (isEditMode.value && bodyId.value) {
+        await bodyStore.updateExistingBody(bodyId.value, formData.value);
+      } else {
+        await bodyStore.createNewBody(formData.value);
+      }
+
+      router.push('/bodies');
+    } catch (error) {
+      console.error('Failed to save body:', error);
+    }
+  }
+
+  function goBack() {
+    router.push('/bodies');
+  }
 </script>

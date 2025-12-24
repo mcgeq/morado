@@ -25,7 +25,7 @@
     <!-- Recent Executions -->
     <div class="rounded-lg border bg-white p-6 shadow-sm mb-8">
       <h2 class="text-xl font-semibold mb-4">Recent Test Executions</h2>
-      
+
       <div v-if="recentExecutions.length === 0" class="text-center py-8 text-gray-500">
         No test executions yet
       </div>
@@ -72,48 +72,48 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+  import { onMounted, ref } from 'vue';
 
-const stats = ref({
-  totalTests: 0,
-  passed: 0,
-  failed: 0,
-  successRate: 0,
-});
+  const stats = ref({
+    totalTests: 0,
+    passed: 0,
+    failed: 0,
+    successRate: 0,
+  });
 
-const recentExecutions = ref<any[]>([]);
+  const recentExecutions = ref<any[]>([]);
 
-onMounted(async () => {
-  // Placeholder - would fetch from API
-  stats.value = {
-    totalTests: 150,
-    passed: 135,
-    failed: 15,
-    successRate: 90,
-  };
+  onMounted(async () => {
+    // Placeholder - would fetch from API
+    stats.value = {
+      totalTests: 150,
+      passed: 135,
+      failed: 15,
+      successRate: 90,
+    };
 
-  recentExecutions.value = [
-    {
-      id: 1,
-      name: 'User Login Test',
-      status: 'passed',
-      duration: 1250,
-      executedAt: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      name: 'API Integration Test',
-      status: 'failed',
-      duration: 3400,
-      executedAt: new Date(Date.now() - 3600000).toISOString(),
-    },
-    {
-      id: 3,
-      name: 'Database Connection Test',
-      status: 'passed',
-      duration: 850,
-      executedAt: new Date(Date.now() - 7200000).toISOString(),
-    },
-  ];
-});
+    recentExecutions.value = [
+      {
+        id: 1,
+        name: 'User Login Test',
+        status: 'passed',
+        duration: 1250,
+        executedAt: new Date().toISOString(),
+      },
+      {
+        id: 2,
+        name: 'API Integration Test',
+        status: 'failed',
+        duration: 3400,
+        executedAt: new Date(Date.now() - 3600000).toISOString(),
+      },
+      {
+        id: 3,
+        name: 'Database Connection Test',
+        status: 'passed',
+        duration: 850,
+        executedAt: new Date(Date.now() - 7200000).toISOString(),
+      },
+    ];
+  });
 </script>

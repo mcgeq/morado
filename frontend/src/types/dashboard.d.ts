@@ -23,23 +23,6 @@ export interface UserProfileCardProps {
 }
 
 // ============================================================================
-// Quick Actions Types
-// ============================================================================
-
-export interface QuickAction {
-  id: string;
-  title: string;
-  icon: string;
-  route: string;
-  description?: string;
-}
-
-export interface QuickActionsPanelProps {
-  actions: QuickAction[];
-  title?: string;
-}
-
-// ============================================================================
 // Statistics Widget Types
 // ============================================================================
 
@@ -157,4 +140,36 @@ export interface DashboardStatistics {
   steps: StepStatistics;
   apiUsage: ApiUsageData;
   trends: TrendDataPoint[];
+}
+
+// ============================================================================
+// Loading and Error State Types
+// ============================================================================
+
+export interface WidgetSkeletonProps {
+  type?: 'profile' | 'chart' | 'stats' | 'trend' | 'actions' | 'default';
+}
+
+export interface ErrorStateProps {
+  title?: string;
+  message?: string;
+  showRetry?: boolean;
+  showContactSupport?: boolean;
+}
+
+export interface LoadingStateProps {
+  // Show specific sections
+  showHeader?: boolean;
+  showProfile?: boolean;
+  showStatistics?: boolean;
+  showStepsStats?: boolean;
+  showApiUsage?: boolean;
+  showTrends?: boolean;
+
+  // Show full dashboard loading
+  fullDashboard?: boolean;
+
+  // Loading text
+  showLoadingText?: boolean;
+  loadingText?: string;
 }

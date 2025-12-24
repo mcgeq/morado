@@ -147,69 +147,69 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useComponentStore } from '@/stores/component';
-import type { ComponentType } from '@/api/component';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import type { ComponentType } from '@/api/component';
+  import { useComponentStore } from '@/stores/component';
 
-const router = useRouter();
-const componentStore = useComponentStore();
+  const router = useRouter();
+  const componentStore = useComponentStore();
 
-const searchQuery = ref('');
-const selectedType = ref<ComponentType | ''>('');
+  const searchQuery = ref('');
+  const selectedType = ref<ComponentType | ''>('');
 
-onMounted(async () => {
-  await componentStore.fetchComponents();
-});
+  onMounted(async () => {
+    await componentStore.fetchComponents();
+  });
 
-function navigateToCreate() {
-  router.push('/components/new');
-}
+  function navigateToCreate() {
+    router.push('/components/new');
+  }
 
-function navigateToEdit(id: number) {
-  router.push(`/components/${id}/edit`);
-}
+  function navigateToEdit(id: number) {
+    router.push(`/components/${id}/edit`);
+  }
 
-function navigateToDebug(id: number) {
-  router.push(`/components/${id}/debug`);
-}
+  function navigateToDebug(id: number) {
+    router.push(`/components/${id}/debug`);
+  }
 
-async function handleSearch() {
-  if (searchQuery.value) {
-    await componentStore.searchComponentsByQuery(searchQuery.value);
-  } else {
+  async function handleSearch() {
+    if (searchQuery.value) {
+      await componentStore.searchComponentsByQuery(searchQuery.value);
+    } else {
+      await componentStore.fetchComponents();
+    }
+  }
+
+  async function handleFilterChange() {
+    await componentStore.fetchComponents({
+      componentType: selectedType.value || undefined,
+    });
+  }
+
+  async function handlePageChange(page: number) {
+    componentStore.setPage(page);
     await componentStore.fetchComponents();
   }
-}
 
-async function handleFilterChange() {
-  await componentStore.fetchComponents({
-    componentType: selectedType.value || undefined,
-  });
-}
-
-async function handlePageChange(page: number) {
-  componentStore.setPage(page);
-  await componentStore.fetchComponents();
-}
-
-async function handleDuplicate(id: number) {
-  if (confirm('Duplicate this component?')) {
-    try {
-      await componentStore.duplicateExistingComponent(id);
-    } catch (error) {
-      console.error('Failed to duplicate component:', error);
+  async function handleDuplicate(id: number) {
+    if (confirm('Duplicate this component?')) {
+      try {
+        await componentStore.duplicateExistingComponent(id);
+      } catch (error) {
+        console.error('Failed to duplicate component:', error);
+      }
     }
   }
-}
 
-async function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this component?')) {
-    try {
-      await componentStore.deleteComponentById(id);
-    } catch (error) {
-      console.error('Failed to delete component:', error);
+  async function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this component?')) {
+      try {
+        await componentStore.deleteComponentById(id);
+      } catch (error) {
+        console.error('Failed to delete component:', error);
+      }
     }
   }
-}
 </script>

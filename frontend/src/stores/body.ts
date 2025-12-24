@@ -48,9 +48,7 @@ export const useBodyStore = defineStore('body', () => {
     bodies.value.filter(b => (b.bodyType === 'response' || b.bodyType === 'both') && b.isActive),
   );
 
-  const globalBodies = computed(() =>
-    bodies.value.filter(b => b.scope === 'global' && b.isActive),
-  );
+  const globalBodies = computed(() => bodies.value.filter(b => b.scope === 'global' && b.isActive));
 
   const projectBodies = computed(() =>
     bodies.value.filter(b => b.scope === 'project' && b.isActive),

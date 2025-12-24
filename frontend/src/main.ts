@@ -14,10 +14,11 @@
 
 import { createApp } from 'vue';
 import App from './App.vue';
+import i18n from './i18n';
+import { preloadECharts, setupEChartsLazy } from './plugins/echarts-lazy';
 import router from './router';
 import pinia from './stores';
 import { logger } from './utils/logger';
-import { setupECharts } from './plugins/echarts';
 
 // Import global styles
 import './styles/main.css';
@@ -75,8 +76,14 @@ app.use(router);
 // Install Pinia state management
 app.use(pinia);
 
-// Install ECharts
-setupECharts(app);
+// Install i18n for internationalization
+app.use(i18n);
+
+// Install ECharts with lazy loading
+setupEChartsLazy(app);
+
+// Preload ECharts during idle time for better UX
+preloadECharts();
 
 /**
  * Global directives (optional)

@@ -82,7 +82,7 @@
               </span>
             </div>
             <div class="text-sm text-gray-500">
-              {{ Object.keys(header.headers).length }} header(s) • Version {{ header.version }}
+              {{ Object.keys(header.headers).length }}header(s) • Version {{ header.version }}
             </div>
           </div>
           <div class="flex gap-2">
@@ -129,65 +129,65 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useHeaderStore } from '@/stores/header';
-import type { HeaderScope } from '@/api/header';
+  import { onMounted, ref } from 'vue';
+  import { useRouter } from 'vue-router';
+  import type { HeaderScope } from '@/api/header';
+  import { useHeaderStore } from '@/stores/header';
 
-const router = useRouter();
-const headerStore = useHeaderStore();
+  const router = useRouter();
+  const headerStore = useHeaderStore();
 
-const searchQuery = ref('');
-const selectedScope = ref<HeaderScope | ''>('');
+  const searchQuery = ref('');
+  const selectedScope = ref<HeaderScope | ''>('');
 
-onMounted(async () => {
-  await headerStore.fetchHeaders();
-});
+  onMounted(async () => {
+    await headerStore.fetchHeaders();
+  });
 
-function navigateToCreate() {
-  router.push('/headers/new');
-}
+  function navigateToCreate() {
+    router.push('/headers/new');
+  }
 
-function navigateToEdit(id: number) {
-  router.push(`/headers/${id}/edit`);
-}
+  function navigateToEdit(id: number) {
+    router.push(`/headers/${id}/edit`);
+  }
 
-async function handleSearch() {
-  if (searchQuery.value) {
-    await headerStore.searchHeadersByQuery(searchQuery.value);
-  } else {
+  async function handleSearch() {
+    if (searchQuery.value) {
+      await headerStore.searchHeadersByQuery(searchQuery.value);
+    } else {
+      await headerStore.fetchHeaders();
+    }
+  }
+
+  async function handleFilterChange() {
+    await headerStore.fetchHeaders({
+      scope: selectedScope.value || undefined,
+    });
+  }
+
+  async function handlePageChange(page: number) {
+    headerStore.setPage(page);
     await headerStore.fetchHeaders();
   }
-}
 
-async function handleFilterChange() {
-  await headerStore.fetchHeaders({
-    scope: selectedScope.value || undefined,
-  });
-}
-
-async function handlePageChange(page: number) {
-  headerStore.setPage(page);
-  await headerStore.fetchHeaders();
-}
-
-async function handleDuplicate(id: number) {
-  if (confirm('Duplicate this header?')) {
-    try {
-      await headerStore.duplicateExistingHeader(id);
-    } catch (error) {
-      console.error('Failed to duplicate header:', error);
+  async function handleDuplicate(id: number) {
+    if (confirm('Duplicate this header?')) {
+      try {
+        await headerStore.duplicateExistingHeader(id);
+      } catch (error) {
+        console.error('Failed to duplicate header:', error);
+      }
     }
   }
-}
 
-async function handleDelete(id: number) {
-  if (confirm('Are you sure you want to delete this header?')) {
-    try {
-      await headerStore.deleteHeaderById(id);
-    } catch (error) {
-      console.error('Failed to delete header:', error);
+  async function handleDelete(id: number) {
+    if (confirm('Are you sure you want to delete this header?')) {
+      try {
+        await headerStore.deleteHeaderById(id);
+      } catch (error) {
+        console.error('Failed to delete header:', error);
+      }
     }
   }
-}
 </script>

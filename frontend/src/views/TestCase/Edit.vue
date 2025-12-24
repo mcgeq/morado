@@ -4,9 +4,7 @@
       <button @click="goBack" class="mb-4 text-blue-600 hover:text-blue-700">
         ← Back to Test Cases
       </button>
-      <h1 class="text-3xl font-bold">
-        {{ isEditMode ? 'Edit Test Case' : 'Create Test Case' }}
-      </h1>
+      <h1 class="text-3xl font-bold">{{ isEditMode ? 'Edit Test Case' : 'Create Test Case' }}</h1>
     </div>
 
     <form @submit.prevent="handleSubmit" class="max-w-3xl space-y-6">
@@ -95,86 +93,86 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useTestCaseStore } from '@/stores/testCase';
-import type { TestCaseCreate, TestCasePriority, TestCaseStatus } from '@/api/test-case';
+  import { computed, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import type { TestCaseCreate, TestCasePriority, TestCaseStatus } from '@/api/test-case';
+  import { useTestCaseStore } from '@/stores/testCase';
 
-const route = useRoute();
-const router = useRouter();
-const testCaseStore = useTestCaseStore();
+  const route = useRoute();
+  const router = useRouter();
+  const testCaseStore = useTestCaseStore();
 
-const isEditMode = computed(() => route.params.id !== 'new');
-const testCaseId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
+  const isEditMode = computed(() => route.params.id !== 'new');
+  const testCaseId = computed(() => (isEditMode.value ? Number(route.params.id) : null));
 
-const formData = ref<TestCaseCreate>({
-  name: '',
-  description: '',
-  status: 'draft' as TestCaseStatus,
-  priority: 'medium' as TestCasePriority,
-  tags: [],
-});
+  const formData = ref<TestCaseCreate>({
+    name: '',
+    description: '',
+    status: 'draft' as TestCaseStatus,
+    priority: 'medium' as TestCasePriority,
+    tags: [],
+  });
 
-const testDataInput = ref('');
-const tagsInput = ref('');
+  const testDataInput = ref('');
+  const tagsInput = ref('');
 
-onMounted(async () => {
-  if (isEditMode.value && testCaseId.value) {
-    try {
-      const testCase = await testCaseStore.fetchTestCaseById(testCaseId.value);
-      formData.value = {
-        name: testCase.name,
-        description: testCase.description,
-        testData: testCase.testData,
-        status: testCase.status,
-        priority: testCase.priority,
-        tags: testCase.tags || [],
-      };
-      testDataInput.value = testCase.testData ? JSON.stringify(testCase.testData, null, 2) : '';
-      tagsInput.value = (testCase.tags || []).join(', ');
-    } catch (error) {
-      console.error('Failed to load test case:', error);
-    }
-  }
-});
-
-function updateTestData() {
-  try {
-    if (testDataInput.value.trim()) {
-      formData.value.testData = JSON.parse(testDataInput.value);
-    } else {
-      formData.value.testData = undefined;
-    }
-  } catch (error) {
-    console.error('Invalid JSON for test data:', error);
-  }
-}
-
-function updateTags() {
-  formData.value.tags = tagsInput.value
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0);
-}
-
-async function handleSubmit() {
-  try {
-    updateTestData();
-    updateTags();
-
+  onMounted(async () => {
     if (isEditMode.value && testCaseId.value) {
-      await testCaseStore.updateExistingTestCase(testCaseId.value, formData.value);
-    } else {
-      await testCaseStore.createNewTestCase(formData.value);
+      try {
+        const testCase = await testCaseStore.fetchTestCaseById(testCaseId.value);
+        formData.value = {
+          name: testCase.name,
+          description: testCase.description,
+          testData: testCase.testData,
+          status: testCase.status,
+          priority: testCase.priority,
+          tags: testCase.tags || [],
+        };
+        testDataInput.value = testCase.testData ? JSON.stringify(testCase.testData, null, 2) : '';
+        tagsInput.value = (testCase.tags || []).join(', ');
+      } catch (error) {
+        console.error('Failed to load test case:', error);
+      }
     }
+  });
 
-    router.push('/test-cases');
-  } catch (error) {
-    console.error('Failed to save test case:', error);
+  function updateTestData() {
+    try {
+      if (testDataInput.value.trim()) {
+        formData.value.testData = JSON.parse(testDataInput.value);
+      } else {
+        formData.value.testData = undefined;
+      }
+    } catch (error) {
+      console.error('Invalid JSON for test data:', error);
+    }
   }
-}
 
-function goBack() {
-  router.push('/test-cases');
-}
+  function updateTags() {
+    formData.value.tags = tagsInput.value
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag.length > 0);
+  }
+
+  async function handleSubmit() {
+    try {
+      updateTestData();
+      updateTags();
+
+      if (isEditMode.value && testCaseId.value) {
+        await testCaseStore.updateExistingTestCase(testCaseId.value, formData.value);
+      } else {
+        await testCaseStore.createNewTestCase(formData.value);
+      }
+
+      router.push('/test-cases');
+    } catch (error) {
+      console.error('Failed to save test case:', error);
+    }
+  }
+
+  function goBack() {
+    router.push('/test-cases');
+  }
 </script>

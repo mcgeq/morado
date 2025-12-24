@@ -4,9 +4,15 @@
  * Unit tests for the dashboard store functionality.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { useDashboardStore, isCacheValid, setCacheData, getCacheData, clearCache } from '../dashboard';
+import { createPinia, setActivePinia } from 'pinia';
+import { beforeEach, describe, expect, it } from 'vitest';
+import {
+  clearCache,
+  getCacheData,
+  isCacheValid,
+  setCacheData,
+  useDashboardStore,
+} from '../dashboard';
 
 describe('Dashboard Store', () => {
   beforeEach(() => {
