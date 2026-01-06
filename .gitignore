@@ -117,6 +117,7 @@ deployment/k8s/secrets/
 deployment/k8s/*-secret.yaml
 
 # Backend specific
+backend/.venv/
 backend/.env
 backend/.env.*
 backend/config/local.toml

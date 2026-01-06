@@ -1,0 +1,916 @@
+openapi: 3.1.0
+info:
+  title: Morado Testing Platform API
+  version: 0.1.0
+  description: |
+    Morado Testing Platform API - A four-layer architecture for API testing.
+    
+    ## Overview
+    
+    Morado provides a comprehensive API for managing automated tests through a four-layer architecture:
+    
+    - **Layer 1 - API Definition**: Headers, Bodies, and API Definitions
+    - **Layer 2 - Scripts**: Test scripts with assertions and parameters
+    - **Layer 3 - Components**: Composite test components with nesting support
+    - **Layer 4 - Test Cases**: User-facing test cases
+    
+    ## Authentication
+    
+    Most endpoints require authentication via Bearer token:
+    ```
+    Authorization: Bearer <token>
+    ```
+    
+    ## Auto-Generated Documentation
+    
+    Litestar automatically generates interactive API documentation at:
+    - Swagger UI: `/docs`
+    - ReDoc: `/redoc`
+    - OpenAPI JSON: `/schema`
+  contact:
+    name: Morado Team
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.morado.example.com
+    description: Production server
+
+tags:
+  - name: Headers
+    description: HTTP header component management (Layer 1)
+  - name: Bodies
+    description: Request/response body component management (Layer 1)
+  - name: API Definitions
+    description: API definition management (Layer 1)
+  - name: Scripts
+    description: Test script management and execution (Layer 2)
+  - name: Components
+    description: Test component management and execution (Layer 3)
+  - name: Test Cases
+    description: Test case management (Layer 4)
+  - name: Test Suites
+    description: Test suite management
+  - name: Test Execution
+    description: Test execution and results
+  - name: Reports
+    description: Test reports and analytics
+  - name: Dashboard
+    description: Dashboard statistics and metrics
+
+paths:
+  # ============================================================================
+  # Headers (Layer 1)
+  # ============================================================================
+  /headers:
+    get:
+      tags: [Headers]
+      summary: List headers
+      description: List headers with optional filtering by scope and project
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            type: string
+            enum: [global, project, local]
+        - name: project_id
+          in: query
+          schema:
+            type: integer
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: List of headers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeaderListResponse'
+    post:
+      tags: [Headers]
+      summary: Create header
+      description: Create a new header component
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeaderCreate'
+      responses:
+        '201':
+          description: Created header
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeaderResponse'
+
+  /headers/{header_id}:
+    get:
+      tags: [Headers]
+      summary: Get header by ID
+      parameters:
+        - name: header_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Header details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeaderResponse'
+        '404':
+          description: Header not found
+    patch:
+      tags: [Headers]
+      summary: Update header
+      parameters:
+        - name: header_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeaderUpdate'
+      responses:
+        '200':
+          description: Updated header
+    delete:
+      tags: [Headers]
+      summary: Delete header
+      parameters:
+        - name: header_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Header deleted
+
+  # ============================================================================
+  # Bodies (Layer 1)
+  # ============================================================================
+  /bodies:
+    get:
+      tags: [Bodies]
+      summary: List bodies
+      parameters:
+        - name: body_type
+          in: query
+          schema:
+            type: string
+            enum: [request, response]
+        - name: skip
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: List of bodies
+    post:
+      tags: [Bodies]
+      summary: Create body
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BodyCreate'
+      responses:
+        '201':
+          description: Created body
+
+  /bodies/{body_id}:
+    get:
+      tags: [Bodies]
+      summary: Get body by ID
+      parameters:
+        - name: body_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Body details
+        '404':
+          description: Body not found
+    patch:
+      tags: [Bodies]
+      summary: Update body
+      parameters:
+        - name: body_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated body
+    delete:
+      tags: [Bodies]
+      summary: Delete body
+      parameters:
+        - name: body_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Body deleted
+
+  # ============================================================================
+  # API Definitions (Layer 1)
+  # ============================================================================
+  /api-definitions:
+    get:
+      tags: [API Definitions]
+      summary: List API definitions
+      responses:
+        '200':
+          description: List of API definitions
+    post:
+      tags: [API Definitions]
+      summary: Create API definition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiDefinitionCreate'
+      responses:
+        '201':
+          description: Created API definition
+
+  /api-definitions/{api_definition_id}:
+    get:
+      tags: [API Definitions]
+      summary: Get API definition by ID
+      parameters:
+        - name: api_definition_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: API definition details
+    patch:
+      tags: [API Definitions]
+      summary: Update API definition
+      parameters:
+        - name: api_definition_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated API definition
+    delete:
+      tags: [API Definitions]
+      summary: Delete API definition
+      parameters:
+        - name: api_definition_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: API definition deleted
+
+  # ============================================================================
+  # Scripts (Layer 2)
+  # ============================================================================
+  /scripts:
+    get:
+      tags: [Scripts]
+      summary: List scripts
+      responses:
+        '200':
+          description: List of scripts
+    post:
+      tags: [Scripts]
+      summary: Create script
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScriptCreate'
+      responses:
+        '201':
+          description: Created script
+
+  /scripts/{script_id}:
+    get:
+      tags: [Scripts]
+      summary: Get script by ID
+      parameters:
+        - name: script_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Script details
+    patch:
+      tags: [Scripts]
+      summary: Update script
+      parameters:
+        - name: script_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated script
+    delete:
+      tags: [Scripts]
+      summary: Delete script
+      parameters:
+        - name: script_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Script deleted
+
+  /scripts/{script_id}/execute:
+    post:
+      tags: [Scripts]
+      summary: Execute script
+      description: Execute a script with optional parameters
+      parameters:
+        - name: script_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                environment:
+                  type: string
+      responses:
+        '200':
+          description: Execution result
+
+  # ============================================================================
+  # Components (Layer 3)
+  # ============================================================================
+  /components:
+    get:
+      tags: [Components]
+      summary: List components
+      responses:
+        '200':
+          description: List of components
+    post:
+      tags: [Components]
+      summary: Create component
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentCreate'
+      responses:
+        '201':
+          description: Created component
+
+  /components/{component_id}:
+    get:
+      tags: [Components]
+      summary: Get component by ID
+      parameters:
+        - name: component_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Component details
+    patch:
+      tags: [Components]
+      summary: Update component
+      parameters:
+        - name: component_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated component
+    delete:
+      tags: [Components]
+      summary: Delete component
+      parameters:
+        - name: component_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Component deleted
+
+  /components/{component_id}/execute:
+    post:
+      tags: [Components]
+      summary: Execute component
+      description: Execute a component with all its scripts
+      parameters:
+        - name: component_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parameters:
+                  type: object
+      responses:
+        '200':
+          description: Execution result
+
+  # ============================================================================
+  # Test Cases (Layer 4)
+  # ============================================================================
+  /test-cases:
+    get:
+      tags: [Test Cases]
+      summary: List test cases
+      parameters:
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, active, archived]
+      responses:
+        '200':
+          description: List of test cases
+    post:
+      tags: [Test Cases]
+      summary: Create test case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestCaseCreate'
+      responses:
+        '201':
+          description: Created test case
+
+  /test-cases/{test_case_id}:
+    get:
+      tags: [Test Cases]
+      summary: Get test case by ID
+      parameters:
+        - name: test_case_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Test case details
+    patch:
+      tags: [Test Cases]
+      summary: Update test case
+      parameters:
+        - name: test_case_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated test case
+    delete:
+      tags: [Test Cases]
+      summary: Delete test case
+      parameters:
+        - name: test_case_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Test case deleted
+
+  /test-cases/{test_case_id}/execute:
+    post:
+      tags: [Test Cases]
+      summary: Execute test case
+      parameters:
+        - name: test_case_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                runtime_parameters:
+                  type: object
+      responses:
+        '200':
+          description: Execution result
+
+  # ============================================================================
+  # Test Suites
+  # ============================================================================
+  /test-suites:
+    get:
+      tags: [Test Suites]
+      summary: List test suites
+      responses:
+        '200':
+          description: List of test suites
+    post:
+      tags: [Test Suites]
+      summary: Create test suite
+      responses:
+        '201':
+          description: Created test suite
+
+  /test-suites/{test_suite_id}:
+    get:
+      tags: [Test Suites]
+      summary: Get test suite by ID
+      parameters:
+        - name: test_suite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Test suite details
+
+  /test-suites/{test_suite_id}/execute:
+    post:
+      tags: [Test Suites]
+      summary: Execute test suite
+      parameters:
+        - name: test_suite_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Execution result
+
+  # ============================================================================
+  # Test Execution
+  # ============================================================================
+  /test-executions:
+    get:
+      tags: [Test Execution]
+      summary: List test executions
+      responses:
+        '200':
+          description: List of test executions
+
+  /test-executions/{execution_id}:
+    get:
+      tags: [Test Execution]
+      summary: Get test execution by ID
+      parameters:
+        - name: execution_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Test execution details
+
+  # ============================================================================
+  # Reports
+  # ============================================================================
+  /reports:
+    get:
+      tags: [Reports]
+      summary: List reports
+      responses:
+        '200':
+          description: List of reports
+
+  /reports/{report_id}:
+    get:
+      tags: [Reports]
+      summary: Get report by ID
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Report details
+
+  # ============================================================================
+  # Dashboard
+  # ============================================================================
+  /dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Get dashboard statistics
+      responses:
+        '200':
+          description: Dashboard statistics
+
+  /dashboard/recent-executions:
+    get:
+      tags: [Dashboard]
+      summary: Get recent test executions
+      responses:
+        '200':
+          description: Recent executions
+
+components:
+  schemas:
+    # Header Schemas
+    HeaderCreate:
+      type: object
+      required:
+        - name
+        - headers
+      properties:
+        name:
+          type: string
+          description: Header component name
+        description:
+          type: string
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        scope:
+          type: string
+          enum: [global, project, local]
+          default: local
+        project_id:
+          type: integer
+
+    HeaderUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        headers:
+          type: object
+        scope:
+          type: string
+          enum: [global, project, local]
+
+    HeaderResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        headers:
+          type: object
+        scope:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    HeaderListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeaderResponse'
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_pages:
+          type: integer
+
+    # Body Schemas
+    BodyCreate:
+      type: object
+      required:
+        - name
+        - body_type
+        - content_type
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        body_type:
+          type: string
+          enum: [request, response]
+        content_type:
+          type: string
+          default: application/json
+        body_schema:
+          type: object
+        example_data:
+          type: object
+
+    # API Definition Schemas
+    ApiDefinitionCreate:
+      type: object
+      required:
+        - name
+        - method
+        - path
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        method:
+          type: string
+          enum: [GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS]
+        path:
+          type: string
+        header_id:
+          type: integer
+        request_body_id:
+          type: integer
+        response_body_id:
+          type: integer
+        inline_request_body:
+          type: object
+        inline_response_body:
+          type: object
+        path_parameters:
+          type: object
+        query_parameters:
+          type: object
+
+    # Script Schemas
+    ScriptCreate:
+      type: object
+      required:
+        - name
+        - api_definition_id
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        api_definition_id:
+          type: integer
+        script_type:
+          type: string
+          enum: [pre, main, post]
+          default: main
+        script_language:
+          type: string
+          enum: [python, javascript, groovy]
+          default: python
+        script_content:
+          type: string
+        assertions:
+          type: array
+          items:
+            type: object
+        parameters:
+          type: array
+          items:
+            type: object
+
+    # Component Schemas
+    ComponentCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        parent_component_id:
+          type: integer
+        scripts:
+          type: array
+          items:
+            type: object
+            properties:
+              script_id:
+                type: integer
+              execution_order:
+                type: integer
+              parameters:
+                type: object
+        shared_variables:
+          type: object
+
+    # Test Case Schemas
+    TestCaseCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+          default: medium
+        tags:
+          type: array
+          items:
+            type: string
+        test_data:
+          type: object
+
+    # Error Response
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+            timestamp:
+              type: string
+              format: date-time
+            request_id:
+              type: string

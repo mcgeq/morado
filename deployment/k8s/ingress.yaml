@@ -1,0 +1,204 @@
+# =============================================================================
+# Morado Kubernetes Ingress Configuration
+# =============================================================================
+# This configuration defines the Ingress resources for routing external
+# traffic to the Morado frontend and backend services.
+#
+# Prerequisites:
+#   - Ingress controller (nginx-ingress or similar) must be installed
+#   - cert-manager for TLS certificates (optional but recommended)
+#
+# Apply: kubectl apply -f deployment/k8s/ingress.yaml
+# =============================================================================
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: morado
+  labels:
+    app: morado
+
+---
+# Ingress for Morado application
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: morado-ingress
+  namespace: morado
+  labels:
+    app: morado
+  annotations:
+    # Nginx Ingress Controller annotations
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    
+    # cert-manager for automatic TLS certificates (uncomment if using cert-manager)
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  # TLS configuration (uncomment for HTTPS)
+  # tls:
+  #   - hosts:
+  #       - morado.example.com
+  #     secretName: morado-tls-secret
+  rules:
+    # Main application domain
+    - host: morado.example.com
+      http:
+        paths:
+          # API routes - proxy to backend
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: morado-backend
+                port:
+                  number: 8000
+          
+          # API documentation
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: morado-backend
+                port:
+                  number: 8000
+          
+          # OpenAPI schema
+          - path: /schema
+            pathType: Prefix
+            backend:
+              service:
+                name: morado-backend
+                port:
+                  number: 8000
+          
+          # Health check endpoint (backend)
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: morado-backend
+                port:
+                  number: 8000
+          
+          # All other routes - serve frontend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: morado-frontend
+                port:
+                  number: 80
+
+---
+# Ingress for API subdomain (optional - for separate API domain)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: morado-api-ingress
+  namespace: morado
+  labels:
+    app: morado
+    component: api
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://morado.example.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  # tls:
+  #   - hosts:
+  #       - api.morado.example.com
+  #     secretName: morado-api-tls-secret
+  rules:
+    - host: api.morado.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: morado-backend
+                port:
+                  number: 8000
+
+---
+# NetworkPolicy - Allow ingress traffic only from ingress controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: morado-network-policy
+  namespace: morado
+  labels:
+    app: morado
+spec:
+  podSelector:
+    matchLabels:
+      app: morado
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 8000
+    # Allow internal communication between pods
+    - from:
+        - podSelector:
+            matchLabels:
+              app: morado
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 8000
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow internal communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app: morado
+    # Allow external HTTPS (for external API calls)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443

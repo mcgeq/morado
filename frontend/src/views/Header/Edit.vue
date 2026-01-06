@@ -56,7 +56,7 @@
       <div>
         <label class="block text-sm font-medium mb-2">Headers *</label>
         <div class="space-y-3">
-          <div v-for="(value, key, index) in formData.headers" :key="index" class="flex gap-2">
+          <div v-for="(_, key, index) in formData.headers" :key="index" class="flex gap-2">
             <input
               v-model="headerKeys[index]"
               type="text"

@@ -2,7 +2,19 @@
   "name": "morado-frontend",
   "private": true,
   "version": "0.1.0",
+  "description": "Morado Testing Platform - Vue3 Frontend Application",
   "type": "module",
+  "author": "mcgeq",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "automation",
+    "vue3",
+    "test-platform"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
@@ -16,7 +28,9 @@
     "lint": "bun biome lint .",
     "lint:fix": "bun biome lint --write .",
     "check": "bun biome check --write .",
-    "ci": "bun biome ci ."
+    "ci": "bun biome ci .",
+    "typecheck": "vue-tsc --noEmit",
+    "clean": "rimraf dist node_modules/.vite"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
@@ -39,6 +53,7 @@
     "@vue/tsconfig": "^0.8.1",
     "fast-check": "^4.5.2",
     "jsdom": "^27.3.0",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "vite": "^8.0.0-beta.3",

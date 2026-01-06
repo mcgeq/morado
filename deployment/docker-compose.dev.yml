@@ -1,0 +1,166 @@
+# =============================================================================
+# Morado Docker Compose - Development Configuration
+# =============================================================================
+# This configuration defines the development environment stack for Morado.
+# It includes hot-reload support and development-friendly settings.
+#
+# Usage:
+#   Start:   docker-compose -f deployment/docker-compose.dev.yml up -d
+#   Stop:    docker-compose -f deployment/docker-compose.dev.yml down
+#   Logs:    docker-compose -f deployment/docker-compose.dev.yml logs -f
+#   Backend: docker-compose -f deployment/docker-compose.dev.yml logs -f backend
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Frontend - Vue.js development server with hot-reload
+  # ---------------------------------------------------------------------------
+  frontend:
+    image: oven/bun:1
+    container_name: morado-frontend-dev
+    working_dir: /app
+    command: sh -c "bun install && bun run dev --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_BASE_URL=http://localhost:8000/api/v1
+    volumes:
+      - ../frontend:/app
+      - frontend-node-modules:/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - morado-dev-network
+    stdin_open: true
+    tty: true
+
+  # ---------------------------------------------------------------------------
+  # Backend - Python Litestar API server with hot-reload
+  # ---------------------------------------------------------------------------
+  backend:
+    image: python:3.13-slim
+    container_name: morado-backend-dev
+    working_dir: /app
+    command: >
+      sh -c "
+        pip install uv &&
+        uv pip install --system -e '.[dev]' &&
+        uvicorn morado.app:app --host 0.0.0.0 --port 8000 --reload
+      "
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=development
+      - PYTHONPATH=/app/backend/src
+      - DATABASE_URL=postgresql://morado:morado_dev@postgres:5432/morado_dev
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=DEBUG
+      - RELOAD=true
+    volumes:
+      - ..:/app
+      - backend-cache:/root/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - morado-dev-network
+    stdin_open: true
+    tty: true
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database (Development)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: morado-postgres-dev
+    environment:
+      - POSTGRES_USER=morado
+      - POSTGRES_PASSWORD=morado_dev
+      - POSTGRES_DB=morado_dev
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    networks:
+      - morado-dev-network
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U morado -d morado_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache (Development)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: morado-redis-dev
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    networks:
+      - morado-dev-network
+    volumes:
+      - redis-dev-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # Adminer - Database Management UI (Development only)
+  # ---------------------------------------------------------------------------
+  adminer:
+    image: adminer:latest
+    container_name: morado-adminer-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    depends_on:
+      - postgres
+    networks:
+      - morado-dev-network
+
+  # ---------------------------------------------------------------------------
+  # Redis Commander - Redis Management UI (Development only)
+  # ---------------------------------------------------------------------------
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: morado-redis-commander-dev
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - morado-dev-network
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  morado-dev-network:
+    driver: bridge
+    name: morado-dev-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-dev-data:
+    name: morado-postgres-dev-data
+  redis-dev-data:
+    name: morado-redis-dev-data
+  frontend-node-modules:
+    name: morado-frontend-node-modules
+  backend-cache:
+    name: morado-backend-cache

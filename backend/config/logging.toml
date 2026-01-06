@@ -1,0 +1,206 @@
+# Morado Logger Configuration
+# =====================================
+# This file configures the logging system for the Morado test platform.
+# Configuration can be overridden by environment variables.
+#
+# Environment variable overrides:
+#   MORADO_LOG_LEVEL           - Global log level
+#   MORADO_LOG_FORMAT          - Output format (console, json, structured)
+#   MORADO_LOG_OUTPUT          - Output destination (stdout, stderr, file path)
+#   MORADO_REQUEST_ID_FORMAT   - Request ID format
+#   MORADO_REQUEST_ID_LENGTH   - Request ID length
+
+# =============================================================================
+# BASIC LOGGING CONFIGURATION
+# =============================================================================
+
+[logging]
+# Log level: Controls the minimum severity of messages to log
+# Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+# Default: INFO
+level = "INFO"
+
+# Output format: Controls how log messages are formatted
+# Options:
+#   - "console": Human-readable colored output (best for development)
+#   - "json": Machine-readable JSON format (best for production/log aggregation)
+#   - "structured": Structured key-value format
+format = "console"
+
+# Output destination: Where to write log messages
+# Options:
+#   - "stdout": Standard output
+#   - "stderr": Standard error
+#   - "/path/to/file.log": File path for log output
+output = "stdout"
+
+# Context variables: List of context variables to include in logs
+# These are automatically injected when set via request_scope or ContextManager
+context_vars = ["request_id", "user_id", "trace_id", "span_id"]
+
+
+# =============================================================================
+# MODULE-LEVEL LOG CONFIGURATION
+# =============================================================================
+# Configure different log levels for specific modules or module patterns.
+# More specific patterns take precedence over general ones.
+
+[logging.module_levels]
+# Morado application modules
+"morado.api" = "INFO"
+"morado.services" = "INFO"
+"morado.repositories" = "INFO"
+"morado.middleware" = "INFO"
+"morado.core" = "INFO"
+
+# Database and ORM logging
+"sqlalchemy.engine" = "WARNING"
+"sqlalchemy.pool" = "WARNING"
+"alembic" = "INFO"
+
+# Third-party library log levels
+"urllib3" = "WARNING"
+"httpx" = "WARNING"
+"uvicorn" = "INFO"
+"uvicorn.access" = "INFO"
+"uvicorn.error" = "INFO"
+
+
+# =============================================================================
+# CUSTOM PROCESSORS
+# =============================================================================
+# Processors transform log events before they are rendered.
+# Built-in processors (timestamp, log level, stack info) are added automatically.
+
+[logging.processors]
+# Custom processors should be specified as module paths
+# Example: custom = ["morado.common.logger.processors.add_hostname"]
+custom = []
+
+
+# =============================================================================
+# REQUEST ID CONFIGURATION
+# =============================================================================
+# Configure how request IDs are automatically generated when not provided.
+# Request IDs are used to trace requests through the system.
+
+[logging.request_id]
+# Format: Type of ID to generate
+# Options:
+#   - "alphanumeric": Mixed letters and numbers (default)
+#   - "numeric": Numbers only
+#   - "uuid4": Standard RFC 4122 UUID4
+#   - "ulid": ULID-like sortable timestamp-based IDs
+format = "alphanumeric"
+
+# Length: Number of characters in the generated ID (ignored for uuid4 and ulid)
+length = 24
+
+# Prefix: String to prepend to generated IDs
+# Useful for identifying request IDs in logs
+prefix = "REQ-"
+
+# Suffix: String to append to generated IDs
+suffix = ""
+
+# Charset: Characters to use for alphanumeric/numeric formats
+charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+# Use timestamp: Include timestamp component for sortability
+use_timestamp = true
+
+# Secure: Use cryptographically secure random generation
+secure = true
+
+
+# =============================================================================
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# =============================================================================
+# These sections provide environment-specific configurations.
+# The appropriate section is loaded based on the MORADO_ENV environment variable.
+
+[logging.environments.development]
+level = "DEBUG"
+format = "console"
+output = "stdout"
+
+[logging.environments.development.module_levels]
+"morado" = "DEBUG"
+"morado.api" = "DEBUG"
+"morado.services" = "DEBUG"
+"sqlalchemy.engine" = "INFO"
+
+[logging.environments.development.request_id]
+format = "alphanumeric"
+length = 12
+prefix = "DEV-"
+
+
+[logging.environments.testing]
+level = "WARNING"
+format = "console"
+output = "stderr"
+
+[logging.environments.testing.module_levels]
+"morado" = "WARNING"
+"sqlalchemy.engine" = "WARNING"
+
+[logging.environments.testing.request_id]
+format = "numeric"
+length = 16
+secure = false
+
+
+[logging.environments.production]
+level = "INFO"
+format = "json"
+output = "stdout"
+
+[logging.environments.production.module_levels]
+"morado" = "INFO"
+"morado.api" = "INFO"
+"sqlalchemy.engine" = "WARNING"
+"urllib3" = "WARNING"
+
+[logging.environments.production.request_id]
+format = "ulid"
+secure = true
+
+
+# =============================================================================
+# FILE ROTATION CONFIGURATION (Optional)
+# =============================================================================
+# Configure log file rotation when output is set to a file path.
+
+[logging.rotation]
+# Enable file rotation
+enabled = false
+
+# Maximum size of each log file before rotation (in bytes)
+# Default: 10MB
+max_bytes = 10485760
+
+# Number of backup files to keep
+# Default: 5
+backup_count = 5
+
+# Compress rotated files
+compress = true
+
+
+# =============================================================================
+# PERFORMANCE SETTINGS
+# =============================================================================
+
+[logging.performance]
+# Enable async logging for better performance in high-throughput scenarios
+async_logging = false
+
+# Queue size for async logging (only used when async_logging is true)
+queue_size = 10000
+
+# Batch size for async logging
+batch_size = 100
+
+# Flush interval in seconds for async logging
+flush_interval = 1.0

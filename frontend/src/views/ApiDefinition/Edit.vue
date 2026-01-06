@@ -59,9 +59,9 @@
           </select>
         </div>
         <div class="col-span-3">
-          <label class="block text-sm font-medium mb-2">URL *</label>
+          <label class="block text-sm font-medium mb-2">Path *</label>
           <input
-            v-model="formData.url"
+            v-model="formData.path"
             type="text"
             required
             class="w-full rounded-lg border px-4 py-2"
@@ -214,7 +214,7 @@
     name: '',
     description: '',
     method: 'GET' as HttpMethod,
-    url: '',
+    path: '',
     isActive: true,
     tags: [],
   });
@@ -240,7 +240,7 @@
           name: api.name,
           description: api.description,
           method: api.method,
-          url: api.url,
+          path: api.path,
           headerId: api.headerId,
           requestBodyId: api.requestBodyId,
           responseBodyId: api.responseBodyId,

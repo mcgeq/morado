@@ -5,8 +5,11 @@ resolves variables, and handles data flow across the four layers.
 """
 
 import sys
+from pathlib import Path
 
-sys.path.insert(0, 'src')
+# Add backend/src to Python path
+backend_src = Path(__file__).parent.parent.parent / "src"
+sys.path.insert(0, str(backend_src))
 
 from morado.services.execution_context import (
     ExecutionContext,
@@ -70,12 +73,12 @@ def demo_variable_resolver():
 
     # Test built-in variables
     print("\n内置变量:")
-    print(f"  时间戳: ${resolver.context['timestamp']}")
-    print(f"  日期: {resolver.context['date']}")
-    print(f"  日期时间: {resolver.context['datetime']}")
-    print(f"  UUID: {resolver.context['uuid']}")
-    print(f"  随机整数: {resolver.context['random_int']}")
-    print(f"  随机字符串: {resolver.context['random_string']}")
+    print(f"  时间戳: {resolver.resolve('${timestamp}')}")
+    print(f"  日期: {resolver.resolve('${date}')}")
+    print(f"  日期时间: {resolver.resolve('${datetime}')}")
+    print(f"  UUID: {resolver.resolve('${uuid}')}")
+    print(f"  随机整数: {resolver.resolve('${random_int}')}")
+    print(f"  随机字符串: {resolver.resolve('${random_string}')}")
 
 
 def demo_execution_context():
@@ -85,13 +88,13 @@ def demo_execution_context():
     print("=" * 70)
 
     # Create execution context
-    context = ExecutionContext(
-        environment="test",
-        initial_params={
-            'user_name': '李四',
-            'user_email': 'lisi@example.com'
-        }
-    )
+    context = ExecutionContext(environment="test")
+    
+    # Set initial parameters
+    context.update_params({
+        'user_name': '李四',
+        'user_email': 'lisi@example.com'
+    })
 
     print("\n初始参数:")
     print(f"  user_name: {context.get_param('user_name')}")
@@ -112,7 +115,7 @@ def demo_execution_context():
     # Resolve complex data structure
     print("\n解析复杂数据结构:")
     api_request = {
-        'url': '${env.api.base_url}/users',
+        'url': '${base_url:https://api.example.com}/users',
         'method': 'POST',
         'headers': {
             'Authorization': 'Bearer ${token:default_token}',
@@ -125,7 +128,7 @@ def demo_execution_context():
         }
     }
 
-    resolved = context.resolve_variables(api_request)
+    resolved = context.resolve_value(api_request)
     print(f"  原始: {api_request}")
     print(f"  解析后: {resolved}")
 
@@ -177,7 +180,6 @@ def demo_parameter_priority():
     context = ScriptExecutionContext(
         script,
         override_params,
-        environment="test"
     )
 
     print("\n最终参数（按优先级合并）:")
@@ -245,7 +247,7 @@ def demo_data_flow():
     print("  [脚本2] 用户登录")
 
     # Next script can reference previous output
-    login_params = context.resolve_variables({
+    login_params = context.resolve_params({
         'user_id': '${created_user_id}',
         'email': '${user_email}',
         'password': '${user_password}'
@@ -283,7 +285,7 @@ def demo_complete_workflow():
 
     # Step 1: Register user
     print("\n[步骤1] 用户注册")
-    register_params = context.resolve_variables({
+    register_params = context.resolve_params({
         'name': '${user_name}',
         'email': '${user_email}',
         'password': '${user_password}'
@@ -300,7 +302,7 @@ def demo_complete_workflow():
 
     # Step 2: Login
     print("\n[步骤2] 用户登录")
-    login_params = context.resolve_variables({
+    login_params = context.resolve_params({
         'email': '${user_email}',
         'password': '${user_password}'
     })
@@ -316,7 +318,7 @@ def demo_complete_workflow():
 
     # Step 3: Get user info
     print("\n[步骤3] 获取用户信息")
-    get_params = context.resolve_variables({
+    get_params = context.resolve_params({
         'user_id': '${user_id}',
         'token': '${token}'
     })
@@ -325,7 +327,7 @@ def demo_complete_workflow():
 
     # Step 4: Update user info
     print("\n[步骤4] 更新用户信息")
-    update_params = context.resolve_variables({
+    update_params = context.resolve_params({
         'user_id': '${user_id}',
         'token': '${token}',
         'new_name': '${user_name}_updated',

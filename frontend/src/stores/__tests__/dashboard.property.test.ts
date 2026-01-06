@@ -6,7 +6,7 @@
 
 import * as fc from 'fast-check';
 import { createPinia, setActivePinia } from 'pinia';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, it } from 'vitest';
 import { clearCache, getCacheData, isCacheValid, setCacheData } from '../dashboard';
 
 describe('Dashboard Store Property Tests', () => {

@@ -1,0 +1,158 @@
+# =============================================================================
+# Morado Docker Compose - Production Configuration
+# =============================================================================
+# This configuration defines the production deployment stack for Morado.
+#
+# Usage:
+#   Start:   docker-compose -f deployment/docker-compose.yml up -d
+#   Stop:    docker-compose -f deployment/docker-compose.yml down
+#   Logs:    docker-compose -f deployment/docker-compose.yml logs -f
+#   Rebuild: docker-compose -f deployment/docker-compose.yml up -d --build
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Frontend - Vue.js application served by Nginx
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/docker/Dockerfile.frontend
+    image: morado-frontend:latest
+    container_name: morado-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - morado-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Backend - Python Litestar API server
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ..
+      dockerfile: deployment/docker/Dockerfile.backend
+    image: morado-backend:latest
+    container_name: morado-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://morado:morado_secret@postgres:5432/morado
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+      - WORKERS=4
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - morado-network
+    volumes:
+      - backend-logs:/app/logs
+      - backend-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: morado-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=morado
+      - POSTGRES_PASSWORD=morado_secret
+      - POSTGRES_DB=morado
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    networks:
+      - morado-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U morado -d morado"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: morado-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    networks:
+      - morado-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  morado-network:
+    driver: bridge
+    name: morado-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres-data:
+    name: morado-postgres-data
+  redis-data:
+    name: morado-redis-data
+  backend-logs:
+    name: morado-backend-logs
+  backend-data:
+    name: morado-backend-data

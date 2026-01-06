@@ -3,7 +3,11 @@
 import asyncio
 
 import pytest
-from morado.common.logger.context import ContextManager
+from morado.common.logger.context import (
+    clear_context,
+    get_context_data,
+    get_request_id,
+)
 from morado.common.logger.decorators import (
     async_with_request_context,
     log_execution,
@@ -13,48 +17,51 @@ from morado.common.logger.decorators import (
 
 def test_with_request_context_sync():
     """Test with_request_context decorator with sync function."""
+    clear_context()
 
     @with_request_context()
     def process_request(request_id: str, user_id: int, data: str):
         # Context should be set
-        assert ContextManager.get_request_id() == request_id
-        assert ContextManager.get_user_id() == user_id
+        assert get_request_id() == request_id
+        assert get_context_data("user_id") == user_id
         return f"Processed: {data}"
 
     result = process_request(request_id="REQ123", user_id=42, data="test")
     assert result == "Processed: test"
 
     # Context should be cleared after function exits
-    assert ContextManager.get_request_id() is None
-    assert ContextManager.get_user_id() is None
+    assert get_request_id() is None
+    assert get_context_data("user_id") is None
 
 
 def test_with_request_context_auto_generate():
     """Test with_request_context auto-generates request_id."""
+    clear_context()
 
     @with_request_context()
     def process_request(user_id: int, data: str):
         # request_id should be auto-generated
-        request_id = ContextManager.get_request_id()
+        request_id = get_request_id()
         assert request_id is not None
         assert len(request_id) > 0
-        assert ContextManager.get_user_id() == user_id
+        assert get_context_data("user_id") == user_id
         return request_id
 
     result = process_request(user_id=42, data="test")
     assert result is not None
 
     # Context should be cleared after function exits
-    assert ContextManager.get_request_id() is None
+    assert get_request_id() is None
 
 
 def test_with_request_context_no_auto_generate():
     """Test with_request_context with auto_generate=False."""
+    clear_context()
 
     @with_request_context(auto_generate=False)
     def process_request(user_id: int, data: str):
         # request_id should not be set
-        request_id = ContextManager.get_request_id()
+        request_id = get_request_id()
         return request_id
 
     result = process_request(user_id=42, data="test")
@@ -64,12 +71,13 @@ def test_with_request_context_no_auto_generate():
 @pytest.mark.asyncio
 async def test_with_request_context_async():
     """Test with_request_context decorator with async function."""
+    clear_context()
 
     @with_request_context()
     async def process_async_request(request_id: str, user_id: int, data: str):
         # Context should be set
-        assert ContextManager.get_request_id() == request_id
-        assert ContextManager.get_user_id() == user_id
+        assert get_request_id() == request_id
+        assert get_context_data("user_id") == user_id
         await asyncio.sleep(0.01)  # Simulate async work
         return f"Processed async: {data}"
 
@@ -77,19 +85,20 @@ async def test_with_request_context_async():
     assert result == "Processed async: async_test"
 
     # Context should be cleared after function exits
-    assert ContextManager.get_request_id() is None
-    assert ContextManager.get_user_id() is None
+    assert get_request_id() is None
+    assert get_context_data("user_id") is None
 
 
 @pytest.mark.asyncio
 async def test_async_with_request_context():
     """Test async_with_request_context decorator."""
+    clear_context()
 
     @async_with_request_context()
     async def process_async_request(request_id: str, user_id: int, data: str):
         # Context should be set
-        assert ContextManager.get_request_id() == request_id
-        assert ContextManager.get_user_id() == user_id
+        assert get_request_id() == request_id
+        assert get_context_data("user_id") == user_id
         await asyncio.sleep(0.01)  # Simulate async work
         return f"Processed: {data}"
 
@@ -97,8 +106,8 @@ async def test_async_with_request_context():
     assert result == "Processed: test"
 
     # Context should be cleared after function exits
-    assert ContextManager.get_request_id() is None
-    assert ContextManager.get_user_id() is None
+    assert get_request_id() is None
+    assert get_context_data("user_id") is None
 
 
 def test_async_with_request_context_on_sync_function_raises():
@@ -147,28 +156,30 @@ def test_log_execution_with_exception():
 
 def test_with_request_context_custom_arg_names():
     """Test with_request_context with custom argument names."""
+    clear_context()
 
     @with_request_context(request_id_arg='req_id', user_id_arg='uid')
     def process_request(req_id: str, uid: int, data: str):
-        assert ContextManager.get_request_id() == req_id
-        assert ContextManager.get_user_id() == uid
+        assert get_request_id() == req_id
+        assert get_context_data("user_id") == uid
         return data
 
     result = process_request(req_id="CUSTOM123", uid=999, data="custom")
     assert result == "custom"
 
     # Context should be cleared
-    assert ContextManager.get_request_id() is None
-    assert ContextManager.get_user_id() is None
+    assert get_request_id() is None
+    assert get_context_data("user_id") is None
 
 
 def test_with_request_context_partial_context():
     """Test with_request_context with only some context values."""
+    clear_context()
 
     @with_request_context()
     def process_request(request_id: str, data: str):
-        assert ContextManager.get_request_id() == request_id
-        assert ContextManager.get_user_id() is None  # Not provided
+        assert get_request_id() == request_id
+        assert get_context_data("user_id") is None  # Not provided
         return data
 
     result = process_request(request_id="PARTIAL123", data="partial")

@@ -95,7 +95,6 @@
 
 <script setup lang="ts">
   import { computed } from 'vue';
-  import { useI18n } from 'vue-i18n';
   import DonutChart from '@/components/common/DonutChart.vue';
   import type { ChartDataset, StepsStatisticsWidgetProps } from '@/types/dashboard';
   import { validateNonNegativeNumber } from '@/utils/propValidation';
@@ -103,8 +102,6 @@
   const props = withDefaults(defineProps<StepsStatisticsWidgetProps>(), {
     title: '',
   });
-  
-  const { t } = useI18n();
 
   // Runtime prop validation in development
   if (import.meta.env.DEV) {

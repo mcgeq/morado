@@ -74,7 +74,7 @@
               </span>
               <h3 class="text-xl font-semibold">{{ api.name }}</h3>
             </div>
-            <p class="text-gray-600 mb-2 font-mono text-sm">{{ api.url }}</p>
+            <p class="text-gray-600 mb-2 font-mono text-sm">{{ api.path }}</p>
             <p v-if="api.description" class="text-gray-600 mb-3">{{ api.description }}</p>
             <div class="flex gap-2 mb-3">
               <span
