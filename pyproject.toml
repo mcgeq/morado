@@ -61,7 +61,10 @@ test = [
 
 e2e = ["playwright>=1.57.0", "selenium>=4.39.0"]
 
-dev = ["ruff>=0.14.9", "ty>=0.0.5"]
+dev = [
+    "ruff>=0.14.9",
+    "ty>=0.0.5",
+]
 
 # ============================================================================
 # Project Paths Configuration
@@ -79,12 +82,15 @@ include = ["morado*"]
 # Documentation: https://docs.astral.sh/ty/configuration/
 [tool.ty]
 
-[tool.ty.src]
-root = "backend/src"
-
 [tool.ty.environment]
+# Python version for type checking
 python-version = "3.13"
-extra-paths = ["./backend/src"]
+# Extra paths for module resolution
+extra-paths = ["backend/src"]
+
+[tool.ty.rules]
+# Diagnostic rules configuration
+# See: https://docs.astral.sh/ty/rules/
 
 # ============================================================================
 # ruff - Python Linter and Formatter
